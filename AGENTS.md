@@ -55,7 +55,25 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 *   **Layout Views**: Master layout admin adalah `app/Views/layouts/admin_default.php`. Views konten harus `extend` layout ini dan menempatkan konten dalam `section('content')`.
 *   **Helper**: Helper `form` dan `url` umumnya dibutuhkan di controller yang menangani form dan view.
 
-## 4. Status Implementasi Saat Ini (untuk Pengembang)
+## 4. Ringkasan Relasi Database Utama
+
+Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam database SI-AKADEMIK. Untuk detail lengkap kolom dan tipe data, silakan merujuk ke file migrasi di `app/Database/Migrations/`.
+
+*   `users.role_id` -> `roles.id` (Menentukan peran pengguna)
+*   `students.user_id` -> `users.id` (Akun login untuk siswa)
+*   `students.parent_user_id` -> `users.id` (Akun login untuk orang tua siswa)
+*   `teachers.user_id` -> `users.id` (Akun login untuk guru)
+*   `classes.wali_kelas_id` -> `teachers.id` (Menentukan wali kelas untuk sebuah rombongan belajar)
+*   `class_student.class_id` -> `classes.id` (Keterkaitan siswa dengan rombongan belajar)
+*   `class_student.student_id` -> `students.id` (Keterkaitan rombongan belajar dengan siswa)
+*   `assessments.student_id` -> `students.id` (Siswa yang dinilai)
+*   `assessments.subject_id` -> `subjects.id` (Mata pelajaran yang dinilai)
+*   `assessments.class_id` -> `classes.id` (Kelas tempat penilaian dilakukan)
+*   `assessments.teacher_id` -> `teachers.id` (Guru yang melakukan penilaian/input nilai)
+
+*(Catatan: ON DELETE/ON UPDATE behavior seperti CASCADE atau SET NULL juga didefinisikan dalam migrasi).*
+
+## 5. Status Implementasi Saat Ini (untuk Pengembang)
 
 *   **[X] Fondasi Proyek**: PHP, Composer, CodeIgniter 4 setup.
 *   **[X] Database**: Skema database awal (semua tabel dari dokumen desain) telah dimigrasikan. SQLite digunakan.
