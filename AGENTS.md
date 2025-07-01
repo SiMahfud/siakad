@@ -126,8 +126,10 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
         *   Selanjutnya: Implementasi filter mata pelajaran berdasarkan penugasan guru di kelas tersebut (memerlukan tabel `teacher_class_subject_assignments`).
     *   **[X] Implementasi fitur edit/hapus untuk data penilaian yang sudah masuk.**
         *   Controller, view dasar untuk edit, rute, dan hak akses dasar (pembuat/admin) telah diimplementasikan.
-        *   Selanjutnya: Integrasi tombol Edit/Hapus ke UI (misalnya, halaman rekapitulasi nilai).
-    *   Tampilan rekapitulasi nilai per siswa dan per mata pelajaran (untuk guru, siswa, orang tua).
+        *   Tombol Edit/Hapus telah terintegrasi di halaman Rekap Nilai Guru.
+    *   **[P] Tampilan rekapitulasi nilai per siswa dan per mata pelajaran (untuk guru, siswa, orang tua).**
+        *   Saat ini: Fitur rekapitulasi nilai dasar untuk Guru telah diimplementasikan (pemilihan konteks, tampilan tabel, aksi Edit/Hapus per entri).
+        *   Selanjutnya: Pengembangan rekap untuk Siswa dan Orang Tua, serta potensi penyempurnaan tampilan/fitur untuk Guru.
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular lagi jika diperlukan (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data (misal, guru A tidak bisa edit data guru B).

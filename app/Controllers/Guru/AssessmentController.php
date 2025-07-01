@@ -413,4 +413,95 @@ class AssessmentController extends BaseController
             return redirect()->to("guru/assessments/input?class_id={$classId}&subject_id={$subjectId}")->with('error', 'Failed to delete assessment.');
         }
     }
+
+    /**
+     * Displays a form for the teacher to select class and subject to view assessment recap.
+     */
+    public function showRecapSelection()
+    {
+        $loggedInUserId = current_user_id();
+        $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+
+        $filteredClasses = [];
+        $allSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+
+        if ($teacher) {
+            $teacherId = $teacher['id'];
+            $waliKelasClasses = $this->classModel->where('wali_kelas_id', $teacherId)
+                                                ->orderBy('class_name', 'ASC')
+                                                ->findAll();
+
+            if (!empty($waliKelasClasses)) {
+                $filteredClasses = $waliKelasClasses;
+            } else {
+                $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+            }
+        } else {
+            if (isAdmin()) {
+                 $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+            } else {
+                $filteredClasses = [];
+                 session()->setFlashdata('error', 'Teacher data not found for your account. Please contact administrator.');
+            }
+        }
+
+        $data = [
+            'pageTitle' => 'Select Class and Subject for Recap',
+            'classes'   => $filteredClasses,
+            'subjects'  => $allSubjects,
+            'formAction' => site_url('guru/assessments/show-recap')
+        ];
+        return view('guru/assessments/select_recap_context', $data);
+    }
+
+    /**
+     * Displays the assessment recap for the selected class and subject.
+     */
+    public function displayRecap()
+    {
+        $classId = $this->request->getGet('class_id');
+        $subjectId = $this->request->getGet('subject_id');
+
+        if (empty($classId) || empty($subjectId)) {
+            return redirect()->to(route_to('guru_assessment_recap_select'))->with('error', 'Please select both class and subject for the recap.');
+        }
+
+        $classInfo = $this->classModel->find($classId);
+        $subjectInfo = $this->subjectModel->find($subjectId);
+
+        if (!$classInfo || !$subjectInfo) {
+            return redirect()->to(route_to('guru_assessment_recap_select'))->with('error', 'Invalid class or subject selected.');
+        }
+
+        // Fetch assessments (consider creating a dedicated model method for this)
+        $assessments = $this->assessmentModel->getAssessmentsForRecap($classId, $subjectId);
+
+        // Group assessments by student for easier display in the view
+        $studentsWithAssessments = [];
+        foreach ($assessments as $assessment) {
+            if (!isset($studentsWithAssessments[$assessment['student_id']])) {
+                $studentsWithAssessments[$assessment['student_id']] = [
+                    'student_id'   => $assessment['student_id'],
+                    'student_name' => $assessment['student_name'],
+                    'student_nisn' => $assessment['student_nisn'],
+                    'assessments'  => []
+                ];
+            }
+            $studentsWithAssessments[$assessment['student_id']]['assessments'][] = $assessment;
+        }
+
+        // Sort students by name if the keys are student_id (numeric)
+        // ksort($studentsWithAssessments); // if keys are numeric student_id
+        // If using student_name as key, it would be sorted.
+        // Or sort the final array by student_name if needed, though SQL ORDER BY should handle it.
+
+        $data = [
+            'pageTitle'             => 'Assessment Recap: ' . esc($classInfo['class_name']) . ' - ' . esc($subjectInfo['subject_name']),
+            'classInfo'             => $classInfo,
+            'subjectInfo'           => $subjectInfo,
+            'studentsWithAssessments' => $studentsWithAssessments,
+        ];
+
+        return view('guru/assessments/recap_display', $data);
+    }
 }
