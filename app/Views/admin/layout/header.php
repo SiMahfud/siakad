@@ -40,10 +40,26 @@
 <body>
 
 <div class="navbar">
-    <a href="<?= site_url('admin/students') ?>">Students</a>
-    <a href="<?= site_url('admin/teachers') ?>">Teachers</a>
-    <a href="<?= site_url('admin/subjects') ?>">Subjects</a>
-    <a href="<?= site_url('admin/classes') ?>">Classes</a>
+    <?php $session = session(); ?>
+    <?php if ($session->get('is_logged_in')): ?>
+        <a href="<?= site_url('admin/students') ?>">Students</a>
+        <a href="<?= site_url('admin/teachers') ?>">Teachers</a>
+        <a href="<?= site_url('admin/subjects') ?>">Subjects</a>
+        <a href="<?= site_url('admin/classes') ?>">Classes</a>
+
+        <?php
+            // Assuming role_id 1 is Administrator Sistem.
+            // This can be made more robust by checking permissions or specific role names.
+            $isAdmin = in_array($session->get('role_id'), [1]);
+        ?>
+        <?php if ($isAdmin): ?>
+            <a href="<?= site_url('admin/users') ?>">User Management</a>
+        <?php endif; ?>
+
+        <a href="<?= site_url('logout') ?>" style="float:right;">Logout (<?= esc($session->get('username')) ?>)</a>
+    <?php else: ?>
+        <a href="<?= site_url('login') ?>" style="float:right;">Login</a>
+    <?php endif; ?>
     <!-- Add more links as modules are developed -->
 </div>
 

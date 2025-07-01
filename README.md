@@ -30,10 +30,11 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 
 *   **[X] Modul Autentikasi & Manajemen Pengguna (Dasar)**
     *   [X] Struktur Tabel Database (`roles`, `users`)
+    *   [X] Model (`UserModel`, `RoleModel`) dengan validasi dan hashing password
     *   [X] Seeder untuk `roles`
-    *   [ ] Login & Logout
-    *   [ ] Manajemen Akun (oleh Admin)
-    *   [ ] Hak Akses Peran
+    *   [X] Login & Logout (Controller `AuthController`, view `auth/login`)
+    *   [X] Manajemen Akun (CRUD oleh Admin via `Admin/UserController` dan views `admin/users/`)
+    *   [X] Hak Akses Peran (Dasar, via Filter `AuthFilter` untuk path `/admin`)
 *   **[X] Modul Manajemen Data Induk (MVP)**
     *   **Data Siswa**
         *   [X] Struktur Tabel Database (`students`)

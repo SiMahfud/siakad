@@ -66,16 +66,24 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
     *   Validasi dasar sisi server diimplementasikan dalam model.
     *   Form untuk Kelas (Rombel) menyertakan pemilihan Wali Kelas dari data Guru.
     *   Navigasi dasar antar modul data induk telah dibuat.
+*   **[X] Modul Autentikasi & Manajemen Pengguna (Dasar)**:
+    *   `UserModel` dan `RoleModel` dibuat/diperbarui.
+    *   `AuthController` untuk proses login/logout.
+    *   View login dasar (`auth/login.php`).
+    *   `Admin/UserController` untuk CRUD pengguna.
+    *   Views dasar untuk manajemen pengguna (`admin/users/`).
+    *   Password di-hash secara otomatis saat disimpan.
+    *   Rute untuk autentikasi dan manajemen pengguna telah ditambahkan.
+    *   Filter `AuthFilter` dibuat dan diterapkan pada rute `/admin` untuk proteksi dasar.
+    *   Layout navigasi diperbarui untuk menampilkan link Login/Logout dan User Management secara kondisional.
 
 ## 5. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Autentikasi & Manajemen Pengguna**:
-    *   Implementasi fungsionalitas Login & Logout.
-    *   Fitur manajemen akun oleh Admin (CRUD untuk tabel `users`).
-    *   Implementasi hak akses berdasarkan peran.
-2.  **Integrasi Template Admin**:
+1.  **Integrasi Template Admin**:
     *   Pilih dan integrasikan AdminLTE atau Bootstrap 5 untuk UI yang lebih baik.
     *   Refactor views yang ada agar menggunakan template tersebut.
+2.  **Penyempurnaan Hak Akses**:
+    *   Implementasi hak akses yang lebih granular berdasarkan peran (misalnya, tidak semua pengguna admin bisa mengakses semua fitur admin).
 3.  **Modul Penilaian (Bank Nilai)**:
     *   Antarmuka input nilai formatif dan sumatif.
     *   Logika penyimpanan dan tampilan nilai.
