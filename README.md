@@ -62,10 +62,15 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [ ] Manajemen Jadwal Pelajaran
     *   [ ] Input Presensi Harian oleh Guru
     *   [ ] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)
-*   **[ ] Modul Penilaian (Bank Nilai)**
+*   **[P] Modul Penilaian (Bank Nilai) (Tahap Awal)**
     *   [X] Struktur Tabel Database (`assessments`)
-    *   [ ] Antarmuka input nilai formatif dan sumatif oleh guru
-    *   [ ] Tampilan rekap nilai per siswa dan per mata pelajaran
+    *   [X] Model (`AssessmentModel`) dengan validasi dasar.
+    *   [X] Controller (`Guru/AssessmentController`) untuk pemilihan konteks (kelas/mapel) & form input nilai.
+    *   [X] Views (`guru/assessments/select_context.php`, `guru/assessments/input_form.php`) untuk alur input nilai.
+    *   [X] Rute untuk fitur penilaian guru.
+    *   [X] Logika dasar penyimpanan batch nilai (formatif/sumatif).
+    *   [ ] Penyempurnaan validasi & error handling di form input.
+    *   [ ] Tampilan rekap nilai per siswa dan per mata pelajaran.
 *   **[ ] Modul Projek P5**
     *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
     *   [ ] Pengaturan projek oleh koordinator
@@ -94,7 +99,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [ ] Membuat dan menyebarkan pengumuman.
 *   **Guru Mata Pelajaran**:
     *   [ ] Menginput absensi harian.
-    *   [ ] Menginput nilai asesmen (formatif, sumatif).
+    *   [P] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada.
     *   [ ] Mengunggah materi ajar/tugas.
 *   **Wali Kelas**:
     *   (Semua fitur Guru Mata Pelajaran)
