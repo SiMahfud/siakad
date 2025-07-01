@@ -117,31 +117,40 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Tampilan pesan error validasi telah disempurnakan di `input_form.php` untuk menampilkan pesan yang jelas, termasuk nama siswa, nomor entri (jika ada beberapa untuk satu siswa), dan nama field yang bermasalah, serta pesan error spesifik.
     *   Rute untuk modul penilaian guru (`/guru/assessments/...`) telah dibuat dan diproteksi menggunakan filter `auth` untuk peran 'Guru' dan 'Administrator Sistem'.
     *   Modul ini telah diuji secara manual dengan berbagai skenario input (valid, berbagai tipe asesmen, data invalid untuk menguji aturan validasi dan tampilan error).
+    *   **Penyempurnaan Tambahan (Modul Penilaian):**
+        *   **[P] Filter Kelas/Mapel di Halaman Pemilihan Konteks (`AssessmentController::index`, `AssessmentController::showRecapSelection`):**
+            *   Filter kelas berdasarkan status wali kelas telah diimplementasikan (wali kelas melihat kelasnya; non-wali kelas & admin melihat semua kelas).
+            *   Dropdown mata pelajaran saat ini masih menampilkan semua mapel. Implementasi filter mapel yang lebih akurat (berdasarkan penugasan guru-mapel-kelas) adalah pengembangan selanjutnya.
+        *   **[X] Fitur Edit dan Hapus Data Penilaian:**
+            *   Method `editAssessment`, `updateAssessment`, dan `deleteAssessment` telah ditambahkan di `AssessmentController`.
+            *   View `edit_form.php` untuk form edit penilaian.
+            *   Rute terkait telah dibuat (`guru_assessment_edit`, `guru_assessment_update`, `guru_assessment_delete`).
+            *   Hak akses dasar (pembuat asesmen atau admin) diimplementasikan untuk operasi edit/hapus.
+        *   **[P] Fitur Rekapitulasi Nilai (untuk Guru):**
+            *   Method `showRecapSelection` dan `displayRecap` telah ditambahkan di `AssessmentController`.
+            *   Method `getAssessmentsForRecap` ditambahkan di `AssessmentModel`.
+            *   Views `select_recap_context.php` dan `recap_display.php` telah dibuat.
+            *   Halaman rekap menampilkan daftar siswa dengan asesmen mereka per kelas dan mapel, dengan tombol "Edit" dan "Hapus" yang fungsional per entri penilaian.
+            *   Link navigasi "Rekap Nilai" ditambahkan untuk peran Guru dan Admin.
 
-## 5. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
+## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   **[P] Implementasi filter kelas/mapel yang diajar guru di `AssessmentController::index()`.**
-        *   Saat ini: Filter kelas sudah diimplementasikan (wali kelas melihat kelasnya, non-wali kelas/admin melihat semua).
-        *   Selanjutnya: Implementasi filter mata pelajaran berdasarkan penugasan guru di kelas tersebut (memerlukan tabel `teacher_class_subject_assignments`).
-    *   **[X] Implementasi fitur edit/hapus untuk data penilaian yang sudah masuk.**
-        *   Controller, view dasar untuk edit, rute, dan hak akses dasar (pembuat/admin) telah diimplementasikan.
-        *   Tombol Edit/Hapus telah terintegrasi di halaman Rekap Nilai Guru.
-    *   **[P] Tampilan rekapitulasi nilai per siswa dan per mata pelajaran (untuk guru, siswa, orang tua).**
-        *   Saat ini: Fitur rekapitulasi nilai dasar untuk Guru telah diimplementasikan (pemilihan konteks, tampilan tabel, aksi Edit/Hapus per entri).
-        *   Selanjutnya: Pengembangan rekap untuk Siswa dan Orang Tua, serta potensi penyempurnaan tampilan/fitur untuk Guru.
+    *   Implementasi filter mata pelajaran yang lebih akurat di `AssessmentController::index()` dan `showRecapSelection()` (memerlukan tabel `teacher_class_subject_assignments`).
+    *   Pengembangan fitur rekapitulasi nilai untuk Siswa dan Orang Tua.
+    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian.
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
-    *   Implementasi hak akses yang lebih granular lagi jika diperlukan (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
-    *   Pengecekan kepemilikan data (misal, guru A tidak bisa edit data guru B).
+    *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
+    *   Pengecekan kepemilikan data secara lebih komprehensif.
 3.  **Manajemen Siswa dalam Kelas**:
     *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`).
-5.  **Modul Projek P5**:
+4.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
-6.  **Modul Ekspor ke e-Rapor**:
+5.  **Modul Ekspor ke e-Rapor**:
     *   Ini adalah fitur kunci dan kompleks yang memerlukan koordinasi terkait format template Excel.
 
-## 6. Perintah Berguna CodeIgniter Spark
+## 7. Perintah Berguna CodeIgniter Spark
 
 *   `php spark make:controller Admin/NamaController --suffix`
 *   `php spark make:model NamaModel --suffix`
