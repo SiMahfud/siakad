@@ -19,7 +19,7 @@ Sistem ini tidak dirancang untuk menghasilkan rapor final secara langsung. Sebal
 ### Spesifikasi Teknologi (Saat Ini):
 *   **Backend Framework**: CodeIgniter 4
 *   **Bahasa Pemrograman**: PHP 8.3.6 (Desain awal: PHP 7.4+)
-*   **Frontend**: HTML, CSS, JavaScript (Template Admin belum diintegrasikan)
+*   **Frontend**: HTML, CSS, JavaScript (Telah diintegrasikan dengan Bootstrap 5 via CDN)
 *   **Database**: SQLite (untuk pengembangan awal, sesuai desain bisa MySQL)
 
 ## Status Implementasi Fitur
@@ -40,22 +40,22 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
         *   [X] Struktur Tabel Database (`students`)
         *   [X] Model (`StudentModel`) dengan validasi dasar
         *   [X] Controller (`Admin/StudentController`) dengan fungsi CRUD
-        *   [X] Views (daftar, tambah, edit siswa)
+        *   [X] Views (daftar, tambah, edit siswa - dengan Bootstrap 5)
     *   **Data Guru**
         *   [X] Struktur Tabel Database (`teachers`)
         *   [X] Model (`TeacherModel`) dengan validasi dasar
         *   [X] Controller (`Admin/TeacherController`) dengan fungsi CRUD
-        *   [X] Views (daftar, tambah, edit guru)
+        *   [X] Views (daftar, tambah, edit guru - dengan Bootstrap 5)
     *   **Data Mata Pelajaran**
         *   [X] Struktur Tabel Database (`subjects`)
         *   [X] Model (`SubjectModel`) dengan validasi dasar
         *   [X] Controller (`Admin/SubjectController`) dengan fungsi CRUD
-        *   [X] Views (daftar, tambah, edit mata pelajaran)
+        *   [X] Views (daftar, tambah, edit mata pelajaran - dengan Bootstrap 5)
     *   **Data Kelas (Rombongan Belajar)**
         *   [X] Struktur Tabel Database (`classes`, `class_student`)
         *   [X] Model (`ClassModel`) dengan validasi dasar & relasi dasar ke guru
         *   [X] Controller (`Admin/ClassController`) dengan fungsi CRUD (termasuk pemilihan Wali Kelas)
-        *   [X] Views (daftar, tambah, edit kelas)
+        *   [X] Views (daftar, tambah, edit kelas - dengan Bootstrap 5)
         *   [ ] Manajemen siswa per kelas (tabel `class_student`)
 *   **[ ] Modul Akademik Harian**
     *   [ ] Manajemen Jadwal Pelajaran

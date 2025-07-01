@@ -8,7 +8,7 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 *   **Bahasa**: PHP (saat ini menggunakan versi 8.3.6)
 *   **Database**: SQLite (lokasi: `writable/database.sqlite`) untuk pengembangan awal. Desain akhir menargetkan MySQL.
 *   **Manajemen Dependensi**: Composer
-*   **Frontend**: HTML dasar dengan CSS inline untuk saat ini. Rencana ke depan akan mengintegrasikan template admin (AdminLTE atau Bootstrap 5).
+*   **Frontend**: Bootstrap 5 (via CDN) telah diintegrasikan sebagai dasar UI. Menggunakan master layout `app/Views/layouts/admin_default.php`.
 
 ## 2. Setup Lingkungan Pengembangan Lokal
 
@@ -52,7 +52,7 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
     *   Rute: Didefinisikan dalam `app/Config/Routes.php` menggunakan grup `admin`.
 *   **Namespace**: Gunakan namespace `App\Controllers\Admin` untuk controller admin, `App\Models` untuk model, dst.
 *   **Validasi**: Sebisa mungkin, letakkan aturan validasi utama di dalam Model terkait. Controller dapat mengambil aturan ini atau menambahinya jika perlu.
-*   **Layout Views**: Layout dasar admin ada di `app/Views/admin/layout/header.php`. Views konten harus `extend` layout ini dan menempatkan konten dalam `section('content')`.
+*   **Layout Views**: Master layout admin adalah `app/Views/layouts/admin_default.php`. Views konten harus `extend` layout ini dan menempatkan konten dalam `section('content')`.
 *   **Helper**: Helper `form` dan `url` umumnya dibutuhkan di controller yang menangani form dan view.
 
 ## 4. Status Implementasi Saat Ini (untuk Pengembang)
@@ -75,15 +75,16 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
     *   Password di-hash secara otomatis saat disimpan.
     *   Rute untuk autentikasi dan manajemen pengguna telah ditambahkan.
     *   Filter `AuthFilter` dibuat dan diterapkan pada rute `/admin` untuk proteksi dasar.
-    *   Layout navigasi diperbarui untuk menampilkan link Login/Logout dan User Management secara kondisional.
+*   **[X] UI Refactor (Bootstrap 5)**:
+    *   Master layout baru `app/Views/layouts/admin_default.php` dibuat menggunakan Bootstrap 5 (via CDN).
+    *   Halaman login dan semua views CRUD untuk Modul Data Induk (Users, Students, Teachers, Subjects, Classes) telah direfactor untuk menggunakan layout baru dan styling Bootstrap 5.
+    *   Navigasi utama menggunakan komponen Navbar Bootstrap dan bersifat dinamis (menampilkan link berdasarkan status login & peran).
 
 ## 5. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Integrasi Template Admin**:
-    *   Pilih dan integrasikan AdminLTE atau Bootstrap 5 untuk UI yang lebih baik.
-    *   Refactor views yang ada agar menggunakan template tersebut.
-2.  **Penyempurnaan Hak Akses**:
-    *   Implementasi hak akses yang lebih granular berdasarkan peran (misalnya, tidak semua pengguna admin bisa mengakses semua fitur admin).
+1.  **Penyempurnaan Hak Akses**:
+    *   Implementasi hak akses yang lebih granular berdasarkan peran (misalnya, tidak semua pengguna admin bisa mengakses semua fitur admin, guru hanya bisa akses data mapel dan kelasnya, dll.).
+    *   Pastikan filter dan controller memeriksa peran sebelum mengizinkan aksi (misal, hanya admin yang bisa delete user).
 3.  **Modul Penilaian (Bank Nilai)**:
     *   Antarmuka input nilai formatif dan sumatif.
     *   Logika penyimpanan dan tampilan nilai.
