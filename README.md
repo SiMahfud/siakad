@@ -1,68 +1,126 @@
-# CodeIgniter 4 Application Starter
+# SI-AKADEMIK - Sistem Informasi Akademik Harian SMAN 1 Campurdarat
 
-## What is CodeIgniter?
+Versi: 1.0 (Pengembangan Awal)
+Tanggal Proyek Dimulai: 30 Juni 2025 (sesuai dokumen desain)
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Deskripsi Aplikasi
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+SI-AKADEMIK adalah aplikasi Sistem Informasi Akademik Harian yang dirancang khusus untuk SMAN 1 Campurdarat. Aplikasi ini bertujuan untuk mendukung implementasi Kurikulum Merdeka dengan fokus utama pada pencatatan aktivitas pembelajaran harian dan pengelolaan penilaian (formatif dan sumatif) oleh guru secara efisien.
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+Sistem ini tidak dirancang untuk menghasilkan rapor final secara langsung. Sebaliknya, SI-AKADEMIK akan berfungsi sebagai "Bank Nilai" yang terstruktur dan terpusat. Fitur kunci dari sistem ini adalah kemampuannya untuk mengekspor data nilai dalam format Excel (.xlsx) yang kompatibel dan siap diimpor ke dalam aplikasi e-Rapor Kemdikbud yang sudah digunakan oleh sekolah.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+### Tujuan Utama Pengembangan:
+*   **Sentralisasi Data Penilaian**: Menciptakan satu sumber data tunggal untuk semua jenis penilaian.
+*   **Efisiensi Kerja Guru**: Memudahkan guru dalam mengelola dan mendokumentasikan nilai.
+*   **Transparansi Proses Pembelajaran**: Memberikan akses bagi siswa dan orang tua untuk memantau perkembangan belajar.
+*   **Integrasi dengan e-Rapor**: Menyederhanakan proses pengisian rapor akhir semester.
+*   **Mendukung Kurikulum Merdeka**: Memfasilitasi administrasi mata pelajaran pilihan dan penilaian Projek Penguatan Profil Pelajar Pancasila (P5).
 
-## Installation & updates
+### Spesifikasi Teknologi (Saat Ini):
+*   **Backend Framework**: CodeIgniter 4
+*   **Bahasa Pemrograman**: PHP 8.3.6 (Desain awal: PHP 7.4+)
+*   **Frontend**: HTML, CSS, JavaScript (Template Admin belum diintegrasikan)
+*   **Database**: SQLite (untuk pengembangan awal, sesuai desain bisa MySQL)
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## Status Implementasi Fitur
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 
-## Setup
+### Modul Utama
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+*   **[X] Modul Autentikasi & Manajemen Pengguna (Dasar)**
+    *   [X] Struktur Tabel Database (`roles`, `users`)
+    *   [X] Seeder untuk `roles`
+    *   [ ] Login & Logout
+    *   [ ] Manajemen Akun (oleh Admin)
+    *   [ ] Hak Akses Peran
+*   **[X] Modul Manajemen Data Induk (MVP)**
+    *   **Data Siswa**
+        *   [X] Struktur Tabel Database (`students`)
+        *   [X] Model (`StudentModel`) dengan validasi dasar
+        *   [X] Controller (`Admin/StudentController`) dengan fungsi CRUD
+        *   [X] Views (daftar, tambah, edit siswa)
+    *   **Data Guru**
+        *   [X] Struktur Tabel Database (`teachers`)
+        *   [X] Model (`TeacherModel`) dengan validasi dasar
+        *   [X] Controller (`Admin/TeacherController`) dengan fungsi CRUD
+        *   [X] Views (daftar, tambah, edit guru)
+    *   **Data Mata Pelajaran**
+        *   [X] Struktur Tabel Database (`subjects`)
+        *   [X] Model (`SubjectModel`) dengan validasi dasar
+        *   [X] Controller (`Admin/SubjectController`) dengan fungsi CRUD
+        *   [X] Views (daftar, tambah, edit mata pelajaran)
+    *   **Data Kelas (Rombongan Belajar)**
+        *   [X] Struktur Tabel Database (`classes`, `class_student`)
+        *   [X] Model (`ClassModel`) dengan validasi dasar & relasi dasar ke guru
+        *   [X] Controller (`Admin/ClassController`) dengan fungsi CRUD (termasuk pemilihan Wali Kelas)
+        *   [X] Views (daftar, tambah, edit kelas)
+        *   [ ] Manajemen siswa per kelas (tabel `class_student`)
+*   **[ ] Modul Akademik Harian**
+    *   [ ] Manajemen Jadwal Pelajaran
+    *   [ ] Input Presensi Harian oleh Guru
+    *   [ ] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)
+*   **[ ] Modul Penilaian (Bank Nilai)**
+    *   [X] Struktur Tabel Database (`assessments`)
+    *   [ ] Antarmuka input nilai formatif dan sumatif oleh guru
+    *   [ ] Tampilan rekap nilai per siswa dan per mata pelajaran
+*   **[ ] Modul Projek P5**
+    *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
+    *   [ ] Pengaturan projek oleh koordinator
+    *   [ ] Pencatatan penilaian kualitatif (BB, MB, BSH, SB) oleh fasilitator
+*   **[ ] Modul Ekspor ke e-Rapor (Fitur Kunci)**
+    *   [ ] Antarmuka Wali Kelas untuk memilih parameter ekspor
+    *   [ ] Proses penarikan data nilai sumatif dan P5
+    *   [ ] Penyusunan data ke format Excel template e-Rapor
+    *   [ ] Tombol unduh file Excel
 
-## Important Change with index.php
+### Fitur Berdasarkan Peran Pengguna
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+*   **Administrator Sistem**:
+    *   [ ] Mengelola akun dan hak akses semua pengguna.
+    *   [ ] Mengatur konfigurasi tahun ajaran, data sekolah, struktur kurikulum.
+    *   [ ] Mengelola data master tema dan dimensi P5.
+    *   [ ] Maintenance dan backup database.
+*   **Staf Tata Usaha (TU)**:
+    *   [X] Mengelola data induk siswa (sebagian via Modul Data Induk)
+    *   [X] Mengelola data induk guru (sebagian via Modul Data Induk)
+    *   [X] Mengatur pembagian siswa ke dalam rombel (dasar via Modul Data Induk - Kelas, detail penempatan siswa belum)
+*   **Kepala Sekolah**:
+    *   [ ] Akses read-only ke seluruh data.
+    *   [ ] Dasbor eksekutif.
+    *   [ ] Memantau aktivitas guru.
+    *   [ ] Membuat dan menyebarkan pengumuman.
+*   **Guru Mata Pelajaran**:
+    *   [ ] Menginput absensi harian.
+    *   [ ] Menginput nilai asesmen (formatif, sumatif).
+    *   [ ] Mengunggah materi ajar/tugas.
+*   **Wali Kelas**:
+    *   (Semua fitur Guru Mata Pelajaran)
+    *   [ ] Memantau rekapitulasi absensi dan nilai kelas perwalian.
+    *   [ ] Menginput catatan perilaku/perkembangan siswa.
+    *   [ ] Membimbing siswa memilih mapel pilihan.
+    *   [ ] Validasi Kelengkapan Nilai.
+    *   [ ] Ekspor Data ke e-Rapor.
+*   **Siswa**:
+    *   [ ] Melihat jadwal pelajaran.
+    *   [ ] Melihat rekap absensi pribadi.
+    *   [ ] Melihat transkrip nilai sementara.
+    *   [ ] Melakukan pemilihan mapel pilihan.
+*   **Orang Tua / Wali**:
+    *   [ ] Memantau kehadiran dan rekap absensi anak.
+    *   [ ] Melihat transkrip nilai sementara anak.
+    *   [ ] Menerima pengumuman dan pesan.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+## Setup Pengembangan Awal
 
-**Please** read the user guide for a better explanation of how CI4 works!
+1.  Clone repositori ini.
+2.  Pastikan PHP (versi 8.1+ direkomendasikan, saat ini menggunakan 8.3.6) dan Composer terinstal.
+3.  Jalankan `composer install` untuk menginstal dependensi.
+4.  Database SQLite (`writable/database.sqlite`) akan dibuat dan dimigrasikan secara otomatis saat pertama kali menjalankan migrasi.
+5.  Jalankan migrasi: `php spark migrate`
+6.  Jalankan seeder (untuk data awal seperti peran): `php spark db:seed DatabaseSeeder`
+7.  Jalankan server pengembangan: `php spark serve`
+8.  Akses aplikasi melalui `http://localhost:8080`. Fitur admin data induk tersedia di bawah path `/admin/...` (misal, `/admin/students`).
 
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Server Requirements
-
-PHP version 8.1 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+---
+*Readme ini bersifat sementara dan akan diperbarui seiring progres pengembangan.*
