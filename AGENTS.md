@@ -86,22 +86,28 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
     *   Controller Data Induk (`Students`, `Teachers`, `Subjects`, `Classes`) ditambahkan pengecekan peran untuk aksi CUD.
     *   Halaman `unauthorized` dibuat.
     *   Navigasi di layout utama disesuaikan dengan hak akses peran.
-*   **[P] Modul Penilaian (Bank Nilai) (Tahap Awal)**:
-    *   `AssessmentModel` dibuat dengan validasi dasar.
-    *   `Guru/AssessmentController` dibuat dengan metode `index` (pemilihan konteks), `showInputForm`, dan `saveAssessments` (logika dasar penyimpanan batch).
-    *   Views untuk pemilihan konteks (`select_context.php`) dan form input nilai (`input_form.php` dengan JS untuk baris dinamis) telah dibuat.
-    *   Rute untuk area penilaian guru telah ditambahkan dan diproteksi.
+*   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal Selesai)**:
+    *   `AssessmentModel.php` dibuat dengan aturan validasi untuk field-field penilaian (termasuk `required`, `valid_date`, `decimal`, `between[0,100]` untuk skor).
+    *   `Guru/AssessmentController.php` diimplementasikan:
+        *   `index()`: Menampilkan form untuk guru memilih Kelas dan Mata Pelajaran.
+        *   `showInputForm()`: Menampilkan form input nilai detail, mengambil daftar siswa dari kelas yang dipilih.
+        *   `saveAssessments()`: Memproses data batch dari form, melakukan validasi kustom per entri (misalnya, skor wajib untuk Sumatif, judul wajib jika ada skor/deskripsi), memvalidasi dengan `AssessmentModel`, dan menyimpan data valid menggunakan `insertBatch()`.
+    *   Views terkait di `app/Views/guru/assessments/`:
+        *   `select_context.php`: Form pemilihan kelas dan subjek.
+        *   `input_form.php`: Form input nilai utama. Menggunakan JavaScript untuk memungkinkan guru menambah/menghapus beberapa baris entri penilaian per siswa secara dinamis.
+    *   Validasi input yang komprehensif telah diimplementasikan, baik di sisi controller (untuk logika yang lebih kompleks antar field) maupun di model (untuk aturan per field).
+    *   Tampilan pesan error validasi telah disempurnakan di `input_form.php` untuk menampilkan pesan yang jelas, termasuk nama siswa, nomor entri (jika ada beberapa untuk satu siswa), dan nama field yang bermasalah, serta pesan error spesifik.
+    *   Rute untuk modul penilaian guru (`/guru/assessments/...`) telah dibuat dan diproteksi menggunakan filter `auth` untuk peran 'Guru' dan 'Administrator Sistem'.
+    *   Modul ini telah diuji secara manual dengan berbagai skenario input (valid, berbagai tipe asesmen, data invalid untuk menguji aturan validasi dan tampilan error).
 
 ## 5. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   Penyempurnaan validasi input nilai di `AssessmentController` dan `AssessmentModel`.
-    *   Penyempurnaan tampilan error validasi di `input_form.php`.
-    *   Implementasi filter kelas/mapel yang diajar guru di `AssessmentController::index()`.
+    *   Implementasi filter kelas/mapel yang diajar guru di `AssessmentController::index()`. Saat ini menampilkan semua kelas/mapel.
     *   Implementasi fitur edit/hapus untuk data penilaian yang sudah masuk.
-    *   Tampilan rekapitulasi nilai per siswa dan per mata pelajaran.
+    *   Tampilan rekapitulasi nilai per siswa dan per mata pelajaran (untuk guru, siswa, orang tua).
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
-    *   Implementasi hak akses yang lebih granular lagi jika diperlukan (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya).
+    *   Implementasi hak akses yang lebih granular lagi jika diperlukan (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data (misal, guru A tidak bisa edit data guru B).
 3.  **Manajemen Siswa dalam Kelas**:
     *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`).

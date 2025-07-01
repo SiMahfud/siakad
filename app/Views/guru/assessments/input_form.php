@@ -32,14 +32,24 @@
             <?php
             $validation_errors = session()->getFlashdata('validation_errors');
             if (!empty($validation_errors)) :
+                // Prepare a student name map for easier lookup in errors
+                $studentNamesMap = [];
+                if (!empty($students) && is_array($students)) {
+                    foreach ($students as $student) {
+                        $studentNamesMap[$student['id']] = $student['full_name'];
+                    }
+                }
             ?>
                 <div class="alert alert-danger" role="alert">
                     <h6 class="alert-heading">Please correct the following errors:</h6>
                     <ul>
                         <?php foreach ($validation_errors as $studentId => $studentErrorArray) : ?>
+                            <?php
+                                $studentDisplayName = isset($studentNamesMap[$studentId]) ? $studentNamesMap[$studentId] . " (ID: " . $studentId . ")" : "Student ID: " . $studentId;
+                            ?>
                             <?php foreach ($studentErrorArray as $index => $fieldErrors) : ?>
                                 <?php foreach ($fieldErrors as $field => $errorMsg) : ?>
-                                    <li>Student Row <?= esc($index + 1) ?> (ID: <?= esc($studentId) ?>) - Field '<?= esc($field) ?>': <?= esc($errorMsg) ?></li>
+                                    <li>For <strong><?= esc($studentDisplayName) ?></strong>, Entry #<?= esc($index + 1) ?>: Field '<em><?= esc(ucfirst(str_replace('_', ' ', $field))) ?></em>' - <?= esc($errorMsg) ?></li>
                                 <?php endforeach; ?>
                             <?php endforeach; ?>
                         <?php endforeach; ?>

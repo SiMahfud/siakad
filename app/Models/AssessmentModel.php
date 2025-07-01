@@ -38,8 +38,8 @@ class AssessmentModel extends Model
         'class_id'        => 'required|integer|is_not_unique[classes.id]',
         'teacher_id'      => 'required|integer|is_not_unique[teachers.id]',
         'assessment_type' => 'required|in_list[FORMATIF,SUMATIF]',
-        'assessment_title'=> 'permit_empty|max_length[255]',
-        'assessment_date' => 'permit_empty|valid_date', // Should ideally be required, but table allows null for now
+        'assessment_title'=> 'permit_empty|max_length[255]', // Title can be optional for quick notes
+        'assessment_date' => 'required|valid_date',
 
         // Conditional validation for score and description might be better handled in controller
         // or with custom validation rules if complexity increases.
