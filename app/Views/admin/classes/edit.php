@@ -1,55 +1,76 @@
-<?= $this->extend('admin/layout/header') ?>
+<?= $this->extend('layouts/admin_default') ?>
 
 <?= $this->section('content') ?>
 
-    <h1>Edit Class: <?= esc($class_item['class_name'] ?? 'N/A') ?> (<?= esc($class_item['academic_year'] ?? '') ?>)</h1>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800"><?= esc($title ?? 'Edit Class (Rombel)') ?></h1>
+    </div>
 
-    <?php if (isset($validation)) : ?>
-        <div class="form-errors">
-            <?php
-                if (is_object($validation) && method_exists($validation, 'listErrors')) {
-                    echo $validation->listErrors();
-                }
-            ?>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Class Details: <?= esc($class_item['class_name'] ?? 'N/A') ?> (<?= esc($class_item['academic_year'] ?? '') ?>)</h6>
         </div>
-    <?php endif; ?>
+        <div class="card-body">
+            <?php if (isset($validation) && $validation->getErrors()) : ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        <?php foreach ($validation->getErrors() as $error) : ?>
+                            <li><?= esc($error) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            <?php if (session()->getFlashdata('error')) : ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <?= session()->getFlashdata('error') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
 
-    <form action="<?= site_url('admin/classes/update/' . ($class_item['id'] ?? '')) ?>" method="post">
-        <?= csrf_field() ?>
+            <form action="<?= site_url('admin/classes/update/' . $class_item['id']) ?>" method="post">
+                <?= csrf_field() ?>
 
-        <div class="form-group">
-            <label for="class_name">Class Name (e.g., X-A, XI IPA 1):</label>
-            <input type="text" name="class_name" id="class_name" value="<?= old('class_name', $class_item['class_name'] ?? '') ?>" required>
+                <div class="mb-3">
+                    <label for="class_name" class="form-label">Class Name (e.g., X-A, XI IPA 1): <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control <?= (isset($validation) && $validation->hasError('class_name')) ? 'is-invalid' : '' ?>"
+                           name="class_name" id="class_name" value="<?= old('class_name', $class_item['class_name'] ?? '') ?>" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="academic_year" class="form-label">Academic Year (e.g., 2024/2025): <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control <?= (isset($validation) && $validation->hasError('academic_year')) ? 'is-invalid' : '' ?>"
+                           name="academic_year" id="academic_year" value="<?= old('academic_year', $class_item['academic_year'] ?? '') ?>" required placeholder="YYYY/YYYY">
+                </div>
+
+                <div class="mb-3">
+                    <label for="fase" class="form-label">Fase (e.g., E, F) (Optional):</label>
+                    <input type="text" class="form-control <?= (isset($validation) && $validation->hasError('fase')) ? 'is-invalid' : '' ?>"
+                           name="fase" id="fase" value="<?= old('fase', $class_item['fase'] ?? '') ?>" maxlength="1">
+                </div>
+
+                <div class="mb-3">
+                    <label for="wali_kelas_id" class="form-label">Wali Kelas (Homeroom Teacher) (Optional):</label>
+                    <select name="wali_kelas_id" id="wali_kelas_id" class="form-select <?= (isset($validation) && $validation->hasError('wali_kelas_id')) ? 'is-invalid' : '' ?>">
+                        <option value="">-- Select Wali Kelas --</option>
+                        <?php if (!empty($teachers) && is_array($teachers)) : ?>
+                            <?php foreach ($teachers as $teacher) : ?>
+                                <option value="<?= esc($teacher['id']) ?>" <?= old('wali_kelas_id', $class_item['wali_kelas_id'] ?? '') == $teacher['id'] ? 'selected' : '' ?>>
+                                    <?= esc($teacher['full_name']) ?> (NIP: <?= esc($teacher['nip'] ?? 'N/A') ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Update Class</button>
+                    <a href="<?= site_url('admin/classes') ?>" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
         </div>
-
-        <div class="form-group">
-            <label for="academic_year">Academic Year (e.g., 2024/2025):</label>
-            <input type="text" name="academic_year" id="academic_year" value="<?= old('academic_year', $class_item['academic_year'] ?? '') ?>" required>
-        </div>
-
-        <div class="form-group">
-            <label for="fase">Fase (e.g., E, F) (Optional):</label>
-            <input type="text" name="fase" id="fase" value="<?= old('fase', $class_item['fase'] ?? '') ?>" maxlength="1">
-        </div>
-
-        <div class="form-group">
-            <label for="wali_kelas_id">Wali Kelas (Homeroom Teacher) (Optional):</label>
-            <select name="wali_kelas_id" id="wali_kelas_id">
-                <option value="">-- Select Wali Kelas --</option>
-                <?php if (!empty($teachers) && is_array($teachers)) : ?>
-                    <?php foreach ($teachers as $teacher) : ?>
-                        <option value="<?= esc($teacher['id']) ?>" <?= old('wali_kelas_id', $class_item['wali_kelas_id'] ?? '') == $teacher['id'] ? 'selected' : '' ?>>
-                            <?= esc($teacher['full_name']) ?> (NIP: <?= esc($teacher['nip'] ?? 'N/A') ?>)
-                        </option>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </select>
-        </div>
-
-        <div class="button-group">
-            <button type="submit">Update Class</button>
-            <a href="<?= site_url('admin/classes') ?>">Cancel</a>
-        </div>
-    </form>
+    </div>
+</div>
 
 <?= $this->endSection() ?>

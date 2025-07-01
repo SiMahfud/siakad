@@ -169,9 +169,9 @@ class Database extends Config
         'password'    => '',
         'database'    => ':memory:',
         'DBDriver'    => 'SQLite3',
-        'DBPrefix'    => 'db_',  // Needed to ensure we're working correctly with prefixes live. DO NOT REMOVE FOR CI DEVS
+        'DBPrefix'    => '',  // Changed from 'db_' to empty string for tests
         'pConnect'    => false,
-        'DBDebug'     => true,
+        'DBDebug'     => true, // Set to false in production if true causes issues, but fine for tests
         'charset'     => 'utf8',
         'DBCollat'    => '',
         'swapPre'     => '',

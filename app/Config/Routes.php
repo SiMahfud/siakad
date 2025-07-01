@@ -7,12 +7,22 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-// Admin routes for Modul Data Induk
-$routes->group('admin', static function ($routes) {
-    $routes->resource('students', ['controller' => 'App\Controllers\Admin\StudentController']);
-    $routes->resource('teachers', ['controller' => 'App\Controllers\Admin\TeacherController']);
-    $routes->resource('subjects', ['controller' => 'App\Controllers\Admin\SubjectController']);
-    $routes->resource('classes', ['controller' => 'App\Controllers\Admin\ClassController']);
+// Authentication routes
+$routes->get('login', 'AuthController::login');
+$routes->post('login', 'AuthController::attemptLogin'); // Match with form action
+$routes->get('logout', 'AuthController::logout');
+
+
+// Admin routes for Modul Data Induk & User Management
+$routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'auth'], static function ($routes) {
+    // Add a default route for /admin to redirect or show a dashboard later
+    // $routes->get('/', 'DashboardController::index');
+
+    $routes->resource('students', ['controller' => 'StudentController']);
+    $routes->resource('teachers', ['controller' => 'TeacherController']);
+    $routes->resource('subjects', ['controller' => 'SubjectController']);
+    $routes->resource('classes', ['controller' => 'ClassController']);
+    $routes->resource('users', ['controller' => 'UserController']); // User Management
 });
 
 // Additional routes can be added here.

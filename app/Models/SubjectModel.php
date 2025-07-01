@@ -29,7 +29,7 @@ class SubjectModel extends Model
     protected $validationRules      = [
         'subject_name' => 'required|min_length[3]|max_length[100]',
         'subject_code' => 'permit_empty|max_length[20]|is_unique[subjects.subject_code,id,{id}]',
-        'is_pilihan'   => 'required|in_list[0,1]',
+        'is_pilihan'   => 'in_list[0,1]', // Removed 'required'
     ];
     protected $validationMessages   = [];
     protected $skipValidation       = false;

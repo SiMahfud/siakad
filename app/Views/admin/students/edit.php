@@ -1,50 +1,72 @@
-<?= $this->extend('admin/layout/header') ?>
+<?= $this->extend('layouts/admin_default') ?>
 
 <?= $this->section('content') ?>
 
-    <h1>Edit Student: <?= esc($student['full_name'] ?? 'N/A') ?></h1>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800"><?= esc($title ?? 'Edit Student') ?></h1>
+    </div>
 
-    <?php if (isset($validation)) : ?>
-        <div class="form-errors">
-            <?php
-                if (is_object($validation) && method_exists($validation, 'listErrors')) {
-                    echo $validation->listErrors();
-                }
-            ?>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Student Details: <?= esc($student['full_name'] ?? ($student['nisn'] ?? 'N/A')) ?></h6>
         </div>
-    <?php endif; ?>
+        <div class="card-body">
+            <?php if (isset($validation) && $validation->getErrors()) : ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        <?php foreach ($validation->getErrors() as $error) : ?>
+                            <li><?= esc($error) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            <?php if (session()->getFlashdata('error')) : ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <?= session()->getFlashdata('error') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
 
-    <form action="<?= site_url('admin/students/update/' . ($student['id'] ?? '')) ?>" method="post">
-        <?= csrf_field() ?>
+            <form action="<?= site_url('admin/students/update/' . $student['id']) ?>" method="post">
+                <?= csrf_field() ?>
 
-        <div class="form-group">
-            <label for="full_name">Full Name:</label>
-            <input type="text" name="full_name" id="full_name" value="<?= old('full_name', $student['full_name'] ?? '') ?>" required>
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Full Name: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control <?= (isset($validation) && $validation->hasError('full_name')) ? 'is-invalid' : '' ?>"
+                           name="full_name" id="full_name" value="<?= old('full_name', $student['full_name'] ?? '') ?>" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="nisn" class="form-label">NISN:</label>
+                    <input type="text" class="form-control <?= (isset($validation) && $validation->hasError('nisn')) ? 'is-invalid' : '' ?>"
+                           name="nisn" id="nisn" value="<?= old('nisn', $student['nisn'] ?? '') ?>">
+                </div>
+
+                <div class="mb-3">
+                    <label for="user_id" class="form-label">User ID (for student login, optional):</label>
+                    <input type="number" class="form-control <?= (isset($validation) && $validation->hasError('user_id')) ? 'is-invalid' : '' ?>"
+                           name="user_id" id="user_id" value="<?= old('user_id', $student['user_id'] ?? '') ?>">
+                    <div class="form-text">Leave blank if no login yet. Must be an existing User ID from the 'users' table if provided.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="parent_user_id" class="form-label">Parent User ID (for parent login, optional):</label>
+                    <input type="number" class="form-control <?= (isset($validation) && $validation->hasError('parent_user_id')) ? 'is-invalid' : '' ?>"
+                           name="parent_user_id" id="parent_user_id" value="<?= old('parent_user_id', $student['parent_user_id'] ?? '') ?>">
+                    <div class="form-text">Leave blank if no parent login. Must be an existing User ID from the 'users' table if provided.</div>
+                </div>
+
+                <!-- Add other student-specific fields as necessary using Bootstrap classes -->
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Update Student</button>
+                    <a href="<?= site_url('admin/students') ?>" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
         </div>
-
-        <div class="form-group">
-            <label for="nisn">NISN:</label>
-            <input type="text" name="nisn" id="nisn" value="<?= old('nisn', $student['nisn'] ?? '') ?>">
-        </div>
-
-        <div class="form-group">
-            <label for="user_id">User ID (for student login, optional):</label>
-            <input type="number" name="user_id" id="user_id" value="<?= old('user_id', $student['user_id'] ?? '') ?>">
-            <small>Leave blank if no login yet. Must be an existing User ID from the 'users' table if provided.</small>
-        </div>
-
-        <div class="form-group">
-            <label for="parent_user_id">Parent User ID (for parent login, optional):</label>
-            <input type="number" name="parent_user_id" id="parent_user_id" value="<?= old('parent_user_id', $student['parent_user_id'] ?? '') ?>">
-            <small>Leave blank if no parent login. Must be an existing User ID from the 'users' table if provided.</small>
-        </div>
-
-        <!-- Add other fields as necessary -->
-
-        <div class="button-group">
-            <button type="submit">Update Student</button>
-            <a href="<?= site_url('admin/students') ?>">Cancel</a>
-        </div>
-    </form>
+    </div>
+</div>
 
 <?= $this->endSection() ?>
