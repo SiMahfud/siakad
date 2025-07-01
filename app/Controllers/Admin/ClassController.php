@@ -15,11 +15,13 @@ class ClassController extends BaseController
     {
         $this->classModel = new ClassModel();
         $this->teacherModel = new TeacherModel();
-        helper(['form', 'url']);
+        helper(['form', 'url', 'auth']); // Ensure auth_helper is loaded
     }
 
     public function index()
     {
+        // Access controlled by route filter for 'Administrator Sistem', 'Staf Tata Usaha'
+        // Kepala Sekolah might need a separate read-only view or logic here.
         $data = [
             // Use the method from ClassModel to get classes with wali_kelas_name
             'classes' => $this->classModel->getAllClassesWithWaliKelas(),
@@ -30,6 +32,9 @@ class ClassController extends BaseController
 
     public function new()
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/classes')->with('error', 'You do not have permission to add new classes.');
+        }
         $data = [
             'title'      => 'Add New Class (Rombel)',
             'teachers'   => $this->teacherModel->orderBy('full_name', 'ASC')->findAll(),
@@ -40,6 +45,9 @@ class ClassController extends BaseController
 
     public function create()
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/classes')->with('error', 'You do not have permission to create classes.');
+        }
         $validationRules = $this->classModel->getValidationRules();
 
         $classData = [
@@ -74,6 +82,9 @@ class ClassController extends BaseController
 
     public function edit($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/classes')->with('error', 'You do not have permission to edit classes.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/classes')->with('error', 'Class ID not provided.');
         }
@@ -94,6 +105,9 @@ class ClassController extends BaseController
 
     public function update($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/classes')->with('error', 'You do not have permission to update classes.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/classes')->with('error', 'Class ID not provided for update.');
         }
@@ -140,6 +154,10 @@ class ClassController extends BaseController
 
     public function delete($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            // Potentially even restrict further to only 'Administrator Sistem' for deletion
+            return redirect()->to('/admin/classes')->with('error', 'You do not have permission to delete classes.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/classes')->with('error', 'Class ID not provided for deletion.');
         }

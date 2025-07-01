@@ -15,7 +15,16 @@ class UserController extends BaseController
     {
         $this->userModel = new UserModel();
         $this->roleModel = new RoleModel();
-        helper(['form', 'url']);
+        helper(['form', 'url', 'auth']); // Ensure auth_helper is loaded
+
+        // Double-check authorization, although route filter should handle this.
+        // This is defense in depth.
+        if (!isAdmin()) {
+            // This should ideally not be reached if route filters are correct.
+            // Redirecting to a general unauthorized page or login.
+            // For now, simple redirect, will create unauthorized page later.
+            // throw new \CodeIgniter\Exceptions\PageNotFoundException('Not authorized'); // Or redirect
+        }
     }
 
     public function index()
