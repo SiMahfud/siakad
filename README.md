@@ -76,9 +76,9 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Validasi input komprehensif (sisi controller & model) untuk tipe asesmen, judul, tanggal, skor (khusus sumatif), dan ketergantungan antar field.
     *   [X] Tampilan error validasi yang jelas di form input, menunjukkan nama siswa, entri keberapa, dan field yang bermasalah.
     *   [X] Telah dilakukan testing manual untuk berbagai skenario input (valid, invalid, berbagai tipe).
-    *   [ ] Tampilan rekap nilai per siswa dan per mata pelajaran.
-    *   [ ] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks.
-    *   [ ] Fitur edit/hapus data penilaian yang sudah dimasukkan.
+    *   [P] Tampilan rekap nilai per siswa dan per mata pelajaran (Dasar untuk Guru: pemilihan konteks, tampilan tabel, integrasi aksi Edit/Hapus).
+    *   [P] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks (Filter kelas berdasarkan wali kelas sudah ada, filter mapel menunggu tabel penugasan).
+    *   [X] Fitur edit/hapus data penilaian yang sudah dimasukkan (Controller, View dasar, Rute, Hak Akses dasar, terintegrasi di halaman rekap).
 *   **[ ] Modul Projek P5**
     *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
     *   [ ] Pengaturan projek oleh koordinator

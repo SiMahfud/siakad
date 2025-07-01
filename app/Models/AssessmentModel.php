@@ -82,4 +82,24 @@ class AssessmentModel extends Model
 
     // You can add methods here to fetch assessments with related data, e.g.:
     // public function getAssessmentsForStudent($studentId, $subjectId = null, $classId = null) { ... }
+
+    /**
+     * Fetches assessments for a specific class and subject, joined with student details,
+     * ordered for recap display.
+     *
+     * @param int $classId
+     * @param int $subjectId
+     * @return array
+     */
+    public function getAssessmentsForRecap(int $classId, int $subjectId): array
+    {
+        return $this->select('assessments.*, students.full_name as student_name, students.nisn as student_nisn')
+                    ->join('students', 'students.id = assessments.student_id')
+                    ->where('assessments.class_id', $classId)
+                    ->where('assessments.subject_id', $subjectId)
+                    ->orderBy('students.full_name', 'ASC')
+                    ->orderBy('assessments.assessment_date', 'ASC')
+                    ->orderBy('assessments.assessment_type', 'ASC') // Formatif then Sumatif for same date
+                    ->findAll();
+    }
 }

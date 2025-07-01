@@ -63,13 +63,22 @@
                         </li>
                         <?php endif; ?>
 
-                        <!-- Add other role-specific menus here later -->
-                        <!-- Example for Guru -->
-                        <?php if (isGuru() && !isAdmin() && !isStafTU() && !isKepalaSekolah()): ?>
-                            <!-- <li class="nav-item"><a class="nav-link" href="<?= site_url('guru/dashboard') ?>">Dashboard Guru</a></li> -->
-                            <!-- <li class="nav-item"><a class="nav-link" href="<?= site_url('guru/absensi') ?>">Absensi</a></li> -->
-                            <!-- <li class="nav-item"><a class="nav-link" href="<?= site_url('guru/nilai') ?>">Input Nilai</a></li> -->
+                        <!-- Assessment Menu for Guru and Admin -->
+                        <?php if (hasRole(['Guru', 'Administrator Sistem'])): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'guru/assessments') !== false) ? 'active' : '' ?>"
+                                   href="#" id="assessmentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Penilaian
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="assessmentDropdown">
+                                    <li><a class="dropdown-item <?= (uri_string() == 'guru/assessments' || uri_string() == 'guru/assessments/input') ? 'active' : '' ?>" href="<?= site_url('guru/assessments') ?>">Input Nilai</a></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'guru/assessments/recap') !== false || strpos(uri_string(), 'guru/assessments/show-recap') !== false) ? 'active' : '' ?>" href="<?= route_to('guru_assessment_recap_select') ?>">Rekap Nilai</a></li>
+                                </ul>
+                            </li>
                         <?php endif; ?>
+
+                        <!-- Add other role-specific menus here later -->
+
 
                     <?php endif; ?>
                 </ul>
