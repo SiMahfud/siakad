@@ -42,15 +42,49 @@ class AssessmentController extends BaseController
      */
     public function index()
     {
-        // TODO: Implement filtering for classes and subjects based on the logged-in teacher's assignments.
-        // This will require a teacher_class_subject_assignments table and corresponding model logic.
-        // For now (MVP), all classes and subjects are listed for selection by any logged-in Guru.
-        // The actual saving of assessments in saveAssessments() uses the logged-in teacher's ID.
+        $loggedInUserId = current_user_id();
+        $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
 
+        $filteredClasses = [];
+        $allSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+
+        if ($teacher) {
+            $teacherId = $teacher['id'];
+            // Cek apakah guru ini adalah wali kelas
+            $waliKelasClasses = $this->classModel->where('wali_kelas_id', $teacherId)
+                                                ->orderBy('class_name', 'ASC')
+                                                ->findAll();
+
+            if (!empty($waliKelasClasses)) {
+                // Jika guru adalah wali kelas, tampilkan hanya kelas perwaliannya
+                $filteredClasses = $waliKelasClasses;
+            } else {
+                // Jika guru bukan wali kelas di kelas manapun, tampilkan semua kelas
+                // Ini asumsi agar guru mapel non-wali kelas tetap bisa input.
+                // Idealnya, ini akan diganti dengan query ke tabel penugasan guru-mapel-kelas.
+                $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+            }
+        } else {
+            // Jika tidak ada data guru terkait user login (seharusnya tidak terjadi jika user adalah Guru)
+            // atau jika user adalah Administrator Sistem yang ingin melihat semua, tampilkan semua kelas.
+            // Untuk Administrator Sistem, mereka mungkin perlu akses ke semua kelas.
+            // Peran 'Guru' seharusnya selalu punya record di tabel 'teachers'.
+            if (isAdmin()) { // isAdmin() adalah helper dari auth_helper
+                 $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+            } else {
+                // Untuk guru yang tidak ditemukan datanya, beri array kosong atau pesan error.
+                // Untuk saat ini, beri array kosong.
+                $filteredClasses = [];
+                 session()->setFlashdata('error', 'Teacher data not found for your account. Please contact administrator.');
+            }
+        }
+
+        // Untuk mata pelajaran, sesuai rencana awal, tampilkan semua.
+        // Ini juga akan memerlukan tabel penugasan guru-mapel-kelas untuk filter yang lebih akurat.
         $data = [
             'pageTitle' => 'Select Class and Subject for Assessment',
-            'classes'   => $this->classModel->orderBy('class_name', 'ASC')->findAll(),
-            'subjects'  => $this->subjectModel->orderBy('subject_name', 'ASC')->findAll(),
+            'classes'   => $filteredClasses,
+            'subjects'  => $allSubjects, // Semua mata pelajaran
         ];
         return view('guru/assessments/select_context', $data);
     }
@@ -228,6 +262,155 @@ class AssessmentController extends BaseController
             // For simplicity, just a generic error for now if validation fails for any.
             // A more robust solution would repopulate form with errors per field.
             return redirect()->back()->withInput()->with('validation_errors', $errors)->with('error', 'Please correct the errors in the form.');
+        }
+    }
+
+    /**
+     * Displays the form to edit an existing assessment.
+     */
+    public function editAssessment($assessmentId)
+    {
+        $assessment = $this->assessmentModel->find($assessmentId);
+
+        if (!$assessment) {
+            return redirect()->to('guru/assessments')->with('error', 'Assessment not found.');
+        }
+
+        // Authorization: Only the teacher who created it or an admin can edit.
+        $loggedInUserId = current_user_id();
+        $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+
+        if (!$teacher && !isAdmin()) {
+            return redirect()->to('guru/assessments')->with('error', 'Teacher data not found. Cannot verify permissions.');
+        }
+
+        // Admins can edit anything. For teachers, check if they are the ones who created the assessment.
+        if (!isAdmin() && ($teacher && $assessment['teacher_id'] != $teacher['id'])) {
+            return redirect()->to('guru/assessments')->with('error', 'You are not authorized to edit this assessment.');
+        }
+
+        $student = $this->studentModel->find($assessment['student_id']);
+        $classInfo = $this->classModel->find($assessment['class_id']);
+        $subjectInfo = $this->subjectModel->find($assessment['subject_id']);
+
+        $data = [
+            'pageTitle'   => 'Edit Assessment',
+            'assessment'  => $assessment,
+            'student'     => $student,
+            'classInfo'   => $classInfo,
+            'subjectInfo' => $subjectInfo,
+            'validation'  => \Config\Services::validation()
+        ];
+
+        return view('guru/assessments/edit_form', $data);
+    }
+
+    /**
+     * Updates an existing assessment.
+     */
+    public function updateAssessment($assessmentId)
+    {
+        $assessment = $this->assessmentModel->find($assessmentId);
+
+        if (!$assessment) {
+            return redirect()->to('guru/assessments')->with('error', 'Assessment not found.');
+        }
+
+        // Authorization: Only the teacher who created it or an admin can update.
+        $loggedInUserId = current_user_id();
+        $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+
+        if (!$teacher && !isAdmin()) {
+            return redirect()->to('guru/assessments')->with('error', 'Teacher data not found. Cannot verify permissions.');
+        }
+
+        if (!isAdmin() && ($teacher && $assessment['teacher_id'] != $teacher['id'])) {
+            return redirect()->to('guru/assessments')->with('error', 'You are not authorized to update this assessment.');
+        }
+
+        $rules = $this->assessmentModel->getValidationRules([
+            // if specific rules for update are needed, define here
+            // e.g., 'assessment_title' => 'required|max_length[255]',
+        ]);
+
+        // Custom validation logic similar to saveAssessments
+        $dataToUpdate = [
+            'id'               => $assessmentId, // Important for update
+            'student_id'       => $assessment['student_id'], // Usually not changed during edit of score
+            'subject_id'       => $assessment['subject_id'], // Usually not changed
+            'class_id'         => $assessment['class_id'],   // Usually not changed
+            'teacher_id'       => $assessment['teacher_id'], // Original teacher_id
+            'assessment_type'  => $this->request->getPost('assessment_type'),
+            'assessment_title' => $this->request->getPost('assessment_title'),
+            'assessment_date'  => $this->request->getPost('assessment_date'),
+            'score'            => ($this->request->getPost('assessment_type') === 'SUMATIF') ? $this->request->getPost('score') : null,
+            'description'      => $this->request->getPost('description'),
+        ];
+
+        $errors = [];
+        if (empty($dataToUpdate['assessment_type'])) {
+            $errors['assessment_type'] = 'Assessment type is required.';
+        }
+        if (empty($dataToUpdate['assessment_date'])) {
+            $errors['assessment_date'] = 'Assessment date is required.';
+        }
+        if (empty($dataToUpdate['assessment_title']) && (!empty($dataToUpdate['score']) || !empty($dataToUpdate['description']))) {
+            $errors['assessment_title'] = 'Assessment title is required if score or description is provided.';
+        }
+        if ($dataToUpdate['assessment_type'] === 'SUMATIF' && ($dataToUpdate['score'] === null || $dataToUpdate['score'] === '')) {
+            $errors['score'] = 'Score is required for Summative assessment.';
+        }
+
+
+        if (!empty($errors)) {
+             return redirect()->back()->withInput()->with('validation_errors', $errors);
+        }
+
+        if ($this->assessmentModel->validate($dataToUpdate)) {
+            if ($this->assessmentModel->save($dataToUpdate)) { // save() handles insert or update
+                // Redirect to a relevant page, e.g., assessment list or back to context selection
+                return redirect()->to("guru/assessments/input?class_id={$assessment['class_id']}&subject_id={$assessment['subject_id']}")->with('success', 'Assessment updated successfully.');
+            } else {
+                return redirect()->back()->withInput()->with('error', 'Failed to update assessment due to a database error.');
+            }
+        } else {
+            return redirect()->back()->withInput()->with('validation_errors', $this->assessmentModel->errors());
+        }
+    }
+
+    /**
+     * Deletes an existing assessment.
+     */
+    public function deleteAssessment($assessmentId)
+    {
+        $assessment = $this->assessmentModel->find($assessmentId);
+
+        if (!$assessment) {
+            return redirect()->to('guru/assessments')->with('error', 'Assessment not found.');
+        }
+
+        // Authorization: Only the teacher who created it or an admin can delete.
+        $loggedInUserId = current_user_id();
+        $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+
+        if (!$teacher && !isAdmin()) {
+            return redirect()->to('guru/assessments')->with('error', 'Teacher data not found. Cannot verify permissions.');
+        }
+
+        if (!isAdmin() && ($teacher && $assessment['teacher_id'] != $teacher['id'])) {
+            return redirect()->to('guru/assessments')->with('error', 'You are not authorized to delete this assessment.');
+        }
+
+        // Store class_id and subject_id for redirect before deleting
+        $classId = $assessment['class_id'];
+        $subjectId = $assessment['subject_id'];
+
+        if ($this->assessmentModel->delete($assessmentId)) {
+            return redirect()->to("guru/assessments/input?class_id={$classId}&subject_id={$subjectId}")->with('success', 'Assessment deleted successfully.');
+        } else {
+            // This part might not be reached if delete() throws an exception on failure,
+            // or if DB errors are handled differently. But good to have a fallback.
+            return redirect()->to("guru/assessments/input?class_id={$classId}&subject_id={$subjectId}")->with('error', 'Failed to delete assessment.');
         }
     }
 }

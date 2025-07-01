@@ -121,8 +121,12 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 ## 5. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   Implementasi filter kelas/mapel yang diajar guru di `AssessmentController::index()`. Saat ini menampilkan semua kelas/mapel.
-    *   Implementasi fitur edit/hapus untuk data penilaian yang sudah masuk.
+    *   **[P] Implementasi filter kelas/mapel yang diajar guru di `AssessmentController::index()`.**
+        *   Saat ini: Filter kelas sudah diimplementasikan (wali kelas melihat kelasnya, non-wali kelas/admin melihat semua).
+        *   Selanjutnya: Implementasi filter mata pelajaran berdasarkan penugasan guru di kelas tersebut (memerlukan tabel `teacher_class_subject_assignments`).
+    *   **[X] Implementasi fitur edit/hapus untuk data penilaian yang sudah masuk.**
+        *   Controller, view dasar untuk edit, rute, dan hak akses dasar (pembuat/admin) telah diimplementasikan.
+        *   Selanjutnya: Integrasi tombol Edit/Hapus ke UI (misalnya, halaman rekapitulasi nilai).
     *   Tampilan rekapitulasi nilai per siswa dan per mata pelajaran (untuk guru, siswa, orang tua).
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular lagi jika diperlukan (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).

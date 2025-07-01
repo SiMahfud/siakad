@@ -49,6 +49,15 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
     $routes->get('assessments', 'AssessmentController::index', ['as' => 'guru_assessment_index']);
     $routes->get('assessments/input', 'AssessmentController::showInputForm', ['as' => 'guru_assessment_input_form']); // Using GET for form display
     $routes->post('assessments/save', 'AssessmentController::saveAssessments', ['as' => 'guru_assessment_save']);
+
+    // Routes for editing and updating assessments
+    $routes->get('assessments/edit/(:num)', 'AssessmentController::editAssessment/$1', ['as' => 'guru_assessment_edit']);
+    $routes->post('assessments/update/(:num)', 'AssessmentController::updateAssessment/$1', ['as' => 'guru_assessment_update']);
+
+    // Route for deleting an assessment (using POST for safety, or GET if simple link with JS confirm)
+    // Using GET for simplicity with JS confirm, but POST is generally safer for delete actions.
+    // For now, let's use GET and make sure there's a JS confirmation on the link/button.
+    $routes->get('assessments/delete/(:num)', 'AssessmentController::deleteAssessment/$1', ['as' => 'guru_assessment_delete']);
 });
 
 
