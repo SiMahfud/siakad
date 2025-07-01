@@ -86,16 +86,24 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
     *   Controller Data Induk (`Students`, `Teachers`, `Subjects`, `Classes`) ditambahkan pengecekan peran untuk aksi CUD.
     *   Halaman `unauthorized` dibuat.
     *   Navigasi di layout utama disesuaikan dengan hak akses peran.
+*   **[P] Modul Penilaian (Bank Nilai) (Tahap Awal)**:
+    *   `AssessmentModel` dibuat dengan validasi dasar.
+    *   `Guru/AssessmentController` dibuat dengan metode `index` (pemilihan konteks), `showInputForm`, dan `saveAssessments` (logika dasar penyimpanan batch).
+    *   Views untuk pemilihan konteks (`select_context.php`) dan form input nilai (`input_form.php` dengan JS untuk baris dinamis) telah dibuat.
+    *   Rute untuk area penilaian guru telah ditambahkan dan diproteksi.
 
 ## 5. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Penyempurnaan Hak Akses (Lanjutan)**:
+1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
+    *   Penyempurnaan validasi input nilai di `AssessmentController` dan `AssessmentModel`.
+    *   Penyempurnaan tampilan error validasi di `input_form.php`.
+    *   Implementasi filter kelas/mapel yang diajar guru di `AssessmentController::index()`.
+    *   Implementasi fitur edit/hapus untuk data penilaian yang sudah masuk.
+    *   Tampilan rekapitulasi nilai per siswa dan per mata pelajaran.
+2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular lagi jika diperlukan (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya).
     *   Pengecekan kepemilikan data (misal, guru A tidak bisa edit data guru B).
-2.  **Modul Penilaian (Bank Nilai)**:
-    *   Antarmuka input nilai formatif dan sumatif.
-    *   Logika penyimpanan dan tampilan nilai.
-4.  **Manajemen Siswa dalam Kelas**:
+3.  **Manajemen Siswa dalam Kelas**:
     *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`).
 5.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.

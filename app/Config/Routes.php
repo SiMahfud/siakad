@@ -43,6 +43,15 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     // More specific routes should be defined above this if they need stricter role checks.
 });
 
+// Guru routes
+$routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth:Guru,Administrator Sistem'], static function ($routes) {
+    // Assessment routes
+    $routes->get('assessments', 'AssessmentController::index', ['as' => 'guru_assessment_index']);
+    $routes->get('assessments/input', 'AssessmentController::showInputForm', ['as' => 'guru_assessment_input_form']); // Using GET for form display
+    $routes->post('assessments/save', 'AssessmentController::saveAssessments', ['as' => 'guru_assessment_save']);
+});
+
+
 // Additional routes can be added here.
 
 /**
