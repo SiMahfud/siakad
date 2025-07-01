@@ -42,8 +42,11 @@ class AssessmentController extends BaseController
      */
     public function index()
     {
-        // For MVP, let's list all classes and subjects.
-        // Later, this should be filtered by classes/subjects taught by the logged-in teacher.
+        // TODO: Implement filtering for classes and subjects based on the logged-in teacher's assignments.
+        // This will require a teacher_class_subject_assignments table and corresponding model logic.
+        // For now (MVP), all classes and subjects are listed for selection by any logged-in Guru.
+        // The actual saving of assessments in saveAssessments() uses the logged-in teacher's ID.
+
         $data = [
             'pageTitle' => 'Select Class and Subject for Assessment',
             'classes'   => $this->classModel->orderBy('class_name', 'ASC')->findAll(),
@@ -174,22 +177,41 @@ class AssessmentController extends BaseController
                     'description'      => !empty($assessment['description']) ? $assessment['description'] : null,
                 ];
 
-                // Basic check for required fields based on type
+                // --- Custom validation logic before model validation ---
+                $currentEntryErrors = [];
+                if (empty($dataToSave['assessment_type'])) {
+                    $currentEntryErrors['assessment_type'] = 'Assessment type is required.';
+                }
+                if (empty($dataToSave['assessment_date'])) { // Model validation now handles this as 'required'
+                    // This check is now redundant if model validation for assessment_date is 'required'
+                    // $currentEntryErrors['assessment_date'] = 'Assessment date is required.';
+                }
+                if (empty($dataToSave['assessment_title']) && (!empty($dataToSave['score']) || !empty($dataToSave['description']))) {
+                    // Title is required if there's a score or description
+                    $currentEntryErrors['assessment_title'] = 'Assessment title is required if score or description is provided.';
+                }
                 if ($dataToSave['assessment_type'] === 'SUMATIF' && $dataToSave['score'] === null) {
-                     $errors[$studentId][$index][] = "Score is required for Summative assessment.";
-                     $allValid = false;
+                    $currentEntryErrors['score'] = 'Score is required for Summative assessment.';
                 }
-                 if (empty($dataToSave['assessment_date'])) {
-                    $errors[$studentId][$index][] = "Assessment date is required.";
+                // --- End custom validation ---
+
+                if (!empty($currentEntryErrors)) {
                     $allValid = false;
+                    if (!isset($errors[$studentId][$index])) $errors[$studentId][$index] = [];
+                    $errors[$studentId][$index] = array_merge($errors[$studentId][$index], $currentEntryErrors);
                 }
 
-
-                if ($this->assessmentModel->validate($dataToSave)) {
-                    $processedData[] = $dataToSave;
+                // Validate with model rules IF no custom errors found yet for this entry OR if we want model errors too
+                if (empty($currentEntryErrors)) { // Only run model validation if custom checks pass for this entry
+                    if ($this->assessmentModel->validate($dataToSave)) {
+                        $processedData[] = $dataToSave;
+                    } else {
+                        $allValid = false;
+                        if (!isset($errors[$studentId][$index])) $errors[$studentId][$index] = [];
+                        $errors[$studentId][$index] = array_merge($errors[$studentId][$index], $this->assessmentModel->errors());
+                    }
                 } else {
-                    $allValid = false;
-                    $errors[$studentId][$index] = $this->assessmentModel->errors();
+                    $allValid = false; // Ensure allValid is false if custom errors exist
                 }
             }
         }

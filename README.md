@@ -62,15 +62,23 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [ ] Manajemen Jadwal Pelajaran
     *   [ ] Input Presensi Harian oleh Guru
     *   [ ] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)
-*   **[P] Modul Penilaian (Bank Nilai) (Tahap Awal)**
+*   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal)**
     *   [X] Struktur Tabel Database (`assessments`)
-    *   [X] Model (`AssessmentModel`) dengan validasi dasar.
+    *   [X] Model (`AssessmentModel`) dengan validasi dasar (termasuk rentang skor, tanggal valid).
     *   [X] Controller (`Guru/AssessmentController`) untuk pemilihan konteks (kelas/mapel) & form input nilai.
-    *   [X] Views (`guru/assessments/select_context.php`, `guru/assessments/input_form.php`) untuk alur input nilai.
-    *   [X] Rute untuk fitur penilaian guru.
-    *   [X] Logika dasar penyimpanan batch nilai (formatif/sumatif).
-    *   [ ] Penyempurnaan validasi & error handling di form input.
+        *   [X] Metode `index` untuk pemilihan Kelas & Mapel.
+        *   [X] Metode `showInputForm` untuk menampilkan form input nilai dengan daftar siswa.
+        *   [X] Metode `saveAssessments` untuk memproses & menyimpan batch data penilaian.
+    *   [X] Views (`guru/assessments/select_context.php`, `guru/assessments/input_form.php`):
+        *   [X] Form input nilai dengan JavaScript untuk menambah/menghapus baris entri nilai per siswa secara dinamis.
+    *   [X] Rute untuk fitur penilaian guru (`/guru/assessments/...`), diproteksi oleh peran Guru.
+    *   [X] Logika penyimpanan batch nilai (formatif/sumatif) ke database.
+    *   [X] Validasi input komprehensif (sisi controller & model) untuk tipe asesmen, judul, tanggal, skor (khusus sumatif), dan ketergantungan antar field.
+    *   [X] Tampilan error validasi yang jelas di form input, menunjukkan nama siswa, entri keberapa, dan field yang bermasalah.
+    *   [X] Telah dilakukan testing manual untuk berbagai skenario input (valid, invalid, berbagai tipe).
     *   [ ] Tampilan rekap nilai per siswa dan per mata pelajaran.
+    *   [ ] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks.
+    *   [ ] Fitur edit/hapus data penilaian yang sudah dimasukkan.
 *   **[ ] Modul Projek P5**
     *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
     *   [ ] Pengaturan projek oleh koordinator
