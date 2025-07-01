@@ -15,11 +15,15 @@ class StudentController extends BaseController
     {
         $this->studentModel = new StudentModel();
         $this->userModel = new UserModel(); // Initialize UserModel
-        helper(['form', 'url']); // Load form and URL helpers
+        helper(['form', 'url', 'auth']); // Load form, URL, and auth helpers
     }
 
     public function index()
     {
+        // Allowed for Admin, Staf TU, Kepala Sekolah (via Route filter or broader access)
+        // No specific controller check needed if route filter is 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah'
+        // or if Kepala Sekolah has a different route to a read-only view.
+        // For now, assuming the route filter handles general access for these roles.
         $data = [
             'students' => $this->studentModel->orderBy('full_name', 'ASC')->findAll(),
             'title' => 'Manage Students'
@@ -29,6 +33,9 @@ class StudentController extends BaseController
 
     public function new()
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/students')->with('error', 'You do not have permission to add new students.');
+        }
         $data = [
             'title' => 'Add New Student',
             'validation' => \Config\Services::validation()
@@ -38,6 +45,9 @@ class StudentController extends BaseController
 
     public function create()
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/students')->with('error', 'You do not have permission to create students.');
+        }
         $validationRules = $this->studentModel->getValidationRules();
 
         // Handle nullable foreign keys: if empty string is passed, convert to null
@@ -62,6 +72,9 @@ class StudentController extends BaseController
 
     public function edit($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/students')->with('error', 'You do not have permission to edit students.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/students')->with('error', 'Student ID not provided.');
         }
@@ -81,6 +94,9 @@ class StudentController extends BaseController
 
     public function update($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/students')->with('error', 'You do not have permission to update students.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/students')->with('error', 'Student ID not provided for update.');
         }
@@ -117,6 +133,10 @@ class StudentController extends BaseController
 
     public function delete($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            // Potentially even restrict further to only 'Administrator Sistem' for deletion
+            return redirect()->to('/admin/students')->with('error', 'You do not have permission to delete students.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/students')->with('error', 'Student ID not provided for deletion.');
         }

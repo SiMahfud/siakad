@@ -55,4 +55,21 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = service('session');
     }
+
+    /**
+     * Displays the unauthorized access page.
+     *
+     * @param string|null $message Optional custom message.
+     * @return string
+     */
+    protected functionshowUnauthorized(string $message = null): string
+    {
+        $data['pageTitle'] = 'Access Forbidden';
+        $data['error_message'] = $message ?? 'You do not have the necessary permissions to view this page.';
+
+        // Set HTTP status code to 403 Forbidden
+        $this->response->setStatusCode(403);
+
+        return view('errors/unauthorized', $data);
+    }
 }

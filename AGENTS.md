@@ -79,13 +79,20 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
     *   Master layout baru `app/Views/layouts/admin_default.php` dibuat menggunakan Bootstrap 5 (via CDN).
     *   Halaman login dan semua views CRUD untuk Modul Data Induk (Users, Students, Teachers, Subjects, Classes) telah direfactor untuk menggunakan layout baru dan styling Bootstrap 5.
     *   Navigasi utama menggunakan komponen Navbar Bootstrap dan bersifat dinamis (menampilkan link berdasarkan status login & peran).
+*   **[X] Penyempurnaan Hak Akses (Dasar)**:
+    *   Helper `auth_helper.php` dibuat untuk pengecekan peran (`hasRole()`, `isAdmin()`, dll.).
+    *   `AuthFilter` dimodifikasi untuk menerima argumen peran dan membatasi akses rute.
+    *   Rute admin diperbarui dengan filter peran spesifik (misal, User Management hanya untuk Admin, Data Induk untuk Admin & Staf TU, dengan KS bisa lihat).
+    *   Controller Data Induk (`Students`, `Teachers`, `Subjects`, `Classes`) ditambahkan pengecekan peran untuk aksi CUD.
+    *   Halaman `unauthorized` dibuat.
+    *   Navigasi di layout utama disesuaikan dengan hak akses peran.
 
 ## 5. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Penyempurnaan Hak Akses**:
-    *   Implementasi hak akses yang lebih granular berdasarkan peran (misalnya, tidak semua pengguna admin bisa mengakses semua fitur admin, guru hanya bisa akses data mapel dan kelasnya, dll.).
-    *   Pastikan filter dan controller memeriksa peran sebelum mengizinkan aksi (misal, hanya admin yang bisa delete user).
-3.  **Modul Penilaian (Bank Nilai)**:
+1.  **Penyempurnaan Hak Akses (Lanjutan)**:
+    *   Implementasi hak akses yang lebih granular lagi jika diperlukan (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya).
+    *   Pengecekan kepemilikan data (misal, guru A tidak bisa edit data guru B).
+2.  **Modul Penilaian (Bank Nilai)**:
     *   Antarmuka input nilai formatif dan sumatif.
     *   Logika penyimpanan dan tampilan nilai.
 4.  **Manajemen Siswa dalam Kelas**:

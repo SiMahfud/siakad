@@ -32,9 +32,10 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Struktur Tabel Database (`roles`, `users`)
     *   [X] Model (`UserModel`, `RoleModel`) dengan validasi dan hashing password
     *   [X] Seeder untuk `roles`
-    *   [X] Login & Logout (Controller `AuthController`, view `auth/login`)
-    *   [X] Manajemen Akun (CRUD oleh Admin via `Admin/UserController` dan views `admin/users/`)
-    *   [X] Hak Akses Peran (Dasar, via Filter `AuthFilter` untuk path `/admin`)
+    *   [X] Login & Logout (Controller `AuthController`, view `auth/login` dengan Bootstrap 5)
+    *   [X] Manajemen Akun (CRUD oleh Admin via `Admin/UserController` dan views `admin/users/` dengan Bootstrap 5)
+    *   [X] Hak Akses Peran (Dasar, via Filter `AuthFilter` untuk path `/admin` dan pengecekan peran di Controller)
+    *   [X] Halaman `Unauthorized Access` (403)
 *   **[X] Modul Manajemen Data Induk (MVP)**
     *   **Data Siswa**
         *   [X] Struktur Tabel Database (`students`)
@@ -78,16 +79,16 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 ### Fitur Berdasarkan Peran Pengguna
 
 *   **Administrator Sistem**:
-    *   [ ] Mengelola akun dan hak akses semua pengguna.
+    *   [X] Mengelola akun dan hak akses semua pengguna (CRUD Users).
+    *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
     *   [ ] Mengatur konfigurasi tahun ajaran, data sekolah, struktur kurikulum.
     *   [ ] Mengelola data master tema dan dimensi P5.
     *   [ ] Maintenance dan backup database.
 *   **Staf Tata Usaha (TU)**:
-    *   [X] Mengelola data induk siswa (sebagian via Modul Data Induk)
-    *   [X] Mengelola data induk guru (sebagian via Modul Data Induk)
-    *   [X] Mengatur pembagian siswa ke dalam rombel (dasar via Modul Data Induk - Kelas, detail penempatan siswa belum)
+    *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
+    *   [ ] Mengatur pembagian siswa ke dalam rombel (detail penempatan siswa belum).
 *   **Kepala Sekolah**:
-    *   [ ] Akses read-only ke seluruh data.
+    *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
     *   [ ] Dasbor eksekutif.
     *   [ ] Memantau aktivitas guru.
     *   [ ] Membuat dan menyebarkan pengumuman.

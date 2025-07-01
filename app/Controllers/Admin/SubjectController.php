@@ -12,11 +12,13 @@ class SubjectController extends BaseController
     public function __construct()
     {
         $this->subjectModel = new SubjectModel();
-        helper(['form', 'url']);
+        helper(['form', 'url', 'auth']); // Ensure auth_helper is loaded
     }
 
     public function index()
     {
+        // Access controlled by route filter for 'Administrator Sistem', 'Staf Tata Usaha'
+        // Kepala Sekolah might need a separate read-only view or logic here.
         $data = [
             'subjects' => $this->subjectModel->orderBy('subject_name', 'ASC')->findAll(),
             'title'    => 'Manage Subjects'
@@ -26,6 +28,9 @@ class SubjectController extends BaseController
 
     public function new()
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/subjects')->with('error', 'You do not have permission to add new subjects.');
+        }
         $data = [
             'title'      => 'Add New Subject',
             'validation' => \Config\Services::validation()
@@ -35,6 +40,9 @@ class SubjectController extends BaseController
 
     public function create()
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/subjects')->with('error', 'You do not have permission to create subjects.');
+        }
         $validationRules = $this->subjectModel->getValidationRules();
 
         $subjectData = [
@@ -64,6 +72,9 @@ class SubjectController extends BaseController
 
     public function edit($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/subjects')->with('error', 'You do not have permission to edit subjects.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/subjects')->with('error', 'Subject ID not provided.');
         }
@@ -83,6 +94,9 @@ class SubjectController extends BaseController
 
     public function update($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/subjects')->with('error', 'You do not have permission to update subjects.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/subjects')->with('error', 'Subject ID not provided for update.');
         }
@@ -120,6 +134,10 @@ class SubjectController extends BaseController
 
     public function delete($id = null)
     {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            // Potentially even restrict further to only 'Administrator Sistem' for deletion
+            return redirect()->to('/admin/subjects')->with('error', 'You do not have permission to delete subjects.');
+        }
         if ($id === null) {
             return redirect()->to('/admin/subjects')->with('error', 'Subject ID not provided for deletion.');
         }

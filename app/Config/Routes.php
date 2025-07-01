@@ -11,18 +11,36 @@ $routes->get('/', 'Home::index');
 $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::attemptLogin'); // Match with form action
 $routes->get('logout', 'AuthController::logout');
+$routes->get('unauthorized-access', 'Home::unauthorizedAccess'); // Route for unauthorized page
 
 
 // Admin routes for Modul Data Induk & User Management
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'auth'], static function ($routes) {
-    // Add a default route for /admin to redirect or show a dashboard later
-    // $routes->get('/', 'DashboardController::index');
+    // Default admin route - can be a dashboard accessible by multiple admin-level roles
+    // $routes->get('/', 'DashboardController::index', ['filter' => 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah,Guru']);
 
-    $routes->resource('students', ['controller' => 'StudentController']);
-    $routes->resource('teachers', ['controller' => 'TeacherController']);
-    $routes->resource('subjects', ['controller' => 'SubjectController']);
-    $routes->resource('classes', ['controller' => 'ClassController']);
-    $routes->resource('users', ['controller' => 'UserController']); // User Management
+    // User Management: Only Administrator Sistem
+    $routes->resource('users', [
+        'controller' => 'UserController',
+        'filter'     => 'auth:Administrator Sistem' // Role ID 1
+    ]);
+
+    // Data Induk: Administrator Sistem & Staf Tata Usaha (CRUD), Kepala Sekolah (Read-only via controller logic)
+    $dataIndukFilter = 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah'; // Role IDs 1, 2, 3
+    $routes->resource('students', ['controller' => 'StudentController', 'filter' => $dataIndukFilter]);
+    $routes->resource('teachers', ['controller' => 'TeacherController', 'filter' => $dataIndukFilter]);
+    $routes->resource('subjects', ['controller' => 'SubjectController', 'filter' => $dataIndukFilter]);
+    $routes->resource('classes', ['controller' => 'ClassController', 'filter' => $dataIndukFilter]);
+
+    // Example for a route accessible by Kepala Sekolah (read-only conceptually)
+    // For now, KepSek can access general admin area due to 'auth' filter on group,
+    // specific read-only views would need controller logic.
+    // $routes->get('dashboard/overview', 'DashboardController::overview', ['filter' => 'auth:Kepala Sekolah']);
+
+
+    // Fallback for any other /admin routes not specifically role-filtered above
+    // They will just use the group's 'auth' filter (logged-in check only)
+    // More specific routes should be defined above this if they need stricter role checks.
 });
 
 // Additional routes can be added here.

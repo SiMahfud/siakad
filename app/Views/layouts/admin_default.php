@@ -41,27 +41,36 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <?php if ($session->get('is_logged_in')): ?>
-                        <li class="nav-item">
-                            <a class="nav-link <?= (uri_string() == 'admin/students') ? 'active' : '' ?>" href="<?= site_url('admin/students') ?>">Students</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= (uri_string() == 'admin/teachers') ? 'active' : '' ?>" href="<?= site_url('admin/teachers') ?>">Teachers</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= (uri_string() == 'admin/subjects') ? 'active' : '' ?>" href="<?= site_url('admin/subjects') ?>">Subjects</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= (uri_string() == 'admin/classes') ? 'active' : '' ?>" href="<?= site_url('admin/classes') ?>">Classes</a>
-                        </li>
-                        <?php
-                            $isAdmin = in_array($session->get('role_id'), [1]); // Assuming role_id 1 is Administrator
-                        ?>
-                        <?php if ($isAdmin): ?>
+                    <?php if (is_logged_in()): ?>
+                        <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha', 'Kepala Sekolah'])): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'admin/students') !== false || strpos(uri_string(), 'admin/teachers') !== false || strpos(uri_string(), 'admin/subjects') !== false || strpos(uri_string(), 'admin/classes') !== false) ? 'active' : '' ?>"
+                                   href="#" id="dataIndukDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Data Induk
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="dataIndukDropdown">
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/students') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/students') ?>">Students</a></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/teachers') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/teachers') ?>">Teachers</a></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/subjects') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/subjects') ?>">Subjects</a></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/classes') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/classes') ?>">Classes</a></li>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php if (isAdmin()): ?>
                         <li class="nav-item">
                             <a class="nav-link <?= (strpos(uri_string(), 'admin/users') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">User Management</a>
                         </li>
                         <?php endif; ?>
+
+                        <!-- Add other role-specific menus here later -->
+                        <!-- Example for Guru -->
+                        <?php if (isGuru() && !isAdmin() && !isStafTU() && !isKepalaSekolah()): ?>
+                            <!-- <li class="nav-item"><a class="nav-link" href="<?= site_url('guru/dashboard') ?>">Dashboard Guru</a></li> -->
+                            <!-- <li class="nav-item"><a class="nav-link" href="<?= site_url('guru/absensi') ?>">Absensi</a></li> -->
+                            <!-- <li class="nav-item"><a class="nav-link" href="<?= site_url('guru/nilai') ?>">Input Nilai</a></li> -->
+                        <?php endif; ?>
+
                     <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">
