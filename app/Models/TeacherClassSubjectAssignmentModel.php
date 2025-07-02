@@ -99,4 +99,19 @@ class TeacherClassSubjectAssignmentModel extends Model
             ->orderBy('subjects.subject_name', 'ASC')
             ->findAll();
     }
+
+    /**
+     * Retrieves all distinct subjects taught in a specific class.
+     * @param int $classId
+     * @return array
+     */
+    public function getDistinctSubjectsForClass(int $classId): array
+    {
+        return $this->select('subjects.id as subject_id, subjects.subject_name, subjects.subject_code, subjects.is_pilihan')
+            ->join('subjects', 'subjects.id = teacher_class_subject_assignments.subject_id')
+            ->where('teacher_class_subject_assignments.class_id', $classId)
+            ->distinct()
+            ->orderBy('subjects.subject_name', 'ASC')
+            ->findAll();
+    }
 }

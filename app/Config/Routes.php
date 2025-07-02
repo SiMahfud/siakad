@@ -70,6 +70,19 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
     $routes->get('assessments/show-recap', 'AssessmentController::displayRecap', ['as' => 'guru_assessment_recap_display']); // Will take class_id and subject_id as GET params
 });
 
+// Siswa routes
+$routes->group('siswa', ['namespace' => 'App\Controllers\Siswa', 'filter' => 'auth:Siswa'], static function ($routes) {
+    $routes->get('nilai', 'NilaiController::index', ['as' => 'siswa_nilai_index']);
+    // Add other siswa specific routes here
+});
+
+// Orang Tua routes
+$routes->group('ortu', ['namespace' => 'App\Controllers\Ortu', 'filter' => 'auth:Orang Tua'], static function ($routes) {
+    $routes->get('nilai', 'NilaiController::index', ['as' => 'ortu_nilai_index']);
+    $routes->get('nilai/(:num)', 'NilaiController::showStudentRecap/$1', ['as' => 'ortu_nilai_recap_siswa']);
+    // Add other orang tua specific routes here
+});
+
 
 // Additional routes can be added here.
 

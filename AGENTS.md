@@ -135,12 +135,11 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
             *   View `edit_form.php` untuk form edit penilaian.
             *   Rute terkait telah dibuat (`guru_assessment_edit`, `guru_assessment_update`, `guru_assessment_delete`).
             *   Hak akses dasar (pembuat asesmen atau admin) diimplementasikan untuk operasi edit/hapus.
-        *   **[P] Fitur Rekapitulasi Nilai (untuk Guru):**
-            *   Method `showRecapSelection` dan `displayRecap` telah ditambahkan di `AssessmentController`.
-            *   Method `getAssessmentsForRecap` ditambahkan di `AssessmentModel`.
-            *   Views `select_recap_context.php` dan `recap_display.php` telah dibuat.
-            *   Halaman rekap menampilkan daftar siswa dengan asesmen mereka per kelas dan mapel, dengan tombol "Edit" dan "Hapus" yang fungsional per entri penilaian.
-            *   Link navigasi "Rekap Nilai" ditambahkan untuk peran Guru dan Admin.
+        *   **[X] Fitur Rekapitulasi Nilai (Guru, Siswa, Orang Tua):**
+            *   **Guru**: Method `showRecapSelection` dan `displayRecap` di `AssessmentController`. Views `select_recap_context.php` dan `recap_display.php`. Tombol Edit/Hapus terintegrasi. Link navigasi "Rekap Nilai".
+            *   **Siswa**: `Siswa/NilaiController::index()` dan view `siswa/nilai/index.php` untuk menampilkan nilai siswa yang login. Link navigasi "Transkrip Nilai".
+            *   **Orang Tua**: `Ortu/NilaiController::index()` (pemilihan anak) & `showStudentRecap()`. Views `ortu/nilai/select_student.php` & `ortu/nilai/recap_display.php`. Link navigasi "Nilai Anak".
+            *   Model `AssessmentModel` memiliki `getAssessmentsForRecap()`. `StudentModel` memiliki `findByParentUserId()`. `TeacherClassSubjectAssignmentModel` memiliki `getDistinctSubjectsForClass()`.
 *   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
     *   Tabel `teacher_class_subject_assignments` dibuat (via Migrasi).
     *   Model `TeacherClassSubjectAssignmentModel` dibuat, termasuk method helper `getAssignmentsDetails()` dan `getSubjectsForTeacherInClass()`.
@@ -151,8 +150,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   Pengembangan fitur rekapitulasi nilai untuk Siswa dan Orang Tua.
-    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian (misalnya, AJAX untuk filter dinamis jika diperlukan).
+    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian (misalnya, AJAX untuk filter dinamis jika diperlukan untuk pemilihan kelas/mapel guru, tampilan rekap yang lebih interaktif).
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data secara lebih komprehensif.

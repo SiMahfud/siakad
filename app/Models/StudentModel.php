@@ -58,4 +58,17 @@ class StudentModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    /**
+     * Finds all students associated with a specific parent user ID.
+     *
+     * @param int $parentUserId The ID of the parent user.
+     * @return array An array of student records, or an empty array if none found.
+     */
+    public function findByParentUserId(int $parentUserId): array
+    {
+        return $this->where('parent_user_id', $parentUserId)
+                    ->orderBy('full_name', 'ASC')
+                    ->findAll();
+    }
 }

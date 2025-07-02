@@ -77,6 +77,22 @@
                             </li>
                         <?php endif; ?>
 
+                        <!-- Siswa Menu -->
+                        <?php if (hasRole('Siswa')): ?>
+                            <li class="nav-item">
+                                <a class="nav-link <?= (strpos(uri_string(), 'siswa/nilai') !== false) ? 'active' : '' ?>"
+                                   href="<?= route_to('siswa_nilai_index') ?>">Transkrip Nilai</a>
+                            </li>
+                        <?php endif; ?>
+
+                        <!-- Orang Tua Menu -->
+                        <?php if (hasRole('Orang Tua')): ?>
+                            <li class="nav-item">
+                                <a class="nav-link <?= (strpos(uri_string(), 'ortu/nilai') !== false) ? 'active' : '' ?>"
+                                   href="<?= route_to('ortu_nilai_index') ?>">Nilai Anak</a>
+                            </li>
+                        <?php endif; ?>
+
                         <!-- Add other role-specific menus here later -->
 
 
