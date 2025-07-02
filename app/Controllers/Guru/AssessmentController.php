@@ -17,6 +17,7 @@ class AssessmentController extends BaseController
     protected $studentModel;
     protected $teacherModel;
     protected $teacherClassSubjectAssignmentModel; // Added
+    protected $classStudentModel; // Added
 
     public function __construct()
     {
@@ -36,6 +37,7 @@ class AssessmentController extends BaseController
         $this->studentModel = new StudentModel();
         $this->teacherModel = new TeacherModel();
         $this->teacherClassSubjectAssignmentModel = new \App\Models\TeacherClassSubjectAssignmentModel(); // Added
+        $this->classStudentModel = new \App\Models\ClassStudentModel(); // Added
     }
 
     /**
@@ -152,13 +154,30 @@ class AssessmentController extends BaseController
             return redirect()->to('guru/assessments')->with('error', 'Invalid class or subject selected.');
         }
 
-        // Fetch students in the class
-        // This requires class_student table to be populated.
-        // For now, let's assume StudentModel can fetch by class_id if such a method exists or is added.
-        // Or, more correctly, use a join through class_student table.
-        // $students = $this->studentModel->where('class_id', $classId)->findAll(); // Simplified for now
+        // --- Authorization Check for Teacher ---
+        if (!isAdmin()) {
+            $loggedInUserId = current_user_id();
+            $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+            $teacherId = $teacher ? $teacher['id'] : null;
 
-        // Correct way to get students of a class (assuming class_student table is managed elsewhere)
+            if ($teacherId) {
+                $assignment = $this->teacherClassSubjectAssignmentModel
+                    ->where('teacher_id', $teacherId)
+                    ->where('class_id', $classId)
+                    ->where('subject_id', $subjectId)
+                    ->first();
+
+                if (!$assignment) {
+                    return redirect()->to('guru/assessments')->with('error', 'You are not authorized to input assessments for this class and subject.');
+                }
+            } else {
+                // Should not happen if role is 'Guru' but no teacher record found
+                return redirect()->to('guru/assessments')->with('error', 'Teacher data not found. Authorization failed.');
+            }
+        }
+        // --- End Authorization Check ---
+
+        // Fetch students in the class
         $students = $this->studentModel
             ->select('students.*')
             ->join('class_student', 'class_student.student_id = students.id')
@@ -214,17 +233,42 @@ class AssessmentController extends BaseController
 
         $classId = $this->request->getPost('class_id');
         $subjectId = $this->request->getPost('subject_id');
-        $teacherId = session()->get('user_id'); // Assuming teacher's user_id is their teacher_id in assessments.
-                                               // This might need adjustment if `teachers.id` is different from `users.id`.
-                                               // For now, let's find teacher record by user_id.
-        $teacherRecord = $this->teacherModel->where('user_id', session()->get('user_id'))->first();
-        if(!$teacherRecord){
-             return redirect()->back()->withInput()->with('error', 'Teacher data not found for the logged in user.');
+
+        $loggedInUserId = current_user_id();
+        $teacherRecord = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+
+        // An admin might not have a teacher record.
+        // A guru MUST have a teacher record.
+        if (!isAdmin() && !$teacherRecord) {
+            return redirect()->back()->withInput()->with('error', 'Teacher data not found for the logged in user.');
         }
-        $dbTeacherId = $teacherRecord['id'];
+        $dbTeacherId = $teacherRecord ? $teacherRecord['id'] : null;
 
+        // --- Authorization Check for Teacher ---
+        // Admin can save for any class/subject, assuming they have a teacher_id if assessments.teacher_id is NOT NULL.
+        // If admin is also a teacher, their $dbTeacherId will be used.
+        // If admin is NOT a teacher, $dbTeacherId is null. This will fail if assessments.teacher_id is NOT NULL and no default is set.
+        // (Migration for assessments states teacher_id is NOT NULL and FK to teachers.id)
+        // So, an Admin who is not in `teachers` table cannot save new assessments. This is an existing constraint.
+        if (!isAdmin() && $dbTeacherId) { // This check is for Guru role
+            $assignment = $this->teacherClassSubjectAssignmentModel
+                ->where('teacher_id', $dbTeacherId)
+                ->where('class_id', $classId)
+                ->where('subject_id', $subjectId)
+                ->first();
 
-        $assessmentsData = $this->request->getPost('assessments'); // Expects an array of assessments
+            if (!$assignment) {
+                return redirect()->back()->withInput()->with('error', 'You are not authorized to save assessments for this class and subject.');
+            }
+        } else if (isAdmin() && !$dbTeacherId) {
+            // Admin is trying to save, but their user account is not linked to a teacher record.
+            // Since assessments.teacher_id is NOT NULL, this will fail at DB level.
+            // It's better to stop it here.
+            return redirect()->back()->withInput()->with('error', 'Administrator account is not linked to a teacher record. Cannot save assessment without a valid teacher ID.');
+        }
+        // --- End Authorization Check ---
+
+        $assessmentsData = $this->request->getPost('assessments');
 
         $allValid = true;
         $errors = [];
@@ -241,11 +285,28 @@ class AssessmentController extends BaseController
                     continue;
                 }
 
+                // --- Validate student is in class ---
+                $isStudentInClass = $this->classStudentModel
+                    ->where('class_id', $classId)
+                    ->where('student_id', $studentId)
+                    ->first();
+
+                if (!$isStudentInClass) {
+                    $allValid = false;
+                    // Find student name for error message
+                    $studentInfo = $this->studentModel->find($studentId);
+                    $studentName = $studentInfo ? $studentInfo['full_name'] : "ID {$studentId}";
+                    if (!isset($errors[$studentId][$index])) $errors[$studentId][$index] = [];
+                    $errors[$studentId][$index]['student_class_validation'] = "Student " . esc($studentName) . " is not registered in this class.";
+                    continue; // Skip this assessment entry, proceed to next assessment for the student or next student
+                }
+                // --- End student in class validation ---
+
                 $dataToSave = [
                     'student_id'       => $studentId,
                     'subject_id'       => $subjectId,
                     'class_id'         => $classId,
-                    'teacher_id'       => $dbTeacherId, // Use actual teacher ID from teachers table
+                    'teacher_id'       => $dbTeacherId,
                     'assessment_type'  => $assessment['assessment_type'],
                     'assessment_title' => $assessment['assessment_title'],
                     'assessment_date'  => !empty($assessment['assessment_date']) ? $assessment['assessment_date'] : null,
@@ -321,14 +382,27 @@ class AssessmentController extends BaseController
         // Authorization: Only the teacher who created it or an admin can edit.
         $loggedInUserId = current_user_id();
         $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+        $teacherId = $teacher ? $teacher['id'] : null;
 
-        if (!$teacher && !isAdmin()) {
-            return redirect()->to('guru/assessments')->with('error', 'Teacher data not found. Cannot verify permissions.');
-        }
-
-        // Admins can edit anything. For teachers, check if they are the ones who created the assessment.
-        if (!isAdmin() && ($teacher && $assessment['teacher_id'] != $teacher['id'])) {
-            return redirect()->to('guru/assessments')->with('error', 'You are not authorized to edit this assessment.');
+        // Authorization:
+        // Admin can edit any assessment.
+        // Teacher can only edit their own assessments for class/subject they are assigned to.
+        if (!isAdmin()) {
+            if (!$teacherId) { // Guru must have a teacher record
+                 return redirect()->to(route_to('guru_assessment_index'))->with('error', 'Teacher data not found. Cannot verify permissions.');
+            }
+            if ($assessment['teacher_id'] != $teacherId) { // Must be creator
+                return redirect()->to(route_to('guru_assessment_index'))->with('error', 'You are not authorized to edit this assessment as it was created by another teacher.');
+            }
+            // Must be assigned to teach this class/subject
+            $assignment = $this->teacherClassSubjectAssignmentModel
+                ->where('teacher_id', $teacherId)
+                ->where('class_id', $assessment['class_id'])
+                ->where('subject_id', $assessment['subject_id'])
+                ->first();
+            if (!$assignment) {
+                 return redirect()->to(route_to('guru_assessment_index'))->with('error', 'You are not authorized to edit assessments for this class/subject, or you are no longer assigned.');
+            }
         }
 
         $student = $this->studentModel->find($assessment['student_id']);
@@ -361,19 +435,27 @@ class AssessmentController extends BaseController
         // Authorization: Only the teacher who created it or an admin can update.
         $loggedInUserId = current_user_id();
         $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+        $teacherId = $teacher ? $teacher['id'] : null;
 
-        if (!$teacher && !isAdmin()) {
-            return redirect()->to('guru/assessments')->with('error', 'Teacher data not found. Cannot verify permissions.');
+        // Authorization: Similar to editAssessment
+        if (!isAdmin()) {
+            if (!$teacherId) {
+                return redirect()->to(route_to('guru_assessment_index'))->with('error', 'Teacher data not found. Cannot verify permissions.');
+            }
+            if ($assessment['teacher_id'] != $teacherId) {
+                 return redirect()->to(route_to('guru_assessment_index'))->with('error', 'You are not authorized to update this assessment as it was created by another teacher.');
+            }
+            $assignment = $this->teacherClassSubjectAssignmentModel
+                ->where('teacher_id', $teacherId)
+                ->where('class_id', $assessment['class_id'])
+                ->where('subject_id', $assessment['subject_id'])
+                ->first();
+            if (!$assignment) {
+                 return redirect()->to(route_to('guru_assessment_index'))->with('error', 'You are not authorized to update assessments for this class/subject, or you are no longer assigned.');
+            }
         }
 
-        if (!isAdmin() && ($teacher && $assessment['teacher_id'] != $teacher['id'])) {
-            return redirect()->to('guru/assessments')->with('error', 'You are not authorized to update this assessment.');
-        }
-
-        $rules = $this->assessmentModel->getValidationRules([
-            // if specific rules for update are needed, define here
-            // e.g., 'assessment_title' => 'required|max_length[255]',
-        ]);
+        // $rules = $this->assessmentModel->getValidationRules([]); // Not needed if using direct save with model's built-in validation
 
         // Custom validation logic similar to saveAssessments
         $dataToUpdate = [
@@ -434,13 +516,24 @@ class AssessmentController extends BaseController
         // Authorization: Only the teacher who created it or an admin can delete.
         $loggedInUserId = current_user_id();
         $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+        $teacherId = $teacher ? $teacher['id'] : null;
 
-        if (!$teacher && !isAdmin()) {
-            return redirect()->to('guru/assessments')->with('error', 'Teacher data not found. Cannot verify permissions.');
-        }
-
-        if (!isAdmin() && ($teacher && $assessment['teacher_id'] != $teacher['id'])) {
-            return redirect()->to('guru/assessments')->with('error', 'You are not authorized to delete this assessment.');
+        // Authorization: Similar to editAssessment
+        if (!isAdmin()) {
+            if (!$teacherId) {
+                return redirect()->to(route_to('guru_assessment_index'))->with('error', 'Teacher data not found. Cannot verify permissions.');
+            }
+            if ($assessment['teacher_id'] != $teacherId) {
+                return redirect()->to(route_to('guru_assessment_index'))->with('error', 'You are not authorized to delete this assessment as it was created by another teacher.');
+            }
+            $assignment = $this->teacherClassSubjectAssignmentModel
+                ->where('teacher_id', $teacherId)
+                ->where('class_id', $assessment['class_id'])
+                ->where('subject_id', $assessment['subject_id'])
+                ->first();
+            if (!$assignment) {
+                return redirect()->to(route_to('guru_assessment_index'))->with('error', 'You are not authorized to delete assessments for this class/subject, or you are no longer assigned.');
+            }
         }
 
         // Store class_id and subject_id for redirect before deleting
@@ -556,7 +649,33 @@ class AssessmentController extends BaseController
             return redirect()->to(route_to('guru_assessment_recap_select'))->with('error', 'Invalid class or subject selected.');
         }
 
-        // Fetch assessments (consider creating a dedicated model method for this)
+        // --- Authorization Check for Teacher (for recap view) ---
+        // Admin can view any recap.
+        // Teacher can view recap if they teach the subject in that class OR if they are the wali kelas of that class.
+        if (!isAdmin()) {
+            $loggedInUserId = current_user_id();
+            $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+            $teacherId = $teacher ? $teacher['id'] : null;
+
+            if ($teacherId) {
+                $isAssignedToTeach = $this->teacherClassSubjectAssignmentModel
+                    ->where('teacher_id', $teacherId)
+                    ->where('class_id', $classId)
+                    ->where('subject_id', $subjectId)
+                    ->first();
+
+                $isWaliKelas = ($classInfo && $classInfo['wali_kelas_id'] == $teacherId);
+
+                if (!$isAssignedToTeach && !$isWaliKelas) {
+                    return redirect()->to(route_to('guru_assessment_recap_select'))->with('error', 'You are not authorized to view the recap for this class and subject.');
+                }
+            } else { // Guru role but no teacher record
+                return redirect()->to(route_to('guru_assessment_recap_select'))->with('error', 'Teacher data not found. Authorization failed.');
+            }
+        }
+        // --- End Authorization Check ---
+
+        // Fetch assessments
         $assessments = $this->assessmentModel->getAssessmentsForRecap($classId, $subjectId);
 
         // Group assessments by student for easier display in the view

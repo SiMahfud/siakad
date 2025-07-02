@@ -5,9 +5,11 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800"><?= esc($title ?? 'Manage Subjects') ?></h1>
-        <a href="<?= site_url('admin/subjects/new') ?>" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> Add New Subject
-        </a>
+        <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+            <a href="<?= site_url('admin/subjects/new') ?>" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Add New Subject
+            </a>
+        <?php endif; ?>
     </div>
 
     <?php if (session()->getFlashdata('success')) : ?>
@@ -36,7 +38,9 @@
                             <th>Subject Code</th>
                             <th>Subject Name</th>
                             <th>Type</th>
-                            <th>Actions</th>
+                            <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+                                <th>Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,19 +57,22 @@
                                             <span class="badge bg-secondary">Wajib (Core)</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <a href="<?= site_url('admin/subjects/edit/' . $subject['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </a>
-                                        <a href="<?= site_url('admin/subjects/delete/' . $subject['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this subject? This action cannot be undone.');">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </a>
-                                    </td>
+                                    <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+                                        <td>
+                                            <a href="<?= site_url('admin/subjects/edit/' . $subject['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <a href="<?= site_url('admin/subjects/delete/' . $subject['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this subject? This action cannot be undone.');">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
                             <tr>
-                                <td colspan="5" class="text-center">No subjects found.</td>
+                                <td colspan="<?= hasRole(['Administrator Sistem', 'Staf Tata Usaha']) ? 5 : 4 ?>" class="text-center">No subjects found.</td>
+                                <td colspan="<?= hasRole(['Administrator Sistem', 'Staf Tata Usaha']) ? 5 : 4 ?>" class="text-center">No subjects found.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

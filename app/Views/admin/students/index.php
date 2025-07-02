@@ -5,9 +5,11 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800"><?= esc($title ?? 'Manage Students') ?></h1>
-        <a href="<?= site_url('admin/students/new') ?>" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> Add New Student
-        </a>
+        <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+            <a href="<?= site_url('admin/students/new') ?>" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Add New Student
+            </a>
+        <?php endif; ?>
     </div>
 
     <?php if (session()->getFlashdata('success')) : ?>
@@ -37,7 +39,9 @@
                             <th>Full Name</th>
                             <th>User ID (Login)</th>
                             <th>Parent User ID</th>
-                            <th>Actions</th>
+                            <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+                                <th>Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,19 +53,22 @@
                                     <td><?= esc($student['full_name']) ?></td>
                                     <td><?= esc($student['user_id']) ?></td>
                                     <td><?= esc($student['parent_user_id']) ?></td>
-                                    <td>
-                                        <a href="<?= site_url('admin/students/edit/' . $student['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </a>
-                                        <a href="<?= site_url('admin/students/delete/' . $student['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this student? This action cannot be undone.');">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </a>
-                                    </td>
+                                    <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+                                        <td>
+                                            <a href="<?= site_url('admin/students/edit/' . $student['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <a href="<?= site_url('admin/students/delete/' . $student['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this student? This action cannot be undone.');">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
                             <tr>
-                                <td colspan="6" class="text-center">No students found.</td>
+                                <td colspan="<?= hasRole(['Administrator Sistem', 'Staf Tata Usaha']) ? 6 : 5 ?>" class="text-center">No students found.</td>
+                                <td colspan="<?= hasRole(['Administrator Sistem', 'Staf Tata Usaha']) ? 6 : 5 ?>" class="text-center">No students found.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

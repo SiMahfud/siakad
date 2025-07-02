@@ -5,9 +5,11 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800"><?= esc($title ?? 'Manage Classes (Rombel)') ?></h1>
-        <a href="<?= site_url('admin/classes/new') ?>" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> Add New Class
-        </a>
+        <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+            <a href="<?= site_url('admin/classes/new') ?>" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Add New Class
+            </a>
+        <?php endif; ?>
     </div>
 
     <?php if (session()->getFlashdata('success')) : ?>
@@ -37,7 +39,9 @@
                             <th>Academic Year</th>
                             <th>Fase</th>
                             <th>Wali Kelas</th>
-                            <th>Actions</th>
+                            <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+                                <th>Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,23 +53,26 @@
                                     <td><?= esc($class_item['academic_year']) ?></td>
                                     <td><?= esc($class_item['fase']) ?></td>
                                     <td><?= esc($class_item['wali_kelas_name'] ?? 'N/A') ?></td>
-                                    <td>
-                                        <a href="<?= site_url('admin/classes/edit/' . $class_item['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </a>
-                                        <a href="<?= site_url('admin/classes/delete/' . $class_item['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone and might affect related student records.');">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </a>
-                                        <!-- Add link to manage students in class later -->
-                                        <!-- <a href="<?= site_url('admin/classes/students/' . $class_item['id']) ?>" class="btn btn-info btn-sm" title="Manage Students">
-                                            <i class="bi bi-people-fill"></i>
-                                        </a> -->
-                                    </td>
+                                    <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) : ?>
+                                        <td>
+                                            <a href="<?= site_url('admin/classes/edit/' . $class_item['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <a href="<?= site_url('admin/classes/delete/' . $class_item['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone and might affect related student records.');">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                            <!-- Add link to manage students in class later -->
+                                            <!-- <a href="<?= site_url('admin/classes/students/' . $class_item['id']) ?>" class="btn btn-info btn-sm" title="Manage Students">
+                                                <i class="bi bi-people-fill"></i>
+                                            </a> -->
+                                        </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
                             <tr>
-                                <td colspan="6" class="text-center">No classes found.</td>
+                                <td colspan="<?= hasRole(['Administrator Sistem', 'Staf Tata Usaha']) ? 6 : 5 ?>" class="text-center">No classes found.</td>
+                                <td colspan="<?= hasRole(['Administrator Sistem', 'Staf Tata Usaha']) ? 6 : 5 ?>" class="text-center">No classes found.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

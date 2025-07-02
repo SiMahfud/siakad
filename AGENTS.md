@@ -115,35 +115,24 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Helper `auth_helper.php` dibuat untuk pengecekan peran (`hasRole()`, `isAdmin()`, dll.).
     *   `AuthFilter` dimodifikasi untuk menerima argumen peran dan membatasi akses rute.
     *   Rute admin diperbarui dengan filter peran spesifik (misal, User Management hanya untuk Admin, Data Induk untuk Admin & Staf TU, dengan KS bisa lihat).
-    *   Controller Data Induk (`Students`, `Teachers`, `Subjects`, `Classes`) ditambahkan pengecekan peran untuk aksi CUD.
+    *   Controller Data Induk (`Students`, `Teachers`, `Subjects`, `Classes`) ditambahkan pengecekan peran (`hasRole(['Administrator Sistem', 'Staf Tata Usaha'])`) untuk aksi CUD, sehingga Kepala Sekolah otomatis read-only pada level controller.
+    *   Views Data Induk (`admin/.../index.php`) dimodifikasi untuk menyembunyikan tombol aksi CUD (Tambah, Edit, Delete) jika pengguna bukan 'Administrator Sistem' atau 'Staf Tata Usaha', efektif memberikan UI read-only untuk Kepala Sekolah.
     *   Halaman `unauthorized` dibuat.
     *   Navigasi di layout utama disesuaikan dengan hak akses peran.
-*   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal Selesai)**:
-    *   `AssessmentModel.php` dibuat dengan aturan validasi untuk field-field penilaian (termasuk `required`, `valid_date`, `decimal`, `between[0,100]` untuk skor).
-    *   `Guru/AssessmentController.php` diimplementasikan:
-        *   `index()`: Menampilkan form untuk guru memilih Kelas dan Mata Pelajaran.
-        *   `showInputForm()`: Menampilkan form input nilai detail, mengambil daftar siswa dari kelas yang dipilih.
-        *   `saveAssessments()`: Memproses data batch dari form, melakukan validasi kustom per entri (misalnya, skor wajib untuk Sumatif, judul wajib jika ada skor/deskripsi), memvalidasi dengan `AssessmentModel`, dan menyimpan data valid menggunakan `insertBatch()`.
-    *   Views terkait di `app/Views/guru/assessments/`:
-        *   `select_context.php`: Form pemilihan kelas dan subjek.
-            *   `input_form.php`: Form input nilai utama. Menggunakan JavaScript untuk memungkinkan guru menambah/menghapus beberapa baris entri penilaian per siswa secara dinamis. Kini juga menyertakan pagination sisi klien (JavaScript) untuk menangani daftar siswa yang panjang.
-    *   Validasi input yang komprehensif telah diimplementasikan, baik di sisi controller (untuk logika yang lebih kompleks antar field) maupun di model (untuk aturan per field).
-    *   Tampilan pesan error validasi telah disempurnakan di `input_form.php` untuk menampilkan pesan yang jelas, termasuk nama siswa, nomor entri (jika ada beberapa untuk satu siswa), dan nama field yang bermasalah, serta pesan error spesifik.
-    *   Rute untuk modul penilaian guru (`/guru/assessments/...`) telah dibuat dan diproteksi menggunakan filter `auth` untuk peran 'Guru' dan 'Administrator Sistem'.
-    *   Modul ini telah diuji secara manual dengan berbagai skenario input (valid, berbagai tipe asesmen, data invalid untuk menguji aturan validasi dan tampilan error).
-    *   **Penyempurnaan Tambahan (Modul Penilaian):**
-        *   **[X] Filter Kelas/Mapel di Halaman Pemilihan Konteks (`AssessmentController::index`, `AssessmentController::showRecapSelection`):**
-            *   Filter kelas berdasarkan status wali kelas atau penugasan guru di kelas.
-            *   Filter mata pelajaran berdasarkan penugasan guru di kelas yang dipilih (menggunakan tabel `teacher_class_subject_assignments`), diimplementasikan dengan AJAX untuk pembaruan dinamis tanpa reload halaman.
-            *   View `select_context.php` dan `select_recap_context.php` dimodifikasi untuk mendukung mekanisme filter AJAX ini.
-            *   Controller `AssessmentController` memiliki method `ajaxGetSubjectsForClass()` untuk menangani request AJAX.
-        *   **[X] Fitur Edit dan Hapus Data Penilaian:**
-            *   Method `editAssessment`, `updateAssessment`, dan `deleteAssessment` telah ditambahkan di `AssessmentController`.
-            *   View `edit_form.php` untuk form edit penilaian.
-            *   Rute terkait telah dibuat (`guru_assessment_edit`, `guru_assessment_update`, `guru_assessment_delete`).
-            *   Hak akses dasar (pembuat asesmen atau admin) diimplementasikan untuk operasi edit/hapus.
-        *   **[X] Fitur Rekapitulasi Nilai (Guru, Siswa, Orang Tua):**
-            *   **Guru**: Method `showRecapSelection` dan `displayRecap` di `AssessmentController`. Views `select_recap_context.php` dan `recap_display.php`. Tombol Edit/Hapus terintegrasi. Tabel rekap menggunakan DataTables.net untuk sorting, filter global & per kolom, pagination, dan export data (Copy, CSV, Excel, PDF, Print). Link navigasi "Rekap Nilai".
+*   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal Selesai dengan Hak Akses Granular)**:
+    *   `AssessmentModel.php` dibuat dengan aturan validasi.
+    *   `Guru/AssessmentController.php` diimplementasikan dengan hak akses granular:
+        *   `index()`, `showRecapSelection()`: Guru (non-admin) hanya melihat kelas/mapel yang diajar atau diampu sebagai wali kelas. AJAX `ajaxGetSubjectsForClass()` juga mengikuti logika ini.
+        *   `showInputForm()`, `saveAssessments()`: Guru (non-admin) hanya bisa mengakses/menyimpan nilai untuk kelas/mapel yang mereka ajar. Validasi tambahan memastikan siswa yang dinilai adalah anggota kelas yang dipilih. Admin yang tidak memiliki profil guru tidak bisa menyimpan asesmen.
+        *   `editAssessment()`, `updateAssessment()`, `deleteAssessment()`: Guru (non-admin) hanya bisa memodifikasi asesmen yang mereka buat sendiri DAN mereka masih aktif ditugaskan mengajar kelas/mapel tersebut. Admin memiliki akses penuh.
+        *   `displayRecap()`: Guru (non-admin) hanya bisa melihat rekap jika mengajar kelas/mapel tersebut atau menjadi wali kelasnya.
+    *   Views terkait di `app/Views/guru/assessments/` mendukung fungsionalitas ini.
+    *   Validasi input komprehensif dan tampilan error yang jelas.
+    *   Rute diproteksi untuk peran 'Guru' dan 'Administrator Sistem'.
+    *   **Penyempurnaan Tambahan Sebelumnya (Modul Penilaian):**
+        *   **[X] Filter Kelas/Mapel di Halaman Pemilihan Konteks (AJAX)**.
+        *   **[X] Fitur Edit dan Hapus Data Penilaian (dengan hak akses dasar awal, kini diperkuat)**.
+        *   **[X] Fitur Rekapitulasi Nilai (Guru, Siswa, Orang Tua)**.
             *   **Siswa**: `Siswa/NilaiController::index()` dan view `siswa/nilai/index.php` untuk menampilkan nilai siswa yang login. Tabel rekap menggunakan DataTables.net (termasuk export dan filter per kolom). Link navigasi "Transkrip Nilai".
             *   **Orang Tua**: `Ortu/NilaiController::index()` (pemilihan anak) & `showStudentRecap()`. Views `ortu/nilai/select_student.php` & `ortu/nilai/recap_display.php`. Tabel rekap menggunakan DataTables.net (termasuk export dan filter per kolom). Link navigasi "Nilai Anak".
             *   Model `AssessmentModel` memiliki `getAssessmentsForRecap()`. `StudentModel` memiliki `findByParentUserId()`. `TeacherClassSubjectAssignmentModel` memiliki `getDistinctSubjectsForClass()`.
@@ -156,14 +145,14 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **Penyempurnaan Hak Akses (Lanjutan)**:
-    *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
-    *   Pengecekan kepemilikan data secara lebih komprehensif.
-3.  **Manajemen Siswa dalam Kelas**:
-    *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`).
-4.  **Modul Projek P5**:
+1.  **Penyempurnaan Hak Akses (Lanjutan) - SELESAI untuk lingkup saat ini**:
+    *   Implementasi hak akses granular untuk Guru di Modul Penilaian (berdasarkan penugasan dan kepemilikan data) telah selesai.
+    *   Implementasi hak akses read-only untuk Kepala Sekolah di Modul Data Induk (controller dan view) telah selesai.
+    *   Pengecekan kepemilikan data di Modul Penilaian telah diperkuat.
+    *   Siswa dan Orang Tua sudah memiliki akses granular ke data mereka sendiri.
+2.  **Manajemen Siswa dalam Kelas**:
+    *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`). Ini menjadi prioritas berikutnya.
+3.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
 5.  **Modul Ekspor ke e-Rapor**:

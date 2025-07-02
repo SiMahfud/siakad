@@ -83,7 +83,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Telah dilakukan testing manual untuk berbagai skenario input (valid, invalid, berbagai tipe).
     *   [X] Tampilan rekap nilai per siswa dan per mata pelajaran (Guru: pemilihan konteks, tampilan tabel, aksi Edit/Hapus; Siswa: tampilan nilai per mapel; Ortu: pemilihan anak & tampilan nilai anak).
     *   [X] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks (Filter kelas berdasarkan wali kelas; Filter mapel berdasarkan penugasan guru di kelas tersebut).
-    *   [X] Fitur edit/hapus data penilaian yang sudah dimasukkan (Controller, View dasar, Rute, Hak Akses dasar, terintegrasi di halaman rekap).
+    *   [X] Fitur edit/hapus data penilaian yang sudah dimasukkan (Controller, View dasar, Rute, Hak Akses diperkuat - guru hanya bisa edit/hapus milik sendiri dan jika masih mengajar kelas/mapel terkait, terintegrasi di halaman rekap).
 *   **[ ] Modul Projek P5**
     *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
     *   [ ] Pengaturan projek oleh koordinator
@@ -106,7 +106,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
     *   [ ] Mengatur pembagian siswa ke dalam rombel (detail penempatan siswa belum).
 *   **Kepala Sekolah**:
-    *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
+    *   [X] Akses read-only ke Data Induk (Controller membatasi aksi CUD, tombol aksi terkait disembunyikan dari tampilan).
     *   [ ] Dasbor eksekutif.
     *   [ ] Memantau aktivitas guru.
     *   [ ] Membuat dan menyebarkan pengumuman.
