@@ -156,17 +156,15 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **Penyempurnaan Hak Akses (Lanjutan)**:
+1.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data secara lebih komprehensif.
-3.  **Manajemen Siswa dalam Kelas**:
+2.  **Manajemen Siswa dalam Kelas**:
     *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`).
-4.  **Modul Projek P5**:
+3.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
-5.  **Modul Ekspor ke e-Rapor**:
+4.  **Modul Ekspor ke e-Rapor**:
     *   Ini adalah fitur kunci dan kompleks yang memerlukan koordinasi terkait format template Excel.
 
 ## 7. Perintah Berguna CodeIgniter Spark
