@@ -57,7 +57,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
         *   [X] Model (`ClassModel`) dengan validasi dasar & relasi dasar ke guru
         *   [X] Controller (`Admin/ClassController`) dengan fungsi CRUD (termasuk pemilihan Wali Kelas)
         *   [X] Views (daftar, tambah, edit kelas - dengan Bootstrap 5)
-        *   [ ] Manajemen siswa per kelas (tabel `class_student`)
+        *   [X] Manajemen siswa per kelas (tabel `class_student`)
     *   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
         *   [X] Struktur Tabel Database (`teacher_class_subject_assignments`)
         *   [X] Model (`TeacherClassSubjectAssignmentModel`)
@@ -104,7 +104,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [ ] Maintenance dan backup database.
 *   **Staf Tata Usaha (TU)**:
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
-    *   [ ] Mengatur pembagian siswa ke dalam rombel (detail penempatan siswa belum).
+    *   [X] Mengatur pembagian siswa ke dalam rombel.
 *   **Kepala Sekolah**:
     *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
     *   [ ] Dasbor eksekutif.

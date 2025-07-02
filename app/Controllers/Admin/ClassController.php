@@ -5,16 +5,22 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\ClassModel;
 use App\Models\TeacherModel;
+use App\Models\StudentModel;
+use App\Models\ClassStudentModel;
 
 class ClassController extends BaseController
 {
     protected $classModel;
     protected $teacherModel;
+    protected $studentModel;
+    protected $classStudentModel;
 
     public function __construct()
     {
         $this->classModel = new ClassModel();
         $this->teacherModel = new TeacherModel();
+        $this->studentModel = new StudentModel();
+        $this->classStudentModel = new ClassStudentModel();
         helper(['form', 'url', 'auth']); // Ensure auth_helper is loaded
     }
 
@@ -175,6 +181,96 @@ class ClassController extends BaseController
         } else {
             // This might occur if there are RESTRICT foreign key constraints preventing deletion
             return redirect()->to('/admin/classes')->with('error', 'Failed to delete class. It might be in use.');
+        }
+    }
+
+    // --- Class Student Management ---
+
+    public function manageStudents($class_id = null)
+    {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->to('/admin/classes')->with('error', 'You do not have permission to manage students in classes.');
+        }
+        if ($class_id === null) {
+            return redirect()->to('/admin/classes')->with('error', 'Class ID not provided.');
+        }
+
+        $class_item = $this->classModel->find($class_id);
+        if (!$class_item) {
+            return redirect()->to('/admin/classes')->with('error', 'Class not found.');
+        }
+
+        $data = [
+            'title'            => 'Manage Students in Class: ' . esc($class_item['class_name']),
+            'class_item'       => $class_item,
+            'students_in_class' => $this->classStudentModel->getStudentsInClass($class_id),
+            'available_students' => $this->classStudentModel->getAvailableStudents($class_id),
+            'validation'       => \Config\Services::validation()
+        ];
+
+        return view('admin/classes/manage_students', $data);
+    }
+
+    public function addStudentToClass($class_id = null)
+    {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->back()->with('error', 'You do not have permission.');
+        }
+        if ($class_id === null) {
+            return redirect()->to('/admin/classes')->with('error', 'Class ID not provided.');
+        }
+
+        $student_id = $this->request->getPost('student_id');
+
+        if (empty($student_id)) {
+            return redirect()->back()->withInput()->with('error', 'No student selected.');
+        }
+
+        // Check if student is already in this class
+        $existing = $this->classStudentModel->where(['class_id' => $class_id, 'student_id' => $student_id])->first();
+        if ($existing) {
+            return redirect()->back()->with('error', 'Student is already in this class.');
+        }
+
+        $data = [
+            'class_id'   => $class_id,
+            'student_id' => $student_id
+        ];
+
+        if ($this->classStudentModel->insert($data)) {
+            return redirect()->to('admin/classes/manage-students/' . $class_id)->with('success', 'Student added to class successfully.');
+        } else {
+            // This typically catches validation errors if set up in model, or DB errors
+            $errors = $this->classStudentModel->errors();
+            $errorMessage = $errors ? implode(', ', $errors) : 'Failed to add student to class. Please try again.';
+            return redirect()->back()->withInput()->with('error', $errorMessage);
+        }
+    }
+
+    public function removeStudentFromClass($class_id = null, $student_id = null)
+    {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha'])) {
+            return redirect()->back()->with('error', 'You do not have permission.');
+        }
+        if ($class_id === null || $student_id === null) {
+            return redirect()->to('/admin/classes')->with('error', 'Class ID or Student ID not provided.');
+        }
+
+        // Find the specific class_student entry to delete
+        $classStudentEntry = $this->classStudentModel
+            ->where('class_id', $class_id)
+            ->where('student_id', $student_id)
+            ->first();
+
+        if (!$classStudentEntry) {
+            return redirect()->to('admin/classes/manage-students/' . $class_id)->with('error', 'Student not found in this class or record missing.');
+        }
+
+        // Use the primary key of the class_student table for deletion
+        if ($this->classStudentModel->delete($classStudentEntry['id'])) {
+            return redirect()->to('admin/classes/manage-students/' . $class_id)->with('success', 'Student removed from class successfully.');
+        } else {
+            return redirect()->to('admin/classes/manage-students/' . $class_id)->with('error', 'Failed to remove student from class.');
         }
     }
 }
