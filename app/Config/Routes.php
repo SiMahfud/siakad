@@ -49,6 +49,15 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'filter'     => 'auth:Administrator Sistem',
         'as'         => 'admin_assignments' // Route alias prefix
     ]);
+
+    // Schedule Management: Administrator Sistem & Staf Tata Usaha
+    $routes->resource('schedules', [
+        'controller' => 'ScheduleController',
+        'filter'     => 'auth:Administrator Sistem,Staf Tata Usaha'
+    ]);
+    // Note: 'delete' method in resource routes defaults to GET if not specified otherwise or handled by form method.
+    // Our form uses POST for delete, which is good.
+
     // Example for a route accessible by Kepala Sekolah (read-only conceptually)
     // For now, KepSek can access general admin area due to 'auth' filter on group,
     // specific read-only views would need controller logic.
@@ -89,11 +98,13 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
     // If ClassViewController is at App\Controllers\Guru\ClassViewController, then it's fine.
     $routes->get('my-classes', 'ClassViewController::index', ['as' => 'guru_my_classes']);
     $routes->get('my-classes/view-students/(:num)', 'ClassViewController::viewStudents/$1', ['as' => 'guru_view_class_students']);
+    $routes->get('my-schedule', 'ClassViewController::mySchedule', ['as' => 'guru_my_schedule']);
 });
 
 // Siswa routes
 $routes->group('siswa', ['namespace' => 'App\Controllers\Siswa', 'filter' => 'auth:Siswa'], static function ($routes) {
     $routes->get('nilai', 'NilaiController::index', ['as' => 'siswa_nilai_index']);
+    $routes->get('my-schedule', 'ScheduleController::classSchedule', ['as' => 'siswa_my_schedule']);
     // Add other siswa specific routes here
 });
 

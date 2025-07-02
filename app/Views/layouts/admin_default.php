@@ -66,6 +66,8 @@
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/teachers') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/teachers') ?>">Teachers</a></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/subjects') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/subjects') ?>">Subjects</a></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/classes') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/classes') ?>">Classes</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/schedules') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/schedules') ?>">Schedule Management</a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
@@ -88,6 +90,10 @@
                                         <a class="dropdown-item <?= (strpos(uri_string(), 'guru/my-classes') !== false) ? 'active' : '' ?>"
                                            href="<?= site_url('guru/my-classes') ?>">Kelas & Siswa Saya</a>
                                     </li>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'guru/my-schedule') !== false) ? 'active' : '' ?>"
+                                           href="<?= site_url('guru/my-schedule') ?>">Jadwal Mengajar Saya</a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Penilaian</h6></li>
                                     <li>
@@ -104,9 +110,21 @@
 
                         <!-- Siswa Menu -->
                         <?php if (hasRole('Siswa')): ?>
-                            <li class="nav-item">
-                                <a class="nav-link <?= (strpos(uri_string(), 'siswa/nilai') !== false) ? 'active' : '' ?>"
-                                   href="<?= route_to('siswa_nilai_index') ?>">Transkrip Nilai</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'siswa/') !== false) ? 'active' : '' ?>"
+                                   href="#" id="siswaMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                   <i class="bi bi-person-student"></i> Menu Siswa
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="siswaMenuDropdown">
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'siswa/my-schedule') !== false) ? 'active' : '' ?>"
+                                           href="<?= site_url('siswa/my-schedule') ?>">Jadwal Kelas Saya</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'siswa/nilai') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('siswa_nilai_index') ?>">Transkrip Nilai</a>
+                                    </li>
+                                </ul>
                             </li>
                         <?php endif; ?>
 

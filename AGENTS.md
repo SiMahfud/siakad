@@ -153,22 +153,34 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Controller `Admin/TeacherClassSubjectAssignmentController` dibuat dengan fungsi CRUD dasar (index, new, create, delete) untuk mengelola penugasan.
     *   Views `admin/assignments/index.php` dan `admin/assignments/new.php` dibuat.
     *   Rute resource `admin/assignments` ditambahkan dan diproteksi untuk Administrator Sistem.
+*   **[P] Modul Akademik Harian - Manajemen Jadwal Pelajaran**:
+    *   Tabel `schedules` dibuat (via Migrasi).
+    *   Model `ScheduleModel` dibuat dengan validasi dasar dan method helper `getScheduleDetails()`.
+    *   Controller `Admin/ScheduleController` dibuat dengan fungsi CRUD (index, new, create, edit, update, delete) untuk mengelola jadwal pelajaran.
+    *   Views `admin/schedules/index.php`, `new.php`, dan `edit.php` dibuat.
+    *   Rute resource `admin/schedules` ditambahkan dan diproteksi untuk Administrator Sistem dan Staf Tata Usaha.
+    *   Navigasi admin diperbarui untuk menyertakan link ke Manajemen Jadwal.
+    *   Guru dapat melihat jadwal mengajarnya sendiri via `Guru/ClassViewController::mySchedule()` dan view `guru/schedules/my_schedule.php`. Navigasi guru diperbarui.
+    *   Siswa dapat melihat jadwal kelasnya via `Siswa/ScheduleController::classSchedule()` dan view `siswa/schedules/class_schedule.php`. Navigasi siswa diperbarui.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
+1.  **Modul Akademik Harian (Lanjutan)**:
+    *   Input Presensi Harian oleh Guru.
+    *   Pemilihan Mata Pelajaran Pilihan (Siswa Fase F).
+2.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **[X] Penyempurnaan Hak Akses (Lanjutan)**:
+3.  **[X] Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
         *   Guru dapat melihat daftar kelas yang mereka ampu (sebagai wali kelas atau pengajar mapel).
         *   Guru dapat melihat daftar siswa di kelas-kelas yang relevan tersebut.
     *   Pengecekan kepemilikan data secara lebih komprehensif (contoh pada modul asesmen untuk edit/hapus).
-3.  **[X] Manajemen Siswa dalam Kelas**:
+4.  **[X] Manajemen Siswa dalam Kelas**:
     *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`) - **SELESAI**.
-4.  **Modul Projek P5**:
+5.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
-5.  **Modul Ekspor ke e-Rapor**:
+6.  **Modul Ekspor ke e-Rapor**:
     *   Ini adalah fitur kunci dan kompleks yang memerlukan koordinasi terkait format template Excel.
 
 ## 7. Perintah Berguna CodeIgniter Spark

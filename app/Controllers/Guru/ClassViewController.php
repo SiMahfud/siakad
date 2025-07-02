@@ -157,4 +157,51 @@ class ClassViewController extends BaseController
 
         return view('guru/classes/view_students', $data);
     }
+
+    public function mySchedule()
+    {
+        if (!$this->loggedInTeacherId && !isAdmin()) {
+             return redirect()->to('/')->with('error', 'Access denied. Teacher information not found.');
+        }
+
+        $filters = [
+            'academic_year' => $this->request->getGet('academic_year') ?? '', // Default ke tahun ajaran aktif jika ada
+            'semester' => $this->request->getGet('semester') ?? '', // Default ke semester aktif jika ada
+            'teacher_id' => null
+        ];
+
+        $schedules = [];
+        if ($this->loggedInTeacherId) {
+            $filters['teacher_id'] = $this->loggedInTeacherId;
+            $schedules = $this->scheduleModel->getScheduleDetails($filters);
+        } elseif (isAdmin()) {
+            // Admin without teacher context accessing this page sees all schedules
+            // or we can restrict this page only for actual teachers.
+            // For now, let admin see all if they hit this URL directly, or filter by teacher if they provide teacher_id.
+            // However, "My Schedule" implies context of logged in teacher.
+            // So, if admin is not a teacher, they should probably not use "My Schedule".
+            // Let's provide a message if admin is not a teacher.
+            // Or, if we want admin to use this to see ANY teacher's schedule:
+            if ($this->request->getGet('teacher_id_for_admin')) {
+                 $filters['teacher_id'] = $this->request->getGet('teacher_id_for_admin');
+                 $schedules = $this->scheduleModel->getScheduleDetails($filters);
+            } else {
+                session()->setFlashdata('info', 'As an Admin, you can view all schedules via Admin menu, or specify a teacher ID to view their schedule here.');
+            }
+        }
+
+
+        $data = [
+            'pageTitle' => 'My Teaching Schedule',
+            'schedules' => $schedules,
+            'filters' => $filters, // Pass filters to view for display or pre-filling filter form
+            // Potentially load list of academic years and semesters for filter dropdowns
+        ];
+
+        // If an admin is also a teacher, $this->loggedInTeacherId will be set, and they'll see their own schedule.
+        // If a pure admin (not a teacher) accesses, $this->loggedInTeacherId is null.
+        // The logic above handles this: pure admin gets info message unless they provide a teacher_id_for_admin filter.
+
+        return view('guru/schedules/my_schedule', $data);
+    }
 }

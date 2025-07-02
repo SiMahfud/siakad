@@ -63,8 +63,8 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
         *   [X] Model (`TeacherClassSubjectAssignmentModel`)
         *   [X] Controller (`Admin/TeacherClassSubjectAssignmentController`) dengan fungsi CRUD dasar (index, new, create, delete).
         *   [X] Views (daftar, tambah penugasan - dengan Bootstrap 5).
-*   **[ ] Modul Akademik Harian**
-    *   [ ] Manajemen Jadwal Pelajaran
+*   **[P] Modul Akademik Harian**
+    *   [X] Manajemen Jadwal Pelajaran (Admin: CRUD; Guru & Siswa: View)
     *   [ ] Input Presensi Harian oleh Guru
     *   [ ] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)
 *   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal)**
@@ -99,18 +99,21 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 *   **Administrator Sistem**:
     *   [X] Mengelola akun dan hak akses semua pengguna (CRUD Users).
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
+    *   [X] Mengelola Jadwal Pelajaran (CRUD).
     *   [ ] Mengatur konfigurasi tahun ajaran, data sekolah, struktur kurikulum.
     *   [ ] Mengelola data master tema dan dimensi P5.
     *   [ ] Maintenance dan backup database.
 *   **Staf Tata Usaha (TU)**:
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
     *   [X] Mengatur pembagian siswa ke dalam rombel.
+    *   [X] Mengelola Jadwal Pelajaran (CRUD).
 *   **Kepala Sekolah**:
     *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
     *   [ ] Dasbor eksekutif.
     *   [ ] Memantau aktivitas guru.
     *   [ ] Membuat dan menyebarkan pengumuman.
 *   **Guru Mata Pelajaran**:
+    *   [X] Melihat Jadwal Mengajar.
     *   [ ] Menginput absensi harian.
     *   [P] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada.
     *   [X] Melihat daftar kelas yang diajar dan siswa di dalamnya.
@@ -124,7 +127,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [ ] Validasi Kelengkapan Nilai.
     *   [ ] Ekspor Data ke e-Rapor.
 *   **Siswa**:
-    *   [ ] Melihat jadwal pelajaran.
+    *   [X] Melihat Jadwal Pelajaran Kelas.
     *   [ ] Melihat rekap absensi pribadi.
     *   [X] Melihat transkrip nilai sementara.
     *   [ ] Melakukan pemilihan mapel pilihan.
