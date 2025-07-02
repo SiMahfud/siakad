@@ -138,7 +138,16 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 3.  Jalankan `composer install` untuk menginstal dependensi.
 4.  Database SQLite (`writable/database.sqlite`) akan dibuat dan dimigrasikan secara otomatis saat pertama kali menjalankan migrasi.
 5.  Jalankan migrasi: `php spark migrate`
-6.  Jalankan seeder (untuk data awal seperti peran): `php spark db:seed DatabaseSeeder`
+6.  Jalankan seeder untuk mengisi data awal: `php spark db:seed DatabaseSeeder`
+    *   Perintah ini akan membuat peran default, user default untuk setiap peran, data guru dan siswa terkait, serta beberapa data master untuk mata pelajaran, kelas, dan penugasan mengajar.
+    *   Beberapa user default yang bisa digunakan untuk login (password untuk semua: `password123`):
+        *   Administrator Sistem: `admin`
+        *   Staf Tata Usaha: `staf`
+        *   Kepala Sekolah: `kepsek`
+        *   Guru 1: `guru1`
+        *   Guru 2: `guru2`
+        *   Siswa 1: `siswa1`
+        *   Orang Tua 1: `ortu1`
 7.  Jalankan server pengembangan: `php spark serve`
 8.  Akses aplikasi melalui `http://localhost:8080`. Fitur admin data induk tersedia di bawah path `/admin/...` (misal, `/admin/students`).
 
