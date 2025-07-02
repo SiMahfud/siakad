@@ -58,6 +58,12 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     // Note: 'delete' method in resource routes defaults to GET if not specified otherwise or handled by form method.
     // Our form uses POST for delete, which is good.
 
+    // Subject Offerings Management: Administrator Sistem & Staf Tata Usaha (or Curriculum Role)
+    $routes->resource('subject-offerings', [
+        'controller' => 'SubjectOfferingController',
+        'filter'     => 'auth:Administrator Sistem,Staf Tata Usaha'
+        // 'as' => 'admin_subject_offerings' // Optional: if you need a prefix for named routes
+    ]);
     // Example for a route accessible by Kepala Sekolah (read-only conceptually)
     // For now, KepSek can access general admin area due to 'auth' filter on group,
     // specific read-only views would need controller logic.
@@ -110,6 +116,10 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
 $routes->group('siswa', ['namespace' => 'App\Controllers\Siswa', 'filter' => 'auth:Siswa'], static function ($routes) {
     $routes->get('nilai', 'NilaiController::index', ['as' => 'siswa_nilai_index']);
     $routes->get('my-schedule', 'ScheduleController::classSchedule', ['as' => 'siswa_my_schedule']);
+
+    // Subject Choice Routes for Siswa
+    $routes->get('subject-choices', 'SubjectChoiceController::index', ['as' => 'siswa_subject_choices_index']);
+    $routes->post('subject-choices/process', 'SubjectChoiceController::processChoice', ['as' => 'siswa_subject_choices_process']);
     // Add other siswa specific routes here
 });
 

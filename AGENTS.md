@@ -168,12 +168,19 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Controller `Guru/AttendanceController` dibuat dengan method `selectSchedule`, `showAttendanceForm`, dan `saveAttendance`.
     *   Views `guru/attendances/select_schedule.php` dan `guru/attendances/attendance_form.php` dibuat.
     *   Rute dan navigasi guru diperbarui.
+*   **[P] Modul Akademik Harian - Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)**:
+    *   Tabel `subject_offerings` dan `student_subject_choices` dibuat (via Migrasi).
+    *   Model `SubjectOfferingModel` dan `StudentSubjectChoiceModel` dibuat.
+    *   Controller `Admin/SubjectOfferingController` dibuat untuk CRUD penawaran mapel oleh admin. Views terkait dibuat.
+    *   Controller `Siswa/SubjectChoiceController` dibuat untuk siswa melihat penawaran dan membuat/membatalkan pilihan (via AJAX). View terkait dibuat.
+    *   Rute dan navigasi Admin & Siswa diperbarui.
+    *   Rekapitulasi pilihan untuk Admin/Wali Kelas belum diimplementasikan (opsional awal).
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Akademik Harian (Lanjutan)**:
-    *   Pemilihan Mata Pelajaran Pilihan (Siswa Fase F).
     *   Rekapitulasi presensi untuk Admin/Wali Kelas (opsional dari tahap presensi).
+    *   Rekapitulasi pilihan mapel untuk Admin/Wali Kelas (opsional dari tahap pemilihan mapel).
 2.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
 3.  **[X] Penyempurnaan Hak Akses (Lanjutan)**:

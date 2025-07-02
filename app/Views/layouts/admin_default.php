@@ -68,6 +68,7 @@
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/classes') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/classes') ?>">Classes</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/schedules') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/schedules') ?>">Schedule Management</a></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/subject-offerings') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/subject-offerings') ?>">Subject Offerings</a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
@@ -127,6 +128,11 @@
                                     <li>
                                         <a class="dropdown-item <?= (strpos(uri_string(), 'siswa/nilai') !== false) ? 'active' : '' ?>"
                                            href="<?= route_to('siswa_nilai_index') ?>">Transkrip Nilai</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'siswa/subject-choices') !== false) ? 'active' : '' ?>"
+                                           href="<?= site_url('siswa/subject-choices') ?>">Pilih Mata Pelajaran</a>
                                     </li>
                                 </ul>
                             </li>
