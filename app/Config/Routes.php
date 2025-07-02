@@ -49,6 +49,21 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'filter'     => 'auth:Administrator Sistem',
         'as'         => 'admin_assignments' // Route alias prefix
     ]);
+
+    // Schedule Management: Administrator Sistem & Staf Tata Usaha
+    $routes->resource('schedules', [
+        'controller' => 'ScheduleController',
+        'filter'     => 'auth:Administrator Sistem,Staf Tata Usaha'
+    ]);
+    // Note: 'delete' method in resource routes defaults to GET if not specified otherwise or handled by form method.
+    // Our form uses POST for delete, which is good.
+
+    // Subject Offerings Management: Administrator Sistem & Staf Tata Usaha (or Curriculum Role)
+    $routes->resource('subject-offerings', [
+        'controller' => 'SubjectOfferingController',
+        'filter'     => 'auth:Administrator Sistem,Staf Tata Usaha'
+        // 'as' => 'admin_subject_offerings' // Optional: if you need a prefix for named routes
+    ]);
     // Example for a route accessible by Kepala Sekolah (read-only conceptually)
     // For now, KepSek can access general admin area due to 'auth' filter on group,
     // specific read-only views would need controller logic.
@@ -82,11 +97,29 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
 
     // AJAX route for dynamic subject loading
     $routes->get('assessments/ajax/get-subjects-for-class/(:num)', 'AssessmentController::ajaxGetSubjectsForClass/$1', ['as' => 'ajax_get_subjects_for_class']);
+
+    // Routes for Guru (Class View)
+    // This should be inside the main 'guru' group if ClassViewController is in App\Controllers\Guru
+    // And if it shares the same filter 'auth:Guru,Administrator Sistem'
+    // If ClassViewController is at App\Controllers\Guru\ClassViewController, then it's fine.
+    $routes->get('my-classes', 'ClassViewController::index', ['as' => 'guru_my_classes']);
+    $routes->get('my-classes/view-students/(:num)', 'ClassViewController::viewStudents/$1', ['as' => 'guru_view_class_students']);
+    $routes->get('my-schedule', 'ClassViewController::mySchedule', ['as' => 'guru_my_schedule']);
+
+    // Attendance Routes for Guru
+    $routes->get('attendance/select-schedule', 'AttendanceController::selectSchedule', ['as' => 'guru_attendance_select_schedule']);
+    $routes->get('attendance/form', 'AttendanceController::showAttendanceForm', ['as' => 'guru_attendance_form']); // Using GET to display form with params
+    $routes->post('attendance/save', 'AttendanceController::saveAttendance', ['as' => 'guru_attendance_save']);
 });
 
 // Siswa routes
 $routes->group('siswa', ['namespace' => 'App\Controllers\Siswa', 'filter' => 'auth:Siswa'], static function ($routes) {
     $routes->get('nilai', 'NilaiController::index', ['as' => 'siswa_nilai_index']);
+    $routes->get('my-schedule', 'ScheduleController::classSchedule', ['as' => 'siswa_my_schedule']);
+
+    // Subject Choice Routes for Siswa
+    $routes->get('subject-choices', 'SubjectChoiceController::index', ['as' => 'siswa_subject_choices_index']);
+    $routes->post('subject-choices/process', 'SubjectChoiceController::processChoice', ['as' => 'siswa_subject_choices_process']);
     // Add other siswa specific routes here
 });
 
