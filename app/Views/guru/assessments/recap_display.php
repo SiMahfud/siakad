@@ -41,7 +41,7 @@
 
                         <?php if (!empty($studentData['assessments'])) : ?>
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-sm">
+                                <table class="table table-bordered table-striped table-sm datatable-recap-guru" id="recapTableGuru_<?= esc($studentData['student_id']) ?>">
                                     <thead class="table-light">
                                         <tr>
                                             <th>Type</th>
@@ -52,6 +52,16 @@
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Title</th>
+                                            <th>Date</th>
+                                            <th>Score</th>
+                                            <th>Description</th>
+                                            <th></th> <!-- No filter for Actions -->
+                                        </tr>
+                                    </tfoot>
                                     <tbody>
                                         <?php foreach ($studentData['assessments'] as $assessment) : ?>
                                             <tr>
@@ -102,6 +112,116 @@
     }
     .table-sm td, .table-sm th {
         padding: 0.4rem;
+        vertical-align: middle; /* Vertically align content in cells */
+    }
+    /* Ensure action buttons fit well and prevent wrapping on smaller DataTables views */
+    .dataTables_wrapper .table td:last-child,
+    .dataTables_wrapper .table th:last-child {
+        white-space: nowrap;
+    }
+    /* Adjust search box alignment if needed */
+    .dataTables_filter {
+        margin-bottom: 0.5rem;
     }
 </style>
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables for each student's assessment table
+        $('.datatable-recap-guru').each(function() {
+            $(this).DataTable({
+                "responsive": true, // Make table responsive
+                "lengthChange": true, // Allow user to change number of entries shown
+                "autoWidth": false, // Disable auto-width calculation
+                "pageLength": 5, // Show 5 entries per page initially
+                "lengthMenu": [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ], // Options for entries per page
+                "dom": 'Bfrtip', // Add Buttons (B) to the DOM layout
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)' // Export all visible columns except the last one (Actions)
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    }
+                ],
+                "columnDefs": [
+                    {
+                        "orderable": false, // Disable sorting on 'Actions' column
+                        "searchable": false, // Disable searching on 'Actions' column
+                        "targets": 5 // Assuming 'Actions' is the 6th column (index 5)
+                    }
+                ],
+                // Setup for individual column filters
+                initComplete: function () {
+                    this.api().columns().every(function (colIdx) {
+                        // Target all columns except the last one (Actions column, index 5)
+                        if (colIdx < 5) {
+                            var column = this;
+                            var title = $(column.header()).text(); // Get header text
+                            var footerCell = $(column.footer());
+                            footerCell.html(''); // Clear existing content
+
+                            if (colIdx === 0) { // Special handling for "Type" column (index 0)
+                                var select = $('<select class="form-select form-select-sm"><option value="">All Types</option></select>')
+                                    .appendTo(footerCell)
+                                    .on('change', function () {
+                                        var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                                        column.search(val ? '^' + val + '$' : '', true, false).draw();
+                                    });
+                                select.append('<option value="Formatif">Formatif</option>');
+                                select.append('<option value="Sumatif">Sumatif</option>');
+                            } else { // For other filterable columns (Title, Date, Score, Description)
+                                var input = $('<input type="text" class="form-control form-control-sm" placeholder="Filter ' + title + '" />')
+                                    .appendTo(footerCell)
+                                    .on('keyup change clear', function () {
+                                        if (column.search() !== this.value) {
+                                            column.search(this.value).draw();
+                                        }
+                                    });
+                            }
+                        }
+                    });
+                },
+                // Optional: Set default order, e.g., by date descending
+                // "order": [[ 2, "desc" ]], // Assuming 'Date' is the 3rd column (index 2)
+                "language": { // Optional: customize language
+                    "search": "Filter:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "infoEmpty": "Showing 0 to 0 of 0 entries",
+                    "infoFiltered": "(filtered from _MAX_ total entries)",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                }
+            });
+        });
+    });
+</script>
 <?= $this->endSection() ?>

@@ -8,7 +8,13 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 *   **Bahasa**: PHP (saat ini menggunakan versi 8.3.6)
 *   **Database**: SQLite (lokasi: `writable/database.sqlite`) untuk pengembangan awal. Desain akhir menargetkan MySQL.
 *   **Manajemen Dependensi**: Composer
-*   **Frontend**: Bootstrap 5 (via CDN) telah diintegrasikan sebagai dasar UI. Menggunakan master layout `app/Views/layouts/admin_default.php`.
+*   **Frontend**:
+    *   Bootstrap 5 (via CDN) sebagai dasar UI.
+    *   jQuery (via CDN) untuk beberapa fungsionalitas JavaScript.
+    *   DataTables.net (via CDN) untuk tabel interaktif (sorting, filter, pagination).
+        *   Ekstensi Buttons DataTables.net (via CDN) untuk fungsionalitas export data.
+        *   Dependensi untuk Buttons: JSZip (untuk Excel), pdfmake (untuk PDF).
+    *   Menggunakan master layout `app/Views/layouts/admin_default.php`.
 
 ## 2. Setup Lingkungan Pengembangan Lokal
 
@@ -120,7 +126,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
         *   `saveAssessments()`: Memproses data batch dari form, melakukan validasi kustom per entri (misalnya, skor wajib untuk Sumatif, judul wajib jika ada skor/deskripsi), memvalidasi dengan `AssessmentModel`, dan menyimpan data valid menggunakan `insertBatch()`.
     *   Views terkait di `app/Views/guru/assessments/`:
         *   `select_context.php`: Form pemilihan kelas dan subjek.
-        *   `input_form.php`: Form input nilai utama. Menggunakan JavaScript untuk memungkinkan guru menambah/menghapus beberapa baris entri penilaian per siswa secara dinamis.
+            *   `input_form.php`: Form input nilai utama. Menggunakan JavaScript untuk memungkinkan guru menambah/menghapus beberapa baris entri penilaian per siswa secara dinamis. Kini juga menyertakan pagination sisi klien (JavaScript) untuk menangani daftar siswa yang panjang.
     *   Validasi input yang komprehensif telah diimplementasikan, baik di sisi controller (untuk logika yang lebih kompleks antar field) maupun di model (untuk aturan per field).
     *   Tampilan pesan error validasi telah disempurnakan di `input_form.php` untuk menampilkan pesan yang jelas, termasuk nama siswa, nomor entri (jika ada beberapa untuk satu siswa), dan nama field yang bermasalah, serta pesan error spesifik.
     *   Rute untuk modul penilaian guru (`/guru/assessments/...`) telah dibuat dan diproteksi menggunakan filter `auth` untuk peran 'Guru' dan 'Administrator Sistem'.
@@ -128,19 +134,19 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   **Penyempurnaan Tambahan (Modul Penilaian):**
         *   **[X] Filter Kelas/Mapel di Halaman Pemilihan Konteks (`AssessmentController::index`, `AssessmentController::showRecapSelection`):**
             *   Filter kelas berdasarkan status wali kelas atau penugasan guru di kelas.
-            *   Filter mata pelajaran berdasarkan penugasan guru di kelas yang dipilih (menggunakan tabel `teacher_class_subject_assignments`).
-            *   View `select_context.php` dan `select_recap_context.php` dimodifikasi untuk mendukung mekanisme filter ini.
+            *   Filter mata pelajaran berdasarkan penugasan guru di kelas yang dipilih (menggunakan tabel `teacher_class_subject_assignments`), diimplementasikan dengan AJAX untuk pembaruan dinamis tanpa reload halaman.
+            *   View `select_context.php` dan `select_recap_context.php` dimodifikasi untuk mendukung mekanisme filter AJAX ini.
+            *   Controller `AssessmentController` memiliki method `ajaxGetSubjectsForClass()` untuk menangani request AJAX.
         *   **[X] Fitur Edit dan Hapus Data Penilaian:**
             *   Method `editAssessment`, `updateAssessment`, dan `deleteAssessment` telah ditambahkan di `AssessmentController`.
             *   View `edit_form.php` untuk form edit penilaian.
             *   Rute terkait telah dibuat (`guru_assessment_edit`, `guru_assessment_update`, `guru_assessment_delete`).
             *   Hak akses dasar (pembuat asesmen atau admin) diimplementasikan untuk operasi edit/hapus.
-        *   **[P] Fitur Rekapitulasi Nilai (untuk Guru):**
-            *   Method `showRecapSelection` dan `displayRecap` telah ditambahkan di `AssessmentController`.
-            *   Method `getAssessmentsForRecap` ditambahkan di `AssessmentModel`.
-            *   Views `select_recap_context.php` dan `recap_display.php` telah dibuat.
-            *   Halaman rekap menampilkan daftar siswa dengan asesmen mereka per kelas dan mapel, dengan tombol "Edit" dan "Hapus" yang fungsional per entri penilaian.
-            *   Link navigasi "Rekap Nilai" ditambahkan untuk peran Guru dan Admin.
+        *   **[X] Fitur Rekapitulasi Nilai (Guru, Siswa, Orang Tua):**
+            *   **Guru**: Method `showRecapSelection` dan `displayRecap` di `AssessmentController`. Views `select_recap_context.php` dan `recap_display.php`. Tombol Edit/Hapus terintegrasi. Tabel rekap menggunakan DataTables.net untuk sorting, filter global & per kolom, pagination, dan export data (Copy, CSV, Excel, PDF, Print). Link navigasi "Rekap Nilai".
+            *   **Siswa**: `Siswa/NilaiController::index()` dan view `siswa/nilai/index.php` untuk menampilkan nilai siswa yang login. Tabel rekap menggunakan DataTables.net (termasuk export dan filter per kolom). Link navigasi "Transkrip Nilai".
+            *   **Orang Tua**: `Ortu/NilaiController::index()` (pemilihan anak) & `showStudentRecap()`. Views `ortu/nilai/select_student.php` & `ortu/nilai/recap_display.php`. Tabel rekap menggunakan DataTables.net (termasuk export dan filter per kolom). Link navigasi "Nilai Anak".
+            *   Model `AssessmentModel` memiliki `getAssessmentsForRecap()`. `StudentModel` memiliki `findByParentUserId()`. `TeacherClassSubjectAssignmentModel` memiliki `getDistinctSubjectsForClass()`.
 *   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
     *   Tabel `teacher_class_subject_assignments` dibuat (via Migrasi).
     *   Model `TeacherClassSubjectAssignmentModel` dibuat, termasuk method helper `getAssignmentsDetails()` dan `getSubjectsForTeacherInClass()`.
@@ -150,18 +156,15 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   Pengembangan fitur rekapitulasi nilai untuk Siswa dan Orang Tua.
-    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian (misalnya, AJAX untuk filter dinamis jika diperlukan).
-2.  **Penyempurnaan Hak Akses (Lanjutan)**:
+1.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data secara lebih komprehensif.
-3.  **Manajemen Siswa dalam Kelas**:
+2.  **Manajemen Siswa dalam Kelas**:
     *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`).
-4.  **Modul Projek P5**:
+3.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
-5.  **Modul Ekspor ke e-Rapor**:
+4.  **Modul Ekspor ke e-Rapor**:
     *   Ini adalah fitur kunci dan kompleks yang memerlukan koordinasi terkait format template Excel.
 
 ## 7. Perintah Berguna CodeIgniter Spark

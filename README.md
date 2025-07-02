@@ -81,7 +81,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Validasi input komprehensif (sisi controller & model) untuk tipe asesmen, judul, tanggal, skor (khusus sumatif), dan ketergantungan antar field.
     *   [X] Tampilan error validasi yang jelas di form input, menunjukkan nama siswa, entri keberapa, dan field yang bermasalah.
     *   [X] Telah dilakukan testing manual untuk berbagai skenario input (valid, invalid, berbagai tipe).
-    *   [P] Tampilan rekap nilai per siswa dan per mata pelajaran (Dasar untuk Guru: pemilihan konteks, tampilan tabel, integrasi aksi Edit/Hapus).
+    *   [X] Tampilan rekap nilai per siswa dan per mata pelajaran (Guru: pemilihan konteks, tampilan tabel, aksi Edit/Hapus; Siswa: tampilan nilai per mapel; Ortu: pemilihan anak & tampilan nilai anak).
     *   [X] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks (Filter kelas berdasarkan wali kelas; Filter mapel berdasarkan penugasan guru di kelas tersebut).
     *   [X] Fitur edit/hapus data penilaian yang sudah dimasukkan (Controller, View dasar, Rute, Hak Akses dasar, terintegrasi di halaman rekap).
 *   **[ ] Modul Projek P5**
@@ -124,11 +124,11 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 *   **Siswa**:
     *   [ ] Melihat jadwal pelajaran.
     *   [ ] Melihat rekap absensi pribadi.
-    *   [ ] Melihat transkrip nilai sementara.
+    *   [X] Melihat transkrip nilai sementara.
     *   [ ] Melakukan pemilihan mapel pilihan.
 *   **Orang Tua / Wali**:
     *   [ ] Memantau kehadiran dan rekap absensi anak.
-    *   [ ] Melihat transkrip nilai sementara anak.
+    *   [X] Melihat transkrip nilai sementara anak.
     *   [ ] Menerima pengumuman dan pesan.
 
 ## Setup Pengembangan Awal
