@@ -124,6 +124,39 @@
                 "autoWidth": false, // Disable auto-width calculation
                 "pageLength": 5, // Show 5 entries per page initially
                 "lengthMenu": [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ], // Options for entries per page
+                "dom": 'Bfrtip', // Add Buttons (B) to the DOM layout
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)' // Export all visible columns except the last one (Actions)
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':visible:not(:last-child)'
+                        }
+                    }
+                ],
                 "columnDefs": [
                     {
                         "orderable": false, // Disable sorting on 'Actions' column

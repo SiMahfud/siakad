@@ -118,6 +118,10 @@
                 "autoWidth": false,
                 "pageLength": 5,
                 "lengthMenu": [ [5, 10, 25, -1], [5, 10, 25, "All"] ],
+                "dom": 'Bfrtip', // Add Buttons
+                "buttons": [
+                    'copy', 'csv', 'excel', 'pdf', 'print'
+                ],
                 "language": {
                     "search": "Filter:",
                     "lengthMenu": "Show _MENU_ entries",

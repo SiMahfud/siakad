@@ -12,6 +12,8 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
     *   Bootstrap 5 (via CDN) sebagai dasar UI.
     *   jQuery (via CDN) untuk beberapa fungsionalitas JavaScript.
     *   DataTables.net (via CDN) untuk tabel interaktif (sorting, filter, pagination).
+        *   Ekstensi Buttons DataTables.net (via CDN) untuk fungsionalitas export data.
+        *   Dependensi untuk Buttons: JSZip (untuk Excel), pdfmake (untuk PDF).
     *   Menggunakan master layout `app/Views/layouts/admin_default.php`.
 
 ## 2. Setup Lingkungan Pengembangan Lokal
@@ -141,9 +143,9 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
             *   Rute terkait telah dibuat (`guru_assessment_edit`, `guru_assessment_update`, `guru_assessment_delete`).
             *   Hak akses dasar (pembuat asesmen atau admin) diimplementasikan untuk operasi edit/hapus.
         *   **[X] Fitur Rekapitulasi Nilai (Guru, Siswa, Orang Tua):**
-            *   **Guru**: Method `showRecapSelection` dan `displayRecap` di `AssessmentController`. Views `select_recap_context.php` dan `recap_display.php`. Tombol Edit/Hapus terintegrasi. Tabel rekap menggunakan DataTables.net untuk sorting, filter, pagination. Link navigasi "Rekap Nilai".
-            *   **Siswa**: `Siswa/NilaiController::index()` dan view `siswa/nilai/index.php` untuk menampilkan nilai siswa yang login. Tabel rekap menggunakan DataTables.net. Link navigasi "Transkrip Nilai".
-            *   **Orang Tua**: `Ortu/NilaiController::index()` (pemilihan anak) & `showStudentRecap()`. Views `ortu/nilai/select_student.php` & `ortu/nilai/recap_display.php`. Tabel rekap menggunakan DataTables.net. Link navigasi "Nilai Anak".
+            *   **Guru**: Method `showRecapSelection` dan `displayRecap` di `AssessmentController`. Views `select_recap_context.php` dan `recap_display.php`. Tombol Edit/Hapus terintegrasi. Tabel rekap menggunakan DataTables.net untuk sorting, filter, pagination, dan export data (Copy, CSV, Excel, PDF, Print). Link navigasi "Rekap Nilai".
+            *   **Siswa**: `Siswa/NilaiController::index()` dan view `siswa/nilai/index.php` untuk menampilkan nilai siswa yang login. Tabel rekap menggunakan DataTables.net (termasuk export). Link navigasi "Transkrip Nilai".
+            *   **Orang Tua**: `Ortu/NilaiController::index()` (pemilihan anak) & `showStudentRecap()`. Views `ortu/nilai/select_student.php` & `ortu/nilai/recap_display.php`. Tabel rekap menggunakan DataTables.net (termasuk export). Link navigasi "Nilai Anak".
             *   Model `AssessmentModel` memiliki `getAssessmentsForRecap()`. `StudentModel` memiliki `findByParentUserId()`. `TeacherClassSubjectAssignmentModel` memiliki `getDistinctSubjectsForClass()`.
 *   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
     *   Tabel `teacher_class_subject_assignments` dibuat (via Migrasi).
@@ -156,7 +158,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   **[P] Optimasi form input batch nilai**: Pagination sisi klien (JavaScript) sudah diimplementasikan. Pengembangan selanjutnya bisa berupa server-side pagination jika jumlah siswa sangat besar atau UI/UX yang lebih disempurnakan.
-    *   Penyempurnaan lebih lanjut pada fitur DataTables (misal, export, custom filter per kolom jika diperlukan).
+    *   **[P] Penyempurnaan lebih lanjut pada fitur DataTables**: Fitur export dasar (Copy, CSV, Excel, PDF, Print) sudah ditambahkan. Pengembangan selanjutnya bisa berupa custom filter per kolom, kustomisasi tampilan export, dll.
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data secara lebih komprehensif.

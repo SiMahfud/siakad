@@ -113,6 +113,11 @@
                 "autoWidth": false,
                 "pageLength": 5,
                 "lengthMenu": [ [5, 10, 25, -1], [5, 10, 25, "All"] ],
+                "dom": 'Bfrtip', // Add Buttons
+                "buttons": [
+                    'copy', 'csv', 'excel', 'pdf', 'print'
+                    // No need for exportOptions to exclude columns here
+                ],
                 // No columnDefs needed to disable sorting/searching for action column here
                 "language": {
                     "search": "Filter:",
