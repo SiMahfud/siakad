@@ -41,7 +41,7 @@
 
                         <?php if (!empty($studentData['assessments'])) : ?>
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-sm">
+                                <table class="table table-bordered table-striped table-sm datatable-recap-guru" id="recapTableGuru_<?= esc($studentData['student_id']) ?>">
                                     <thead class="table-light">
                                         <tr>
                                             <th>Type</th>
@@ -102,6 +102,52 @@
     }
     .table-sm td, .table-sm th {
         padding: 0.4rem;
+        vertical-align: middle; /* Vertically align content in cells */
+    }
+    /* Ensure action buttons fit well and prevent wrapping on smaller DataTables views */
+    .dataTables_wrapper .table td:last-child,
+    .dataTables_wrapper .table th:last-child {
+        white-space: nowrap;
+    }
+    /* Adjust search box alignment if needed */
+    .dataTables_filter {
+        margin-bottom: 0.5rem;
     }
 </style>
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables for each student's assessment table
+        $('.datatable-recap-guru').each(function() {
+            $(this).DataTable({
+                "responsive": true, // Make table responsive
+                "lengthChange": true, // Allow user to change number of entries shown
+                "autoWidth": false, // Disable auto-width calculation
+                "pageLength": 5, // Show 5 entries per page initially
+                "lengthMenu": [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ], // Options for entries per page
+                "columnDefs": [
+                    {
+                        "orderable": false, // Disable sorting on 'Actions' column
+                        "searchable": false, // Disable searching on 'Actions' column
+                        "targets": 5 // Assuming 'Actions' is the 6th column (index 5)
+                    }
+                ],
+                // Optional: Set default order, e.g., by date descending
+                // "order": [[ 2, "desc" ]], // Assuming 'Date' is the 3rd column (index 2)
+                "language": { // Optional: customize language
+                    "search": "Filter:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "infoEmpty": "Showing 0 to 0 of 0 entries",
+                    "infoFiltered": "(filtered from _MAX_ total entries)",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                }
+            });
+        });
+    });
+</script>
 <?= $this->endSection() ?>

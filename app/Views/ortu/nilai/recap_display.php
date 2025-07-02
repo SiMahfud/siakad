@@ -45,7 +45,7 @@
                     <div class="card-body">
                         <?php if (!empty($item['assessments'])) : ?>
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-sm" width="100%" cellspacing="0">
+                                <table class="table table-bordered table-striped table-sm datatable-recap-ortu" id="recapTableOrtu_<?= esc($student['id']) ?>_<?= esc($item['subject_info']['subject_id']) ?>" width="100%" cellspacing="0">
                                     <thead class="table-light">
                                         <tr>
                                             <th>Tanggal</th>
@@ -105,5 +105,34 @@
         padding: 0.4rem;
         vertical-align: middle;
     }
+    .dataTables_filter {
+        margin-bottom: 0.5rem;
+    }
 </style>
+<script>
+    $(document).ready(function() {
+        $('.datatable-recap-ortu').each(function() {
+            $(this).DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 5,
+                "lengthMenu": [ [5, 10, 25, -1], [5, 10, 25, "All"] ],
+                "language": {
+                    "search": "Filter:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "infoEmpty": "Showing 0 to 0 of 0 entries",
+                    "infoFiltered": "(filtered from _MAX_ total entries)",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                }
+            });
+        });
+    });
+</script>
 <?= $this->endSection() ?>
