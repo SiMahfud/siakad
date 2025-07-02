@@ -52,6 +52,16 @@
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Title</th>
+                                            <th>Date</th>
+                                            <th>Score</th>
+                                            <th>Description</th>
+                                            <th></th> <!-- No filter for Actions -->
+                                        </tr>
+                                    </tfoot>
                                     <tbody>
                                         <?php foreach ($studentData['assessments'] as $assessment) : ?>
                                             <tr>
@@ -164,6 +174,37 @@
                         "targets": 5 // Assuming 'Actions' is the 6th column (index 5)
                     }
                 ],
+                // Setup for individual column filters
+                initComplete: function () {
+                    this.api().columns().every(function (colIdx) {
+                        // Target all columns except the last one (Actions column, index 5)
+                        if (colIdx < 5) {
+                            var column = this;
+                            var title = $(column.header()).text(); // Get header text
+                            var footerCell = $(column.footer());
+                            footerCell.html(''); // Clear existing content
+
+                            if (colIdx === 0) { // Special handling for "Type" column (index 0)
+                                var select = $('<select class="form-select form-select-sm"><option value="">All Types</option></select>')
+                                    .appendTo(footerCell)
+                                    .on('change', function () {
+                                        var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                                        column.search(val ? '^' + val + '$' : '', true, false).draw();
+                                    });
+                                select.append('<option value="Formatif">Formatif</option>');
+                                select.append('<option value="Sumatif">Sumatif</option>');
+                            } else { // For other filterable columns (Title, Date, Score, Description)
+                                var input = $('<input type="text" class="form-control form-control-sm" placeholder="Filter ' + title + '" />')
+                                    .appendTo(footerCell)
+                                    .on('keyup change clear', function () {
+                                        if (column.search() !== this.value) {
+                                            column.search(this.value).draw();
+                                        }
+                                    });
+                            }
+                        }
+                    });
+                },
                 // Optional: Set default order, e.g., by date descending
                 // "order": [[ 2, "desc" ]], // Assuming 'Date' is the 3rd column (index 2)
                 "language": { // Optional: customize language

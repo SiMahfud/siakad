@@ -55,6 +55,15 @@
                                             <th>Deskripsi/Catatan</th>
                                         </tr>
                                     </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Judul Asesmen</th>
+                                            <th>Tipe</th>
+                                            <th>Skor</th>
+                                            <th>Deskripsi/Catatan</th>
+                                        </tr>
+                                    </tfoot>
                                     <tbody>
                                         <?php foreach ($item['assessments'] as $assessment) : ?>
                                             <tr>
@@ -122,6 +131,33 @@
                 "buttons": [
                     'copy', 'csv', 'excel', 'pdf', 'print'
                 ],
+                initComplete: function () {
+                    this.api().columns().every(function (colIdx) {
+                        var column = this;
+                        var title = $(column.header()).text();
+                        var footerCell = $(column.footer()).empty();
+
+                        // For "Tipe" column (index 2), use a select filter
+                        if (colIdx === 2) {
+                            var select = $('<select class="form-select form-select-sm"><option value="">All</option></select>')
+                                .appendTo(footerCell)
+                                .on('change', function () {
+                                    var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                                    column.search(val ? '^' + val + '$' : '', true, false).draw();
+                                });
+                            select.append('<option value="Formatif">Formatif</option>');
+                            select.append('<option value="Sumatif">Sumatif</option>');
+                        } else { // For other columns
+                            var input = $('<input type="text" class="form-control form-control-sm" placeholder="Filter ' + title + '" />')
+                                .appendTo(footerCell)
+                                .on('keyup change clear', function () {
+                                    if (column.search() !== this.value) {
+                                        column.search(this.value).draw();
+                                    }
+                                });
+                        }
+                    });
+                },
                 "language": {
                     "search": "Filter:",
                     "lengthMenu": "Show _MENU_ entries",
