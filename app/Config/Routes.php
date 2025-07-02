@@ -82,6 +82,13 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
 
     // AJAX route for dynamic subject loading
     $routes->get('assessments/ajax/get-subjects-for-class/(:num)', 'AssessmentController::ajaxGetSubjectsForClass/$1', ['as' => 'ajax_get_subjects_for_class']);
+
+    // Routes for Guru (Class View)
+    // This should be inside the main 'guru' group if ClassViewController is in App\Controllers\Guru
+    // And if it shares the same filter 'auth:Guru,Administrator Sistem'
+    // If ClassViewController is at App\Controllers\Guru\ClassViewController, then it's fine.
+    $routes->get('my-classes', 'ClassViewController::index', ['as' => 'guru_my_classes']);
+    $routes->get('my-classes/view-students/(:num)', 'ClassViewController::viewStudents/$1', ['as' => 'guru_view_class_students']);
 });
 
 // Siswa routes

@@ -76,16 +76,28 @@
                         </li>
                         <?php endif; ?>
 
-                        <!-- Assessment Menu for Guru and Admin -->
+                        <!-- Guru Menu (includes My Classes and Assessments) -->
                         <?php if (hasRole(['Guru', 'Administrator Sistem'])): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'guru/assessments') !== false) ? 'active' : '' ?>"
-                                   href="#" id="assessmentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Penilaian
+                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'guru/my-classes') !== false || strpos(uri_string(), 'guru/assessments') !== false) ? 'active' : '' ?>"
+                                   href="#" id="guruMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                   <i class="bi bi-chalkboard-teacher"></i> Menu Guru
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="assessmentDropdown">
-                                    <li><a class="dropdown-item <?= (uri_string() == 'guru/assessments' || uri_string() == 'guru/assessments/input') ? 'active' : '' ?>" href="<?= site_url('guru/assessments') ?>">Input Nilai</a></li>
-                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'guru/assessments/recap') !== false || strpos(uri_string(), 'guru/assessments/show-recap') !== false) ? 'active' : '' ?>" href="<?= route_to('guru_assessment_recap_select') ?>">Rekap Nilai</a></li>
+                                <ul class="dropdown-menu" aria-labelledby="guruMenuDropdown">
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'guru/my-classes') !== false) ? 'active' : '' ?>"
+                                           href="<?= site_url('guru/my-classes') ?>">Kelas & Siswa Saya</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Penilaian</h6></li>
+                                    <li>
+                                        <a class="dropdown-item <?= (uri_string() == 'guru/assessments' || uri_string() == 'guru/assessments/input') ? 'active' : '' ?>"
+                                           href="<?= site_url('guru/assessments') ?>">Input Nilai</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'guru/assessments/recap') !== false || strpos(uri_string(), 'guru/assessments/show-recap') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('guru_assessment_recap_select') ?>">Rekap Nilai</a>
+                                    </li>
                                 </ul>
                             </li>
                         <?php endif; ?>

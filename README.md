@@ -113,9 +113,11 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 *   **Guru Mata Pelajaran**:
     *   [ ] Menginput absensi harian.
     *   [P] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada.
+    *   [X] Melihat daftar kelas yang diajar dan siswa di dalamnya.
     *   [ ] Mengunggah materi ajar/tugas.
 *   **Wali Kelas**:
     *   (Semua fitur Guru Mata Pelajaran)
+    *   [X] Melihat daftar siswa di kelas perwalian.
     *   [ ] Memantau rekapitulasi absensi dan nilai kelas perwalian.
     *   [ ] Menginput catatan perilaku/perkembangan siswa.
     *   [ ] Membimbing siswa memilih mapel pilihan.

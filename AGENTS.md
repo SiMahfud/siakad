@@ -158,9 +158,11 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **Penyempurnaan Hak Akses (Lanjutan)**:
+2.  **[X] Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
-    *   Pengecekan kepemilikan data secara lebih komprehensif.
+        *   Guru dapat melihat daftar kelas yang mereka ampu (sebagai wali kelas atau pengajar mapel).
+        *   Guru dapat melihat daftar siswa di kelas-kelas yang relevan tersebut.
+    *   Pengecekan kepemilikan data secara lebih komprehensif (contoh pada modul asesmen untuk edit/hapus).
 3.  **[X] Manajemen Siswa dalam Kelas**:
     *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`) - **SELESAI**.
 4.  **Modul Projek P5**:
