@@ -76,8 +76,16 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 ## 5. Status Implementasi Saat Ini (untuk Pengembang)
 
 *   **[X] Fondasi Proyek**: PHP, Composer, CodeIgniter 4 setup.
-*   **[X] Database**: Skema database awal (semua tabel dari dokumen desain) telah dimigrasikan. SQLite digunakan.
-*   **[X] Seeding**: Seeder untuk tabel `roles` telah dibuat dan dijalankan.
+*   **[X] Database**: Skema database (semua tabel dari dokumen desain dan `teacher_class_subject_assignments`) telah dimigrasikan. SQLite digunakan.
+*   **[X] Seeding**: Seeder komprehensif telah dibuat dan dijalankan via `DatabaseSeeder`:
+    *   `RoleSeeder`: Mengisi tabel `roles`.
+    *   `UserSeeder`: Membuat user default untuk setiap peran (admin, staf, kepsek, guru1, guru2, siswa1, ortu1).
+    *   `TeacherSeeder`: Membuat data guru untuk user `guru1` dan `guru2`.
+    *   `StudentSeeder`: Membuat data siswa untuk user `siswa1` dan mengaitkan dengan `ortu1`.
+    *   `SubjectSeeder`: Mengisi beberapa mata pelajaran default.
+    *   `ClassSeeder`: Mengisi beberapa kelas default, termasuk penetapan wali kelas.
+    *   `ClassStudentSeeder`: Memasukkan siswa default ke kelas default.
+    *   `TeacherClassSubjectAssignmentSeeder`: Membuat beberapa penugasan mengajar default.
 *   **[X] Modul Data Induk (MVP)**:
     *   CRUD dasar (Create, Read, Update, Delete) untuk Siswa, Guru, Mata Pelajaran, dan Kelas (Rombel) telah diimplementasikan.
     *   Ini termasuk model, controller namespaced admin, views dasar, dan routing.
