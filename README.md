@@ -65,7 +65,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
         *   [X] Views (daftar, tambah penugasan - dengan Bootstrap 5).
 *   **[P] Modul Akademik Harian**
     *   [X] Manajemen Jadwal Pelajaran (Admin: CRUD; Guru & Siswa: View)
-    *   [ ] Input Presensi Harian oleh Guru
+    *   [P] Input Presensi Harian oleh Guru (Guru: Input; Rekap Admin/Wali Kelas: Belum)
     *   [ ] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)
 *   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal)**
     *   [X] Struktur Tabel Database (`assessments`)
@@ -100,6 +100,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Mengelola akun dan hak akses semua pengguna (CRUD Users).
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
     *   [X] Mengelola Jadwal Pelajaran (CRUD).
+    *   [ ] Melihat Rekap Presensi (Belum).
     *   [ ] Mengatur konfigurasi tahun ajaran, data sekolah, struktur kurikulum.
     *   [ ] Mengelola data master tema dan dimensi P5.
     *   [ ] Maintenance dan backup database.
@@ -107,21 +108,23 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
     *   [X] Mengatur pembagian siswa ke dalam rombel.
     *   [X] Mengelola Jadwal Pelajaran (CRUD).
+    *   [ ] Melihat Rekap Presensi (Belum).
 *   **Kepala Sekolah**:
     *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
+    *   [ ] Melihat Rekap Presensi (Belum).
     *   [ ] Dasbor eksekutif.
     *   [ ] Memantau aktivitas guru.
     *   [ ] Membuat dan menyebarkan pengumuman.
 *   **Guru Mata Pelajaran**:
     *   [X] Melihat Jadwal Mengajar.
-    *   [ ] Menginput absensi harian.
+    *   [X] Menginput Presensi Harian.
     *   [P] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada.
     *   [X] Melihat daftar kelas yang diajar dan siswa di dalamnya.
     *   [ ] Mengunggah materi ajar/tugas.
 *   **Wali Kelas**:
     *   (Semua fitur Guru Mata Pelajaran)
     *   [X] Melihat daftar siswa di kelas perwalian.
-    *   [ ] Memantau rekapitulasi absensi dan nilai kelas perwalian.
+    *   [ ] Memantau rekapitulasi absensi dan nilai kelas perwalian (Rekap Presensi Belum).
     *   [ ] Menginput catatan perilaku/perkembangan siswa.
     *   [ ] Membimbing siswa memilih mapel pilihan.
     *   [ ] Validasi Kelengkapan Nilai.

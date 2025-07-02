@@ -99,6 +99,11 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
     $routes->get('my-classes', 'ClassViewController::index', ['as' => 'guru_my_classes']);
     $routes->get('my-classes/view-students/(:num)', 'ClassViewController::viewStudents/$1', ['as' => 'guru_view_class_students']);
     $routes->get('my-schedule', 'ClassViewController::mySchedule', ['as' => 'guru_my_schedule']);
+
+    // Attendance Routes for Guru
+    $routes->get('attendance/select-schedule', 'AttendanceController::selectSchedule', ['as' => 'guru_attendance_select_schedule']);
+    $routes->get('attendance/form', 'AttendanceController::showAttendanceForm', ['as' => 'guru_attendance_form']); // Using GET to display form with params
+    $routes->post('attendance/save', 'AttendanceController::saveAttendance', ['as' => 'guru_attendance_save']);
 });
 
 // Siswa routes

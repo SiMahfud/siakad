@@ -162,12 +162,18 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Navigasi admin diperbarui untuk menyertakan link ke Manajemen Jadwal.
     *   Guru dapat melihat jadwal mengajarnya sendiri via `Guru/ClassViewController::mySchedule()` dan view `guru/schedules/my_schedule.php`. Navigasi guru diperbarui.
     *   Siswa dapat melihat jadwal kelasnya via `Siswa/ScheduleController::classSchedule()` dan view `siswa/schedules/class_schedule.php`. Navigasi siswa diperbarui.
+*   **[P] Modul Akademik Harian - Input Presensi Harian oleh Guru**:
+    *   Tabel `attendances` dibuat (via Migrasi) untuk mencatat kehadiran siswa per jadwal per tanggal.
+    *   Model `AttendanceModel` dibuat dengan konstanta status, validasi, dan method helper.
+    *   Controller `Guru/AttendanceController` dibuat dengan method `selectSchedule`, `showAttendanceForm`, dan `saveAttendance`.
+    *   Views `guru/attendances/select_schedule.php` dan `guru/attendances/attendance_form.php` dibuat.
+    *   Rute dan navigasi guru diperbarui.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Akademik Harian (Lanjutan)**:
-    *   Input Presensi Harian oleh Guru.
     *   Pemilihan Mata Pelajaran Pilihan (Siswa Fase F).
+    *   Rekapitulasi presensi untuk Admin/Wali Kelas (opsional dari tahap presensi).
 2.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
 3.  **[X] Penyempurnaan Hak Akses (Lanjutan)**:

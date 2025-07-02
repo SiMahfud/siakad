@@ -94,6 +94,10 @@
                                         <a class="dropdown-item <?= (strpos(uri_string(), 'guru/my-schedule') !== false) ? 'active' : '' ?>"
                                            href="<?= site_url('guru/my-schedule') ?>">Jadwal Mengajar Saya</a>
                                     </li>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'guru/attendance') !== false) ? 'active' : '' ?>"
+                                           href="<?= site_url('guru/attendance/select-schedule') ?>">Input Presensi Harian</a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Penilaian</h6></li>
                                     <li>
