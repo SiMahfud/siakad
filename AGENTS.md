@@ -124,7 +124,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
         *   `saveAssessments()`: Memproses data batch dari form, melakukan validasi kustom per entri (misalnya, skor wajib untuk Sumatif, judul wajib jika ada skor/deskripsi), memvalidasi dengan `AssessmentModel`, dan menyimpan data valid menggunakan `insertBatch()`.
     *   Views terkait di `app/Views/guru/assessments/`:
         *   `select_context.php`: Form pemilihan kelas dan subjek.
-        *   `input_form.php`: Form input nilai utama. Menggunakan JavaScript untuk memungkinkan guru menambah/menghapus beberapa baris entri penilaian per siswa secara dinamis.
+            *   `input_form.php`: Form input nilai utama. Menggunakan JavaScript untuk memungkinkan guru menambah/menghapus beberapa baris entri penilaian per siswa secara dinamis. Kini juga menyertakan pagination sisi klien (JavaScript) untuk menangani daftar siswa yang panjang.
     *   Validasi input yang komprehensif telah diimplementasikan, baik di sisi controller (untuk logika yang lebih kompleks antar field) maupun di model (untuk aturan per field).
     *   Tampilan pesan error validasi telah disempurnakan di `input_form.php` untuk menampilkan pesan yang jelas, termasuk nama siswa, nomor entri (jika ada beberapa untuk satu siswa), dan nama field yang bermasalah, serta pesan error spesifik.
     *   Rute untuk modul penilaian guru (`/guru/assessments/...`) telah dibuat dan diproteksi menggunakan filter `auth` untuk peran 'Guru' dan 'Administrator Sistem'.
@@ -155,7 +155,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   Optimasi form input batch nilai (misalnya, pagination internal atau UI yang lebih baik untuk banyak siswa).
+    *   **[P] Optimasi form input batch nilai**: Pagination sisi klien (JavaScript) sudah diimplementasikan. Pengembangan selanjutnya bisa berupa server-side pagination jika jumlah siswa sangat besar atau UI/UX yang lebih disempurnakan.
     *   Penyempurnaan lebih lanjut pada fitur DataTables (misal, export, custom filter per kolom jika diperlukan).
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).

@@ -65,6 +65,8 @@
 
                 <p><strong>Instructions:</strong> Fill in the assessment details for each student. You can add multiple assessment entries per student using the "Add Row" button for that student. Ensure "Assessment Date" and "Type" are selected for each entry you wish to save. "Score" is primarily for Summative types.</p>
 
+                <div id="paginationControlsTop" class="pagination-controls my-3"></div>
+
                 <div class="table-responsive">
                     <table class="table table-bordered" id="assessmentTable">
                         <thead>
@@ -78,10 +80,10 @@
                                 <th style="width: 5%;">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="studentEntriesContainer"> <?php // Changed from just tbody ?>
                             <?php if (!empty($students) && is_array($students)) : ?>
                                 <?php foreach ($students as $student) : ?>
-                                    <tr class="student-row" data-student-id="<?= esc($student['id']) ?>">
+                                    <tr class="student-row student-entry-block" data-student-id="<?= esc($student['id']) ?>"> <?php // Added student-entry-block class ?>
                                         <td><?= esc($student['full_name']) ?><br><small>(NISN: <?= esc($student['nisn']) ?>)</small></td>
                                         <td colspan="5">
                                             <table class="table table-sm mb-0 inner-assessment-table">
@@ -119,6 +121,8 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div id="paginationControlsBottom" class="pagination-controls mt-3"></div>
 
                 <?php if (!empty($students)) : ?>
                 <div class="mt-4">
@@ -175,6 +179,159 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // Pagination Logic
+    const itemsPerPage = 5; // Show 5 students per page
+    const studentEntriesContainer = document.getElementById('studentEntriesContainer');
+    const studentBlocks = studentEntriesContainer ? Array.from(studentEntriesContainer.querySelectorAll('tr.student-entry-block')) : [];
+    const totalItems = studentBlocks.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    let currentPage = 1;
+
+    function displayPage(page) {
+        if (!studentEntriesContainer || studentBlocks.length === 0) return;
+
+        currentPage = page;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        studentBlocks.forEach((block, index) => {
+            if (index >= startIndex && index < endIndex) {
+                block.style.display = ''; // Show row (tr default display is table-row)
+            } else {
+                block.style.display = 'none'; // Hide row
+            }
+        });
+        updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+        document.querySelectorAll('.pagination-controls').forEach(container => {
+            if (!container) return;
+
+            let controlsHtml = '';
+            if (totalPages > 1) {
+                controlsHtml += `<nav aria-label="Page navigation"><ul class="pagination pagination-sm justify-content-center">`;
+
+                // Previous Button
+                controlsHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                 </li>`;
+
+                // Page Numbers (simplified: show current and a few around it, or just Prev/Next and Page X of Y)
+                // Simple Page X of Y
+                 controlsHtml += `<li class="page-item disabled"><span class="page-link">Page ${currentPage} of ${totalPages}</span></li>`;
+
+                // Next Button
+                controlsHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                 </li>`;
+                controlsHtml += `</ul></nav>`;
+            }
+            container.innerHTML = controlsHtml;
+
+            // Add event listeners to new controls
+            container.querySelectorAll('.page-link[data-page]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!this.parentElement.classList.contains('disabled')) {
+                        const page = parseInt(this.dataset.page);
+                        displayPage(page);
+                    }
+                });
+            });
+        });
+    }
+
+    if (totalItems > 0) {
+        displayPage(1); // Display the first page initially
+    } else {
+        // Hide pagination controls if no students
+        document.querySelectorAll('.pagination-controls').forEach(container => container.innerHTML = '');
+    }
+
+    // Pagination Logic
+    const itemsPerPage = 5; // Show 5 students per page
+    const studentEntriesContainer = document.getElementById('studentEntriesContainer');
+    const studentBlocks = studentEntriesContainer ? Array.from(studentEntriesContainer.querySelectorAll('tr.student-entry-block')) : [];
+    const totalItems = studentBlocks.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    let currentPage = 1;
+
+    function displayPage(page) {
+        if (!studentEntriesContainer || studentBlocks.length === 0) return;
+
+        currentPage = page;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        studentBlocks.forEach((block, index) => {
+            if (index >= startIndex && index < endIndex) {
+                block.style.display = ''; // Show row (tr default display is table-row)
+            } else {
+                block.style.display = 'none'; // Hide row
+            }
+        });
+        updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+        document.querySelectorAll('.pagination-controls').forEach(container => {
+            if (!container) return;
+
+            let controlsHtml = '';
+            if (totalPages > 1) {
+                controlsHtml += `<nav aria-label="Page navigation"><ul class="pagination pagination-sm justify-content-center">`;
+
+                // Previous Button
+                controlsHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                 </li>`;
+
+                // Page Numbers (simplified: show current and a few around it, or just Prev/Next and Page X of Y)
+                // Simple Page X of Y
+                 controlsHtml += `<li class="page-item disabled"><span class="page-link">Page ${currentPage} of ${totalPages}</span></li>`;
+
+                // Next Button
+                controlsHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                 </li>`;
+                controlsHtml += `</ul></nav>`;
+            }
+            container.innerHTML = controlsHtml;
+
+            // Add event listeners to new controls
+            container.querySelectorAll('.page-link[data-page]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!this.parentElement.classList.contains('disabled')) {
+                        const page = parseInt(this.dataset.page);
+                        displayPage(page);
+                    }
+                });
+            });
+        });
+    }
+
+    if (totalItems > 0) {
+        displayPage(1); // Display the first page initially
+    } else {
+        // Hide pagination controls if no students
+        document.querySelectorAll('.pagination-controls').forEach(container => container.innerHTML = '');
+    }
 });
 </script>
+<style>
+    .pagination-controls {
+        /* margin-top: 1rem; margin-bottom: 1rem; already added via my-3 on the div */
+    }
+</style>
 <?= $this->endSection() ?>
