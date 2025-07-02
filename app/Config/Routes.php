@@ -27,10 +27,21 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
 
     // Data Induk: Administrator Sistem & Staf Tata Usaha (CRUD), Kepala Sekolah (Read-only via controller logic)
     $dataIndukFilter = 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah'; // Role IDs 1, 2, 3
+    $dataIndukEditFilter = 'auth:Administrator Sistem,Staf Tata Usaha'; // For CRUD actions beyond viewing
+
     $routes->resource('students', ['controller' => 'StudentController', 'filter' => $dataIndukFilter]);
     $routes->resource('teachers', ['controller' => 'TeacherController', 'filter' => $dataIndukFilter]);
     $routes->resource('subjects', ['controller' => 'SubjectController', 'filter' => $dataIndukFilter]);
+
+    // Class Management (CRUD)
     $routes->resource('classes', ['controller' => 'ClassController', 'filter' => $dataIndukFilter]);
+
+    // Class Student Management specific routes
+    // Ensure these routes are protected by a filter that allows 'Administrator Sistem' and 'Staf Tata Usaha'
+    $routes->get('classes/manage-students/(:num)', 'ClassController::manageStudents/$1', ['as' => 'admin_class_manage_students', 'filter' => $dataIndukEditFilter]);
+    $routes->post('classes/add-student/(:num)', 'ClassController::addStudentToClass/$1', ['as' => 'admin_class_add_student', 'filter' => $dataIndukEditFilter]);
+    $routes->get('classes/remove-student/(:num)/(:num)', 'ClassController::removeStudentFromClass/$1/$2', ['as' => 'admin_class_remove_student', 'filter' => $dataIndukEditFilter]);
+
 
     // Teacher Class Subject Assignments Management: Only Administrator Sistem
     $routes->resource('assignments', [

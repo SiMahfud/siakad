@@ -56,10 +56,9 @@
                                         <a href="<?= site_url('admin/classes/delete/' . $class_item['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone and might affect related student records.');">
                                             <i class="bi bi-trash-fill"></i>
                                         </a>
-                                        <!-- Add link to manage students in class later -->
-                                        <!-- <a href="<?= site_url('admin/classes/students/' . $class_item['id']) ?>" class="btn btn-info btn-sm" title="Manage Students">
-                                            <i class="bi bi-people-fill"></i>
-                                        </a> -->
+                                        <a href="<?= site_url('admin/classes/manage-students/' . $class_item['id']) ?>" class="btn btn-info btn-sm" title="Manage Students">
+                                            <i class="bi bi-people-fill"></i> Manage Students
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

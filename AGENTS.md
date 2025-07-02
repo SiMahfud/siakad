@@ -161,8 +161,8 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data secara lebih komprehensif.
-3.  **Manajemen Siswa dalam Kelas**:
-    *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`).
+3.  **[X] Manajemen Siswa dalam Kelas**:
+    *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`) - **SELESAI**.
 4.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
