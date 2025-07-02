@@ -106,24 +106,9 @@ class AssessmentController extends BaseController
                 }
 
                 if ($selectedClassId) {
-                    $filteredSubjects = $this->teacherClassSubjectAssignmentModel
-                                            ->getSubjectsForTeacherInClass($teacherId, $selectedClassId);
-                } else {
-                    // Jika kelas belum dipilih ATAU guru bisa memilih banyak kelas dan belum ada pilihan
-                    // Tampilkan semua mapel yang diajar guru tersebut di SEMUA kelasnya, atau semua mapel jika admin
-                    if(isAdmin()){
-                        $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
-                    } else {
-                        $allTeacherSubjects = $this->teacherClassSubjectAssignmentModel
-                            ->distinct()
-                            ->select('subjects.*')
-                            ->join('subjects', 'subjects.id = teacher_class_subject_assignments.subject_id')
-                            ->where('teacher_class_subject_assignments.teacher_id', $teacherId)
-                            ->orderBy('subjects.subject_name', 'ASC')
-                            ->findAll();
-                        $filteredSubjects = $allTeacherSubjects ?: [];
-                    }
+                    // Subjects will be loaded by AJAX, but keep $selectedClassId for the view
                 }
+                 // $filteredSubjects is not pre-populated here anymore, AJAX will handle it.
             }
         } else { // User bukan Guru dan bukan Admin (seharusnya tidak bisa akses karena filter rute)
             session()->setFlashdata('error', 'Access denied or teacher data not found.');
@@ -138,10 +123,10 @@ class AssessmentController extends BaseController
         $data = [
             'pageTitle'       => 'Select Class and Subject for Assessment',
             'classes'         => $filteredClasses,
-            'subjects'        => $filteredSubjects,
-            'selectedClassId' => $selectedClassId, // Kirim class_id yang terpilih ke view
-            'formAction'      => site_url('guru/assessments/input'), // Action untuk ke form input
-            'currentUrl'      => site_url('guru/assessments') // URL saat ini untuk refresh dengan class_id
+            // 'subjects'        => $filteredSubjects, // No longer sending subjects directly
+            'selectedClassId' => $selectedClassId,
+            'formAction'      => site_url('guru/assessments/input'),
+            // 'currentUrl'      => site_url('guru/assessments') // Not needed if AJAX handles subject loading without page reload for filter
         ];
         return view('guru/assessments/select_context', $data);
     }
@@ -528,22 +513,9 @@ class AssessmentController extends BaseController
                 }
 
                 if ($selectedClassId) {
-                    $filteredSubjects = $this->teacherClassSubjectAssignmentModel
-                                            ->getSubjectsForTeacherInClass($teacherId, $selectedClassId);
-                } else {
-                    if(isAdmin()){
-                        $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
-                    } else {
-                        $allTeacherSubjects = $this->teacherClassSubjectAssignmentModel
-                            ->distinct()
-                            ->select('subjects.*')
-                            ->join('subjects', 'subjects.id = teacher_class_subject_assignments.subject_id')
-                            ->where('teacher_class_subject_assignments.teacher_id', $teacherId)
-                            ->orderBy('subjects.subject_name', 'ASC')
-                            ->findAll();
-                        $filteredSubjects = $allTeacherSubjects ?: [];
-                    }
+                    // Subjects will be loaded by AJAX
                 }
+                // $filteredSubjects is not pre-populated here anymore, AJAX will handle it.
             }
         } else { // User bukan Guru dan bukan Admin
             session()->setFlashdata('error', 'Access denied or teacher data not found.');
@@ -557,10 +529,10 @@ class AssessmentController extends BaseController
         $data = [
             'pageTitle'       => 'Select Class and Subject for Recap',
             'classes'         => $filteredClasses,
-            'subjects'        => $filteredSubjects,
+            // 'subjects'        => $filteredSubjects, // No longer sending subjects directly
             'selectedClassId' => $selectedClassId,
             'formAction'      => site_url('guru/assessments/show-recap'),
-            'currentUrl'      => site_url('guru/assessments/recap') // URL saat ini untuk refresh
+            // 'currentUrl'      => site_url('guru/assessments/recap') // Not needed for AJAX
         ];
         return view('guru/assessments/select_recap_context', $data);
     }
@@ -614,5 +586,41 @@ class AssessmentController extends BaseController
         ];
 
         return view('guru/assessments/recap_display', $data);
+    }
+
+    /**
+     * AJAX handler to get subjects for a given class, filtered by the logged-in teacher.
+     * If the user is a pure Admin (not linked to a teacher record), it returns all subjects taught in that class.
+     *
+     * @param int $classId
+     * @return \CodeIgniter\HTTP\ResponseInterface
+     */
+    public function ajaxGetSubjectsForClass(int $classId)
+    {
+        if (!$this->request->isAJAX()) {
+            // Or throw a 403/404 error
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Direct access not allowed.']);
+        }
+
+        $loggedInUserId = current_user_id();
+        $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+        $teacherId = $teacher ? $teacher['id'] : null;
+
+        $subjects = [];
+
+        if ($classId > 0) { // Basic validation for classId
+            if ($teacherId) { // User is a Teacher (or Admin who is also a Teacher)
+                $subjects = $this->teacherClassSubjectAssignmentModel->getSubjectsForTeacherInClass($teacherId, $classId);
+            } elseif (isAdmin()) { // User is a pure Admin (not a Teacher)
+                // Admin gets to see all subjects taught in that class by any teacher
+                $subjects = $this->teacherClassSubjectAssignmentModel->getDistinctSubjectsForClass($classId);
+                 if (empty($subjects)) { // Fallback for admin if no assignments exist for the class
+                    // $subjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+                 }
+            }
+            // If not a teacher and not an admin, $subjects remains empty, access should be blocked by route filter anyway.
+        }
+
+        return $this->response->setJSON($subjects);
     }
 }

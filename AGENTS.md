@@ -128,8 +128,9 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   **Penyempurnaan Tambahan (Modul Penilaian):**
         *   **[X] Filter Kelas/Mapel di Halaman Pemilihan Konteks (`AssessmentController::index`, `AssessmentController::showRecapSelection`):**
             *   Filter kelas berdasarkan status wali kelas atau penugasan guru di kelas.
-            *   Filter mata pelajaran berdasarkan penugasan guru di kelas yang dipilih (menggunakan tabel `teacher_class_subject_assignments`).
-            *   View `select_context.php` dan `select_recap_context.php` dimodifikasi untuk mendukung mekanisme filter ini.
+            *   Filter mata pelajaran berdasarkan penugasan guru di kelas yang dipilih (menggunakan tabel `teacher_class_subject_assignments`), diimplementasikan dengan AJAX untuk pembaruan dinamis tanpa reload halaman.
+            *   View `select_context.php` dan `select_recap_context.php` dimodifikasi untuk mendukung mekanisme filter AJAX ini.
+            *   Controller `AssessmentController` memiliki method `ajaxGetSubjectsForClass()` untuk menangani request AJAX.
         *   **[X] Fitur Edit dan Hapus Data Penilaian:**
             *   Method `editAssessment`, `updateAssessment`, dan `deleteAssessment` telah ditambahkan di `AssessmentController`.
             *   View `edit_form.php` untuk form edit penilaian.
@@ -150,7 +151,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian (misalnya, AJAX untuk filter dinamis jika diperlukan untuk pemilihan kelas/mapel guru, tampilan rekap yang lebih interaktif).
+    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian (misalnya, tampilan rekap yang lebih interaktif, optimasi form input batch).
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data secara lebih komprehensif.

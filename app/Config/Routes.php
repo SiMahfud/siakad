@@ -68,6 +68,9 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
     // Routes for assessment recap
     $routes->get('assessments/recap', 'AssessmentController::showRecapSelection', ['as' => 'guru_assessment_recap_select']);
     $routes->get('assessments/show-recap', 'AssessmentController::displayRecap', ['as' => 'guru_assessment_recap_display']); // Will take class_id and subject_id as GET params
+
+    // AJAX route for dynamic subject loading
+    $routes->get('assessments/ajax/get-subjects-for-class/(:num)', 'AssessmentController::ajaxGetSubjectsForClass/$1', ['as' => 'ajax_get_subjects_for_class']);
 });
 
 // Siswa routes
