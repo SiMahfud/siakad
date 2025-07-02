@@ -16,6 +16,7 @@ class AssessmentController extends BaseController
     protected $subjectModel;
     protected $studentModel;
     protected $teacherModel;
+    protected $teacherClassSubjectAssignmentModel; // Added
 
     public function __construct()
     {
@@ -34,6 +35,7 @@ class AssessmentController extends BaseController
         $this->subjectModel = new SubjectModel();
         $this->studentModel = new StudentModel();
         $this->teacherModel = new TeacherModel();
+        $this->teacherClassSubjectAssignmentModel = new \App\Models\TeacherClassSubjectAssignmentModel(); // Added
     }
 
     /**
@@ -44,47 +46,102 @@ class AssessmentController extends BaseController
     {
         $loggedInUserId = current_user_id();
         $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+        $teacherId = $teacher ? $teacher['id'] : null;
 
         $filteredClasses = [];
-        $allSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+        $filteredSubjects = [];
+        $selectedClassId = $this->request->getGet('class_id'); // Untuk mempertahankan pilihan kelas
 
-        if ($teacher) {
-            $teacherId = $teacher['id'];
-            // Cek apakah guru ini adalah wali kelas
-            $waliKelasClasses = $this->classModel->where('wali_kelas_id', $teacherId)
-                                                ->orderBy('class_name', 'ASC')
-                                                ->findAll();
-
-            if (!empty($waliKelasClasses)) {
-                // Jika guru adalah wali kelas, tampilkan hanya kelas perwaliannya
-                $filteredClasses = $waliKelasClasses;
-            } else {
-                // Jika guru bukan wali kelas di kelas manapun, tampilkan semua kelas
-                // Ini asumsi agar guru mapel non-wali kelas tetap bisa input.
-                // Idealnya, ini akan diganti dengan query ke tabel penugasan guru-mapel-kelas.
+        if ($teacherId || isAdmin()) {
+            if (isAdmin() && !$teacherId) { // Admin murni, bukan guru
                 $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+                // Jika admin dan kelas sudah dipilih, tampilkan semua mapel untuk kelas itu (atau semua mapel jika tidak ada assignment)
+                // Namun, admin sebaiknya melihat semua mapel jika tidak ada konteks guru.
+                // Untuk admin, jika kelas DIPILIH, filter mapel berdasarkan kelas itu (jika ada assignment) atau semua mapel.
+                // Jika kelas BELUM DIPILIH, tampilkan semua mapel.
+                if ($selectedClassId) {
+                     // Admin bisa melihat semua mapel yang diajarkan di kelas tersebut, atau semua mapel jika tidak ada assignment spesifik
+                     // Ini bisa disempurnakan lagi, untuk admin mungkin selalu tampilkan semua mapel saja.
+                    $assignedSubjects = $this->teacherClassSubjectAssignmentModel
+                        ->distinct()
+                        ->select('subjects.*')
+                        ->join('subjects', 'subjects.id = teacher_class_subject_assignments.subject_id')
+                        ->where('teacher_class_subject_assignments.class_id', $selectedClassId)
+                        ->orderBy('subjects.subject_name', 'ASC')
+                        ->findAll();
+                    if(!empty($assignedSubjects)){
+                        $filteredSubjects = $assignedSubjects;
+                    } else {
+                        $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+                    }
+                } else {
+                    $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+                }
+
+            } else if ($teacherId) { // User adalah Guru (mungkin juga admin)
+                $waliKelasClasses = $this->classModel->where('wali_kelas_id', $teacherId)
+                                                    ->orderBy('class_name', 'ASC')
+                                                    ->findAll();
+                if (!empty($waliKelasClasses)) {
+                    $filteredClasses = $waliKelasClasses;
+                    // Jika wali kelas dan hanya punya 1 kelas perwalian, anggap itu selectedClassId
+                    if (count($waliKelasClasses) === 1 && !$selectedClassId) {
+                        $selectedClassId = $waliKelasClasses[0]['id'];
+                    }
+                } else {
+                    // Guru non-wali kelas, atau admin yang juga guru tapi bukan wali kelas
+                    // Tampilkan semua kelas dimana guru tersebut punya assignment, atau semua kelas jika admin
+                    if (isAdmin()){
+                        $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+                    } else {
+                         $assignedClasses = $this->teacherClassSubjectAssignmentModel
+                            ->distinct()
+                            ->select('classes.*')
+                            ->join('classes', 'classes.id = teacher_class_subject_assignments.class_id')
+                            ->where('teacher_class_subject_assignments.teacher_id', $teacherId)
+                            ->orderBy('classes.class_name', 'ASC')
+                            ->findAll();
+                        $filteredClasses = $assignedClasses ?: []; // Jika tidak ada assignment, array kosong
+                    }
+                }
+
+                if ($selectedClassId) {
+                    $filteredSubjects = $this->teacherClassSubjectAssignmentModel
+                                            ->getSubjectsForTeacherInClass($teacherId, $selectedClassId);
+                } else {
+                    // Jika kelas belum dipilih ATAU guru bisa memilih banyak kelas dan belum ada pilihan
+                    // Tampilkan semua mapel yang diajar guru tersebut di SEMUA kelasnya, atau semua mapel jika admin
+                    if(isAdmin()){
+                        $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+                    } else {
+                        $allTeacherSubjects = $this->teacherClassSubjectAssignmentModel
+                            ->distinct()
+                            ->select('subjects.*')
+                            ->join('subjects', 'subjects.id = teacher_class_subject_assignments.subject_id')
+                            ->where('teacher_class_subject_assignments.teacher_id', $teacherId)
+                            ->orderBy('subjects.subject_name', 'ASC')
+                            ->findAll();
+                        $filteredSubjects = $allTeacherSubjects ?: [];
+                    }
+                }
             }
-        } else {
-            // Jika tidak ada data guru terkait user login (seharusnya tidak terjadi jika user adalah Guru)
-            // atau jika user adalah Administrator Sistem yang ingin melihat semua, tampilkan semua kelas.
-            // Untuk Administrator Sistem, mereka mungkin perlu akses ke semua kelas.
-            // Peran 'Guru' seharusnya selalu punya record di tabel 'teachers'.
-            if (isAdmin()) { // isAdmin() adalah helper dari auth_helper
-                 $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
-            } else {
-                // Untuk guru yang tidak ditemukan datanya, beri array kosong atau pesan error.
-                // Untuk saat ini, beri array kosong.
-                $filteredClasses = [];
-                 session()->setFlashdata('error', 'Teacher data not found for your account. Please contact administrator.');
-            }
+        } else { // User bukan Guru dan bukan Admin (seharusnya tidak bisa akses karena filter rute)
+            session()->setFlashdata('error', 'Access denied or teacher data not found.');
+            return redirect()->to('/'); // Redirect ke halaman utama atau error
         }
 
-        // Untuk mata pelajaran, sesuai rencana awal, tampilkan semua.
-        // Ini juga akan memerlukan tabel penugasan guru-mapel-kelas untuk filter yang lebih akurat.
+        if (empty($filteredClasses) && !isAdmin() && $teacherId) {
+             session()->setFlashdata('info', 'You are not assigned to any classes yet. Please contact administrator.');
+        }
+
+
         $data = [
-            'pageTitle' => 'Select Class and Subject for Assessment',
-            'classes'   => $filteredClasses,
-            'subjects'  => $allSubjects, // Semua mata pelajaran
+            'pageTitle'       => 'Select Class and Subject for Assessment',
+            'classes'         => $filteredClasses,
+            'subjects'        => $filteredSubjects,
+            'selectedClassId' => $selectedClassId, // Kirim class_id yang terpilih ke view
+            'formAction'      => site_url('guru/assessments/input'), // Action untuk ke form input
+            'currentUrl'      => site_url('guru/assessments') // URL saat ini untuk refresh dengan class_id
         ];
         return view('guru/assessments/select_context', $data);
     }
@@ -421,35 +478,89 @@ class AssessmentController extends BaseController
     {
         $loggedInUserId = current_user_id();
         $teacher = $this->teacherModel->where('user_id', $loggedInUserId)->first();
+        $teacherId = $teacher ? $teacher['id'] : null;
 
         $filteredClasses = [];
-        $allSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+        $filteredSubjects = [];
+        $selectedClassId = $this->request->getGet('class_id'); // Untuk mempertahankan pilihan kelas
 
-        if ($teacher) {
-            $teacherId = $teacher['id'];
-            $waliKelasClasses = $this->classModel->where('wali_kelas_id', $teacherId)
-                                                ->orderBy('class_name', 'ASC')
-                                                ->findAll();
-
-            if (!empty($waliKelasClasses)) {
-                $filteredClasses = $waliKelasClasses;
-            } else {
+        if ($teacherId || isAdmin()) {
+            if (isAdmin() && !$teacherId) { // Admin murni
                 $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+                if ($selectedClassId) {
+                    $assignedSubjects = $this->teacherClassSubjectAssignmentModel
+                        ->distinct()
+                        ->select('subjects.*')
+                        ->join('subjects', 'subjects.id = teacher_class_subject_assignments.subject_id')
+                        ->where('teacher_class_subject_assignments.class_id', $selectedClassId)
+                        ->orderBy('subjects.subject_name', 'ASC')
+                        ->findAll();
+                    if(!empty($assignedSubjects)){
+                        $filteredSubjects = $assignedSubjects;
+                    } else {
+                        $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+                    }
+                } else {
+                    $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+                }
+            } else if ($teacherId) { // User adalah Guru
+                $waliKelasClasses = $this->classModel->where('wali_kelas_id', $teacherId)
+                                                    ->orderBy('class_name', 'ASC')
+                                                    ->findAll();
+                if (!empty($waliKelasClasses)) {
+                    $filteredClasses = $waliKelasClasses;
+                    if (count($waliKelasClasses) === 1 && !$selectedClassId) {
+                        $selectedClassId = $waliKelasClasses[0]['id'];
+                    }
+                } else {
+                    if (isAdmin()){ // Admin yg juga guru, bukan wali kelas
+                        $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
+                    } else { // Guru murni, bukan wali kelas
+                         $assignedClasses = $this->teacherClassSubjectAssignmentModel
+                            ->distinct()
+                            ->select('classes.*')
+                            ->join('classes', 'classes.id = teacher_class_subject_assignments.class_id')
+                            ->where('teacher_class_subject_assignments.teacher_id', $teacherId)
+                            ->orderBy('classes.class_name', 'ASC')
+                            ->findAll();
+                        $filteredClasses = $assignedClasses ?: [];
+                    }
+                }
+
+                if ($selectedClassId) {
+                    $filteredSubjects = $this->teacherClassSubjectAssignmentModel
+                                            ->getSubjectsForTeacherInClass($teacherId, $selectedClassId);
+                } else {
+                    if(isAdmin()){
+                        $filteredSubjects = $this->subjectModel->orderBy('subject_name', 'ASC')->findAll();
+                    } else {
+                        $allTeacherSubjects = $this->teacherClassSubjectAssignmentModel
+                            ->distinct()
+                            ->select('subjects.*')
+                            ->join('subjects', 'subjects.id = teacher_class_subject_assignments.subject_id')
+                            ->where('teacher_class_subject_assignments.teacher_id', $teacherId)
+                            ->orderBy('subjects.subject_name', 'ASC')
+                            ->findAll();
+                        $filteredSubjects = $allTeacherSubjects ?: [];
+                    }
+                }
             }
-        } else {
-            if (isAdmin()) {
-                 $filteredClasses = $this->classModel->orderBy('class_name', 'ASC')->findAll();
-            } else {
-                $filteredClasses = [];
-                 session()->setFlashdata('error', 'Teacher data not found for your account. Please contact administrator.');
-            }
+        } else { // User bukan Guru dan bukan Admin
+            session()->setFlashdata('error', 'Access denied or teacher data not found.');
+            return redirect()->to('/');
+        }
+
+        if (empty($filteredClasses) && !isAdmin() && $teacherId) {
+             session()->setFlashdata('info', 'You are not assigned to any classes yet. Please contact administrator.');
         }
 
         $data = [
-            'pageTitle' => 'Select Class and Subject for Recap',
-            'classes'   => $filteredClasses,
-            'subjects'  => $allSubjects,
-            'formAction' => site_url('guru/assessments/show-recap')
+            'pageTitle'       => 'Select Class and Subject for Recap',
+            'classes'         => $filteredClasses,
+            'subjects'        => $filteredSubjects,
+            'selectedClassId' => $selectedClassId,
+            'formAction'      => site_url('guru/assessments/show-recap'),
+            'currentUrl'      => site_url('guru/assessments/recap') // URL saat ini untuk refresh
         ];
         return view('guru/assessments/select_recap_context', $data);
     }

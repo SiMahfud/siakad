@@ -32,6 +32,12 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     $routes->resource('subjects', ['controller' => 'SubjectController', 'filter' => $dataIndukFilter]);
     $routes->resource('classes', ['controller' => 'ClassController', 'filter' => $dataIndukFilter]);
 
+    // Teacher Class Subject Assignments Management: Only Administrator Sistem
+    $routes->resource('assignments', [
+        'controller' => 'TeacherClassSubjectAssignmentController',
+        'filter'     => 'auth:Administrator Sistem',
+        'as'         => 'admin_assignments' // Route alias prefix
+    ]);
     // Example for a route accessible by Kepala Sekolah (read-only conceptually)
     // For now, KepSek can access general admin area due to 'auth' filter on group,
     // specific read-only views would need controller logic.

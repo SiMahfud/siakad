@@ -19,27 +19,50 @@
             <h6 class="m-0 font-weight-bold text-primary">Choose Class and Subject for Recap</h6>
         </div>
         <div class="card-body">
-            <form action="<?= esc($formAction ?? site_url('guru/assessments/show-recap')) ?>" method="get">
-                <?php // csrf_field() removed for GET form ?>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="class_id" class="form-label">Class: <span class="text-danger">*</span></label>
-                        <select name="class_id" id="class_id" class="form-select" required>
-                            <option value="">-- Select Class --</option>
+            <!-- Form untuk memfilter mapel berdasarkan kelas yang dipilih -->
+            <form action="<?= esc($currentUrl ?? site_url('guru/assessments/recap')) ?>" method="get" id="filterFormRecap" class="mb-3">
+                <div class="row align-items-end">
+                    <div class="col-md-5">
+                        <label for="class_id_filter_recap" class="form-label">Class: <span class="text-danger">*</span></label>
+                        <select name="class_id" id="class_id_filter_recap" class="form-select" onchange="document.getElementById('filterFormRecap').submit();">
+                            <option value="">-- Select Class to Filter Subjects --</option>
                             <?php if (!empty($classes) && is_array($classes)) : ?>
                                 <?php foreach ($classes as $class_item) : ?>
-                                    <option value="<?= esc($class_item['id']) ?>" <?= (isset($selected_class_id) && $selected_class_id == $class_item['id']) ? 'selected' : '' ?>>
+                                    <option value="<?= esc($class_item['id']) ?>" <?= ($selectedClassId == $class_item['id']) ? 'selected' : '' ?>>
                                         <?= esc($class_item['class_name']) ?> (<?= esc($class_item['academic_year']) ?>)
                                     </option>
                                 <?php endforeach; ?>
+                            <?php else : ?>
+                                <option value="" disabled>No classes assigned or available.</option>
                             <?php endif; ?>
                         </select>
                     </div>
+                    <div class="col-md-2">
+                        <!-- Tombol submit untuk filter, bisa disembunyikan jika onchange sudah cukup -->
+                        <!-- <button type="submit" class="btn btn-secondary">Filter Subjects</button> -->
+                    </div>
+                </div>
+            </form>
+            <hr>
+
+            <!-- Form utama untuk menuju halaman rekap -->
+            <form action="<?= esc($formAction ?? site_url('guru/assessments/show-recap')) ?>" method="get">
+                <input type="hidden" name="class_id" value="<?= esc($selectedClassId ?? '') ?>">
+
+                <div class="row">
+                     <div class="col-md-6 mb-3">
+                        <label class="form-label">Selected Class:</label>
+                        <input type="text" class="form-control"
+                               value="<?= (!empty($selectedClassId) && !empty($classes)) ? esc(array_column($classes, 'class_name', 'id')[$selectedClassId] ?? 'Please select class above') : 'Please select class above' ?>"
+                               readonly>
+                        <?php if (empty($selectedClassId)) : ?>
+                            <small class="text-danger">Please select a class from the dropdown above to enable subject selection and proceed.</small>
+                        <?php endif; ?>
+                    </div>
 
                     <div class="col-md-6 mb-3">
-                        <label for="subject_id" class="form-label">Subject: <span class="text-danger">*</span></label>
-                        <select name="subject_id" id="subject_id" class="form-select" required>
+                        <label for="subject_id_recap" class="form-label">Subject: <span class="text-danger">*</span></label>
+                        <select name="subject_id" id="subject_id_recap" class="form-select" required <?= empty($selectedClassId) || empty($subjects) ? 'disabled' : '' ?>>
                             <option value="">-- Select Subject --</option>
                             <?php if (!empty($subjects) && is_array($subjects)) : ?>
                                 <?php foreach ($subjects as $subject_item) : ?>
@@ -47,13 +70,18 @@
                                         <?= esc($subject_item['subject_name']) ?> <?= $subject_item['is_pilihan'] ? '(Pilihan)' : '' ?>
                                     </option>
                                 <?php endforeach; ?>
+                            <?php else : ?>
+                                <option value="" disabled>No subjects available for this class or no class selected.</option>
                             <?php endif; ?>
                         </select>
+                        <?php if (!empty($selectedClassId) && empty($subjects)) : ?>
+                            <small class="text-warning">No subjects assigned for you in this class.</small>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="mt-3">
-                    <button type="submit" class="btn btn-info">
+                    <button type="submit" class="btn btn-info" <?= empty($selectedClassId) || empty($subjects) ? 'disabled' : '' ?>>
                         <i class="bi bi-eye"></i> Show Recap
                     </button>
                 </div>

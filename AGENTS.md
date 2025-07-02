@@ -118,9 +118,10 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Rute untuk modul penilaian guru (`/guru/assessments/...`) telah dibuat dan diproteksi menggunakan filter `auth` untuk peran 'Guru' dan 'Administrator Sistem'.
     *   Modul ini telah diuji secara manual dengan berbagai skenario input (valid, berbagai tipe asesmen, data invalid untuk menguji aturan validasi dan tampilan error).
     *   **Penyempurnaan Tambahan (Modul Penilaian):**
-        *   **[P] Filter Kelas/Mapel di Halaman Pemilihan Konteks (`AssessmentController::index`, `AssessmentController::showRecapSelection`):**
-            *   Filter kelas berdasarkan status wali kelas telah diimplementasikan (wali kelas melihat kelasnya; non-wali kelas & admin melihat semua kelas).
-            *   Dropdown mata pelajaran saat ini masih menampilkan semua mapel. Implementasi filter mapel yang lebih akurat (berdasarkan penugasan guru-mapel-kelas) adalah pengembangan selanjutnya.
+        *   **[X] Filter Kelas/Mapel di Halaman Pemilihan Konteks (`AssessmentController::index`, `AssessmentController::showRecapSelection`):**
+            *   Filter kelas berdasarkan status wali kelas atau penugasan guru di kelas.
+            *   Filter mata pelajaran berdasarkan penugasan guru di kelas yang dipilih (menggunakan tabel `teacher_class_subject_assignments`).
+            *   View `select_context.php` dan `select_recap_context.php` dimodifikasi untuk mendukung mekanisme filter ini.
         *   **[X] Fitur Edit dan Hapus Data Penilaian:**
             *   Method `editAssessment`, `updateAssessment`, dan `deleteAssessment` telah ditambahkan di `AssessmentController`.
             *   View `edit_form.php` untuk form edit penilaian.
@@ -132,13 +133,18 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
             *   Views `select_recap_context.php` dan `recap_display.php` telah dibuat.
             *   Halaman rekap menampilkan daftar siswa dengan asesmen mereka per kelas dan mapel, dengan tombol "Edit" dan "Hapus" yang fungsional per entri penilaian.
             *   Link navigasi "Rekap Nilai" ditambahkan untuk peran Guru dan Admin.
+*   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
+    *   Tabel `teacher_class_subject_assignments` dibuat (via Migrasi).
+    *   Model `TeacherClassSubjectAssignmentModel` dibuat, termasuk method helper `getAssignmentsDetails()` dan `getSubjectsForTeacherInClass()`.
+    *   Controller `Admin/TeacherClassSubjectAssignmentController` dibuat dengan fungsi CRUD dasar (index, new, create, delete) untuk mengelola penugasan.
+    *   Views `admin/assignments/index.php` dan `admin/assignments/new.php` dibuat.
+    *   Rute resource `admin/assignments` ditambahkan dan diproteksi untuk Administrator Sistem.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   Implementasi filter mata pelajaran yang lebih akurat di `AssessmentController::index()` dan `showRecapSelection()` (memerlukan tabel `teacher_class_subject_assignments`).
     *   Pengembangan fitur rekapitulasi nilai untuk Siswa dan Orang Tua.
-    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian.
+    *   Potensi penyempurnaan UI/UX lebih lanjut pada modul penilaian (misalnya, AJAX untuk filter dinamis jika diperlukan).
 2.  **Penyempurnaan Hak Akses (Lanjutan)**:
     *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
     *   Pengecekan kepemilikan data secara lebih komprehensif.
