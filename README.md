@@ -58,6 +58,11 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
         *   [X] Controller (`Admin/ClassController`) dengan fungsi CRUD (termasuk pemilihan Wali Kelas)
         *   [X] Views (daftar, tambah, edit kelas - dengan Bootstrap 5)
         *   [ ] Manajemen siswa per kelas (tabel `class_student`)
+    *   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
+        *   [X] Struktur Tabel Database (`teacher_class_subject_assignments`)
+        *   [X] Model (`TeacherClassSubjectAssignmentModel`)
+        *   [X] Controller (`Admin/TeacherClassSubjectAssignmentController`) dengan fungsi CRUD dasar (index, new, create, delete).
+        *   [X] Views (daftar, tambah penugasan - dengan Bootstrap 5).
 *   **[ ] Modul Akademik Harian**
     *   [ ] Manajemen Jadwal Pelajaran
     *   [ ] Input Presensi Harian oleh Guru
@@ -77,7 +82,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Tampilan error validasi yang jelas di form input, menunjukkan nama siswa, entri keberapa, dan field yang bermasalah.
     *   [X] Telah dilakukan testing manual untuk berbagai skenario input (valid, invalid, berbagai tipe).
     *   [P] Tampilan rekap nilai per siswa dan per mata pelajaran (Dasar untuk Guru: pemilihan konteks, tampilan tabel, integrasi aksi Edit/Hapus).
-    *   [P] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks (Filter kelas berdasarkan wali kelas sudah ada, filter mapel menunggu tabel penugasan).
+    *   [X] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks (Filter kelas berdasarkan wali kelas; Filter mapel berdasarkan penugasan guru di kelas tersebut).
     *   [X] Fitur edit/hapus data penilaian yang sudah dimasukkan (Controller, View dasar, Rute, Hak Akses dasar, terintegrasi di halaman rekap).
 *   **[ ] Modul Projek P5**
     *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
