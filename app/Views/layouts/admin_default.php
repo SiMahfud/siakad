@@ -71,19 +71,20 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/schedules') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/schedules') ?>">Schedule Management</a></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/subject-offerings') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/subject-offerings') ?>">Subject Offerings</a></li>
+                                    <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])): ?>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/daily-attendance') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/daily-attendance') ?>">Absensi Harian Umum</a></li>
+                                    <?php endif; ?>
                                 </ul>
                             </li>
                         <?php endif; ?>
 
                         <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha'])): // Or a specific P5 Coordinator role ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'admin/p5') !== false) ? 'active' : '' ?>"
+                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'admin/p5') !== false || strpos(uri_string(), 'admin/p5export') !== false) ? 'active' : '' ?>"
                                    href="#" id="p5ManagementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     P5 Management
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="p5ManagementDropdown">
-                                <ul class="dropdown-menu" aria-labelledby="p5ManagementDropdown">
-                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5themes') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5themes') ?>">P5 Themes</a></li>
                                 <ul class="dropdown-menu" aria-labelledby="p5ManagementDropdown">
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5themes') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5themes') ?>">P5 Themes</a></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5dimensions') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5dimensions') ?>">P5 Dimensions</a></li>

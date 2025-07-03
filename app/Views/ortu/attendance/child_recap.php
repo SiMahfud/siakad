@@ -36,24 +36,44 @@
         </div>
     </div>
 
-    <!-- Visual Calendar -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Kalender Visual Absensi</h6>
+    <!-- Visual Calendars -->
+     <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Kalender Absensi Harian Umum Anak</h6>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($dailyStatusDataGeneral)) : ?>
+                        <div id="attendanceCalendarGeneralOrtu"></div>
+                        <small class="form-text text-muted mt-2">Kalender ini menampilkan status absensi harian umum anak Anda (dicatat oleh Admin/Staf TU).</small>
+                    <?php else : ?>
+                        <p class="text-center">Tidak ada data absensi harian umum anak untuk ditampilkan di kalender pada periode ini.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <?php if (!empty($dailyStatusData)) : ?>
-                <div id="attendanceCalendarOrtu"></div>
-            <?php else : ?>
-                <p class="text-center">Tidak ada data absensi untuk ditampilkan di kalender pada periode ini.</p>
-            <?php endif; ?>
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Kalender Absensi Anak per Jam Pelajaran</h6>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($dailyStatusDataSchedule)) : ?>
+                        <div id="attendanceCalendarScheduleOrtu"></div>
+                        <small class="form-text text-muted mt-2">Kalender ini menampilkan ringkasan status absensi anak Anda per jam pelajaran (dicatat oleh Guru Mapel).</small>
+                    <?php else : ?>
+                        <p class="text-center">Tidak ada data absensi anak per jam pelajaran untuk ditampilkan di kalender pada periode ini.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Attendance Table -->
+    <!-- Attendance Table for Per-Hour/Schedule Based -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Detail Absensi</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Detail Absensi Anak per Jam Pelajaran</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -149,44 +169,58 @@
             order: [[1, 'desc']] // Sort by date descending by default
         });
 
-        // FullCalendar for Ortu
-        var calendarElOrtu = document.getElementById('attendanceCalendarOrtu');
-        if (calendarElOrtu && typeof FullCalendar !== 'undefined') {
-            const dailyStatusDataOrtu = <?= json_encode($dailyStatusData ?? []) ?>;
-            let eventsOrtu = [];
-            for (const date in dailyStatusDataOrtu) {
-                let statusChar = dailyStatusDataOrtu[date];
-                let eventColor = '';
-                let titleText = '';
-                 switch(statusChar) {
-                    case 'H': eventColor = 'rgba(40, 167, 69, 0.7)'; titleText = 'Hadir'; break;
-                    case 'S': eventColor = 'rgba(255, 193, 7, 0.7)'; titleText = 'Sakit'; break;
-                    case 'I': eventColor = 'rgba(23, 162, 184, 0.7)'; titleText = 'Izin'; break;
-                    case 'A': eventColor = 'rgba(220, 53, 69, 0.7)'; titleText = 'Alfa'; break;
-                    default: eventColor = 'rgba(108, 117, 125, 0.5)'; titleText = 'Tidak ada data'; break;
+        // Function to render FullCalendar (can be moved to a global JS file if used elsewhere)
+        function renderAttendanceCalendar(elementId, eventData, defaultEmptyText = 'Tidak ada data absensi untuk kalender ini.') {
+            var calendarEl = document.getElementById(elementId);
+            if (calendarEl && typeof FullCalendar !== 'undefined') {
+                 if (Object.keys(eventData).length === 0) {
+                    // PHP part should ideally handle the empty message before div creation
+                    return;
                 }
-                eventsOrtu.push({
-                    title: titleText,
-                    start: date,
-                    allDay: true,
-                    backgroundColor: eventColor,
-                    borderColor: eventColor.replace('0.7', '1').replace('0.5', '1'),
-                    display: 'background'
-                });
-            }
+                let events = [];
+                for (const date in eventData) {
+                    let statusChar = eventData[date];
+                    let eventColor = '';
+                    let titleText = '';
+                    switch(statusChar) {
+                        case 'H': eventColor = 'rgba(40, 167, 69, 0.7)'; titleText = 'Hadir'; break;
+                        case 'S': eventColor = 'rgba(255, 193, 7, 0.7)'; titleText = 'Sakit'; break;
+                        case 'I': eventColor = 'rgba(23, 162, 184, 0.7)'; titleText = 'Izin'; break;
+                        case 'A': eventColor = 'rgba(220, 53, 69, 0.7)'; titleText = 'Alfa'; break;
+                        default: eventColor = 'rgba(108, 117, 125, 0.5)'; titleText = 'Tidak Diketahui'; break;
+                    }
+                    events.push({
+                        title: titleText,
+                        start: date,
+                        allDay: true,
+                        backgroundColor: eventColor,
+                        borderColor: eventColor.replace(/0\.\d+\)/, '1)'),
+                        display: 'background'
+                    });
+                }
 
-            var calendarOrtu = new FullCalendar.Calendar(calendarElOrtu, {
-                initialView: 'dayGridMonth',
-                locale: 'id',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth'
-                },
-                events: eventsOrtu,
-            });
-            calendarOrtu.render();
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'id',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth'
+                    },
+                    events: events,
+                });
+                calendar.render();
+            }
         }
+
+        // Render General Daily Attendance Calendar for Ortu
+        const dailyStatusDataGeneralOrtu = <?= json_encode($dailyStatusDataGeneral ?? []) ?>;
+        renderAttendanceCalendar('attendanceCalendarGeneralOrtu', dailyStatusDataGeneralOrtu, 'Tidak ada data absensi harian umum anak untuk ditampilkan di kalender pada periode ini.');
+
+        // Render Per-Hour/Schedule Attendance Calendar for Ortu
+        const dailyStatusDataScheduleOrtu = <?= json_encode($dailyStatusDataSchedule ?? []) ?>;
+        renderAttendanceCalendar('attendanceCalendarScheduleOrtu', dailyStatusDataScheduleOrtu, 'Tidak ada data absensi anak per jam pelajaran untuk ditampilkan di kalender pada periode ini.');
+
     });
 </script>
 <?= $this->endSection() ?>

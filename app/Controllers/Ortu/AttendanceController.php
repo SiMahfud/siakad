@@ -72,10 +72,20 @@ class AttendanceController extends BaseController
         $statusFilter = []; // Show all by default for parent view
 
         $attendanceData = $attendanceModel->getStudentAttendanceSummary($student['id'], $dateFrom, $dateTo, $statusFilter);
-        $dailyStatusData = $attendanceModel->getDailyAttendanceStatusForStudent($student['id'], $dateFrom, $dateTo);
+        // This $dailyStatusData is for per-hour/schedule based attendance calendar
+        $dailyStatusDataSchedule = $attendanceModel->getDailyAttendanceStatusForStudent($student['id'], $dateFrom, $dateTo);
+
+        // Get general daily attendance for the student
+        $dailyAttendanceModel = new \App\Models\DailyAttendanceModel(); // Instantiate DailyAttendanceModel
+        $generalDailyAttendanceRaw = $dailyAttendanceModel->getStudentDailyAttendanceRange($student['id'], $dateFrom, $dateTo);
+        $dailyStatusDataGeneral = [];
+        $statusCharsMap = \App\Models\DailyAttendanceModel::getStatusCharMap();
+        foreach($generalDailyAttendanceRaw as $row){
+            $dailyStatusDataGeneral[$row['attendance_date']] = $statusCharsMap[$row['status']] ?? '?';
+        }
 
         $statusMap = AttendanceModel::getStatusMap();
-        foreach($attendanceData as &$row){
+        foreach($attendanceData as &$row){ // For per-hour data
             if(isset($statusMap[$row['status']])){
                 $row['status_text'] = $statusMap[$row['status']];
             } else {
@@ -87,8 +97,9 @@ class AttendanceController extends BaseController
         $data = [
             'title' => 'Rekap Absensi Anak: ' . esc($student['full_name']),
             'student' => $student,
-            'attendanceData' => $attendanceData,
-            'dailyStatusData' => $dailyStatusData,
+            'attendanceData' => $attendanceData, // Per-hour/schedule details
+            'dailyStatusDataSchedule' => $dailyStatusDataSchedule, // For per-hour/schedule FullCalendar
+            'dailyStatusDataGeneral' => $dailyStatusDataGeneral, // For general daily FullCalendar
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
             'statusMap' => $statusMap,

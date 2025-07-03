@@ -43,7 +43,8 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 *   **[X] Modul Akademik Harian (MVP & Penyempurnaan)**
     *   [X] Manajemen Jadwal Pelajaran (Admin: CRUD; Guru & Siswa: View)
     *   [X] Input Presensi Harian oleh Guru
-    *   [X] Rekapitulasi Presensi (View, Filter Rentang Tanggal, Export untuk Admin/Wali Kelas/Kepala Sekolah). **Dilengkapi Kalender Presensi Visual & Grafik Tren Kehadiran per Kelas.**
+    *   [X] Input Presensi Harian Umum per Kelas (oleh Admin/Staf TU).
+    *   [X] Rekapitulasi Presensi (View, Filter Rentang Tanggal, Export untuk Admin/Wali Kelas/Kepala Sekolah). **Dilengkapi Kalender Presensi Visual (Harian Umum & Per Jam Pelajaran) & Grafik Tren Kehadiran per Kelas.**
     *   [X] **Notifikasi Otomatis Ketidakhadiran Siswa** (untuk Wali Kelas, Ortu, Admin) berdasarkan threshold (Alfa beruntun, total Alfa, total Sakit/Izin).
     *   [X] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F: Pilih; Admin: Setup)
     *   [X] Rekapitulasi Pilihan Mata Pelajaran (View, Filter, Export untuk Admin/Wali Kelas/Kepala Sekolah)
@@ -93,12 +94,14 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Melihat laporan P5 per siswa (dengan visualisasi).
     *   [X] Melakukan ekspor data P5 ke format e-Rapor.
     *   [X] Mengatur Konfigurasi Global Sekolah (Nama Sekolah, Alamat, Kepsek, Tahun/Semester Aktif, Kode Semester e-Rapor).
+    *   [X] Menginput dan mengelola Absensi Harian Umum per kelas.
     *   [ ] Maintenance dan backup database.
 *   **Staf Tata Usaha (TU)**:
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
     *   [X] Mengatur pembagian siswa ke dalam rombel.
     *   [X] Mengelola Jadwal Pelajaran (CRUD).
     *   [X] Mengelola Penawaran Mata Pelajaran Pilihan (CRUD).
+    *   [X] Menginput dan mengelola Absensi Harian Umum per kelas.
     *   [X] Melihat Rekap Presensi.
     *   [X] Melihat Rekap Pemilihan Mapel.
     *   [X] (Jika diberi akses) Mengelola data master P5 dan Projek P5.

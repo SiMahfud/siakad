@@ -130,7 +130,51 @@
     <?php elseif ($selected_class_id && empty($this->request->getGet('date_from'))): ?>
         <!-- No action, initial load for a class, visuals will load after filter application -->
     <?php elseif ($selected_class_id) : ?>
-         <div class="alert alert-info">Tidak ada data presensi untuk visualisasi pada rentang tanggal dan kelas yang dipilih.</div>
+         <div class="alert alert-info">Tidak ada data presensi (per jam pelajaran) untuk visualisasi pada rentang tanggal dan kelas yang dipilih.</div>
+    <?php endif; ?>
+
+    <!-- Display General Daily Attendance Summary if available -->
+    <?php if ($selected_class_id && !empty($daily_general_attendance_summary)) : ?>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Ringkasan Absensi Harian Umum (Kelas: <?= esc($available_classes[array_search($selected_class_id, array_column($available_classes, 'id'))]['class_name'] ?? 'N/A') ?>)</h6>
+        </div>
+        <div class="card-body">
+            <p>Berikut adalah ringkasan absensi harian umum untuk kelas yang dipilih pada rentang tanggal <?= esc(date('d M Y', strtotime($date_from))) ?> s/d <?= esc(date('d M Y', strtotime($date_to))) ?>. Data ini dicatat oleh Admin/Staf TU.</p>
+            <div id="generalAttendanceCalendar"></div>
+            <?php /*
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Hadir</th>
+                        <th>Sakit</th>
+                        <th>Izin</th>
+                        <th>Alfa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php
+                $sorted_general_dates = array_keys($daily_general_attendance_summary);
+                sort($sorted_general_dates);
+                ?>
+                <?php foreach ($sorted_general_dates as $date) :
+                    $summary = $daily_general_attendance_summary[$date]; ?>
+                    <tr>
+                        <td><?= esc(date('d M Y', strtotime($date))) ?></td>
+                        <td><?= esc($summary['H'] ?? 0) ?></td>
+                        <td><?= esc($summary['S'] ?? 0) ?></td>
+                        <td><?= esc($summary['I'] ?? 0) ?></td>
+                        <td><?= esc($summary['A'] ?? 0) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            */ ?>
+        </div>
+    </div>
+    <?php elseif ($selected_class_id) : ?>
+        <div class="alert alert-info">Tidak ada data absensi harian umum yang tercatat untuk kelas dan rentang tanggal ini.</div>
     <?php endif; ?>
 
 
@@ -361,6 +405,51 @@
             });
         }
     });
+
+    // FullCalendar for General Daily Attendance
+    var generalCalendarEl = document.getElementById('generalAttendanceCalendar');
+    if (generalCalendarEl && typeof FullCalendar !== 'undefined' && <?= !empty($daily_general_attendance_summary) ? 'true' : 'false' ?>) {
+        const generalDailyData = <?= json_encode($daily_general_attendance_summary) ?>;
+        let generalEvents = [];
+        for (const date in generalDailyData) {
+            const dayInfo = generalDailyData[date];
+            let title = `H: ${dayInfo.H}, A: ${dayInfo.A}, I: ${dayInfo.I}, S: ${dayInfo.S}`;
+            let eventColor = '#0275d8'; // Blue for general daily by default
+            if (dayInfo.A > 0) eventColor = '#d9534f'; // Red if any Alfa
+            else if (dayInfo.I > 0 || dayInfo.S > 0) eventColor = '#f0ad4e'; // Yellow for Izin/Sakit
+            else if (dayInfo.H > 0) eventColor = '#5cb85c'; // Green if all Hadir
+
+            generalEvents.push({
+                title: title,
+                start: date,
+                allDay: true,
+                backgroundColor: eventColor,
+                borderColor: eventColor,
+            });
+        }
+
+        var generalCalendar = new FullCalendar.Calendar(generalCalendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'id',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth'
+            },
+            events: generalEvents,
+            eventDidMount: function(info) {
+                if (info.event.title) {
+                    var tooltip = new bootstrap.Tooltip(info.el, {
+                        title: info.event.title,
+                        placement: 'top',
+                        trigger: 'hover',
+                        container: 'body'
+                    });
+                }
+            },
+        });
+        generalCalendar.render();
+    }
     <?php endif; ?>
 </script>
 <?= $this->endSection() ?>

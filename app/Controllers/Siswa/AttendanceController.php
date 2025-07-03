@@ -26,6 +26,7 @@ class AttendanceController extends BaseController
         }
 
         $attendanceModel = new AttendanceModel();
+        $dailyAttendanceModel = new \App\Models\DailyAttendanceModel(); // Added
 
         // Default date range: current month
         $dateFrom = $this->request->getGet('date_from') ?? date('Y-m-01');
@@ -37,11 +38,20 @@ class AttendanceController extends BaseController
         $statusFilter = []; // Show all by default
 
         $attendanceData = $attendanceModel->getStudentAttendanceSummary($student['id'], $dateFrom, $dateTo, $statusFilter);
-        $dailyStatusData = $attendanceModel->getDailyAttendanceStatusForStudent($student['id'], $dateFrom, $dateTo);
+        // This $dailyStatusData is for per-hour/schedule based attendance calendar
+        $dailyStatusDataSchedule = $attendanceModel->getDailyAttendanceStatusForStudent($student['id'], $dateFrom, $dateTo);
+
+        // Get general daily attendance for the student
+        $generalDailyAttendanceRaw = $dailyAttendanceModel->getStudentDailyAttendanceRange($student['id'], $dateFrom, $dateTo);
+        $dailyStatusDataGeneral = [];
+        $statusCharsMap = \App\Models\DailyAttendanceModel::getStatusCharMap();
+        foreach($generalDailyAttendanceRaw as $row){
+            $dailyStatusDataGeneral[$row['attendance_date']] = $statusCharsMap[$row['status']] ?? '?';
+        }
 
         $statusMap = AttendanceModel::getStatusMap(); // Get [1 => 'Hadir', 2 => 'Sakit', ...]
 
-        // Map numeric status in attendanceData to text status
+        // Map numeric status in attendanceData (per-hour) to text status
         foreach($attendanceData as &$row){
             if(isset($statusMap[$row['status']])){
                 $row['status_text'] = $statusMap[$row['status']];
@@ -55,12 +65,13 @@ class AttendanceController extends BaseController
         $data = [
             'title' => 'Rekap Absensi Saya',
             'student' => $student,
-            'attendanceData' => $attendanceData,
-            'dailyStatusData' => $dailyStatusData, // For FullCalendar
+            'attendanceData' => $attendanceData, // Per-hour/schedule details
+            'dailyStatusDataSchedule' => $dailyStatusDataSchedule, // For per-hour/schedule FullCalendar
+            'dailyStatusDataGeneral' => $dailyStatusDataGeneral, // For general daily FullCalendar
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
-            'statusMap' => $statusMap, // For filter dropdown if added
-            'selected_status' => $this->request->getGet('status') ?? 'ALL', // If filter added
+            'statusMap' => $statusMap,
+            'selected_status' => $this->request->getGet('status') ?? 'ALL',
         ];
 
         return view('siswa/attendance/my_recap', $data);

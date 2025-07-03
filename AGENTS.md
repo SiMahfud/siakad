@@ -1,6 +1,6 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
-*Terakhir Diperbarui: 2025-07-03* (Update setelah implementasi fitur Notifikasi Absensi dan Rekap Presensi Visual)
+*Terakhir Diperbarui: 2025-07-03* (Update setelah implementasi Modul Absensi Harian Umum dan penyesuaian rekap)
 
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
@@ -55,9 +55,9 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 
 *   **Modul Data Induk**:
     *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`, `NotificationModel.php`)
-    *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`, `NotificationModel.php`, `AttendanceModel.php`)
-    *   Views: `app/Views/admin/<module_name>/` (misal, `students/index.php`, `settings/index.php`, `recaps/attendance_recap.php`), `app/Views/kepala_sekolah/dashboard/index.php`, `app/Views/notifications/index.php`, `app/Views/siswa/attendance/my_recap.php`, `app/Views/ortu/attendance/select_child.php`, `app/Views/ortu/attendance/child_recap.php`
-    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `SettingController.php`, `RecapController.php`), `app/Controllers/KepalaSekolah/DashboardController.php`, `app/Controllers/NotificationController.php`, `app/Controllers/Siswa/AttendanceController.php`, `app/Controllers/Ortu/AttendanceController.php`
+    *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`, `NotificationModel.php`, `AttendanceModel.php`, `DailyAttendanceModel.php`)
+    *   Views: `app/Views/admin/<module_name>/` (misal, `students/index.php`, `settings/index.php`, `recaps/attendance_recap.php`, `daily_attendance/manage.php`), `app/Views/kepala_sekolah/dashboard/index.php`, `app/Views/notifications/index.php`, `app/Views/siswa/attendance/my_recap.php`, `app/Views/ortu/attendance/select_child.php`, `app/Views/ortu/attendance/child_recap.php`
+    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `SettingController.php`, `RecapController.php`, `DailyAttendanceController.php`), `app/Controllers/KepalaSekolah/DashboardController.php`, `app/Controllers/NotificationController.php`, `app/Controllers/Siswa/AttendanceController.php`, `app/Controllers/Ortu/AttendanceController.php`
     *   Commands: `app/Commands/AttendanceAlertsCheckCommand.php`
     *   Rute: Didefinisikan dalam `app/Config/Routes.php`.
 *   **Namespace**: Sesuai struktur direktori.
@@ -72,6 +72,9 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 *   `users.role_id` -> `roles.id`
 *   `notifications.user_id` -> `users.id` (Penerima notifikasi)
 *   `notifications.student_id` -> `students.id` (Siswa terkait notifikasi)
+*   `daily_attendances.student_id` -> `students.id`
+*   `daily_attendances.class_id` -> `classes.id`
+*   `daily_attendances.recorded_by_user_id` -> `users.id`
 *   `students.user_id` -> `users.id` (Akun login untuk siswa)
 *   `students.parent_user_id` -> `users.id` (Akun login untuk orang tua siswa)
 *   `teachers.user_id` -> `users.id` (Akun login untuk guru)
@@ -301,8 +304,14 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Rute dan navigasi ditambahkan.
 *   **[X] Fitur Rekap Absensi Orang Tua**:
     *   Controller `Ortu/AttendanceController.php` dan views `ortu/attendance/select_child.php` & `ortu/attendance/child_recap.php` dibuat.
-    *   Orang tua dapat memilih anak (jika >1) dan melihat detail absensi anak dengan filter rentang tanggal dan kalender visual.
+    *   Orang tua dapat memilih anak (jika >1) dan melihat detail absensi anak dengan filter rentang tanggal dan dua kalender visual (harian umum & per jam pelajaran).
     *   Rute dan navigasi ditambahkan.
+*   **[X] Modul Absensi Harian Umum (Admin/Staf TU)**:
+    *   Tabel `daily_attendances` dibuat untuk mencatat absensi harian umum per siswa per tanggal.
+    *   `DailyAttendanceModel.php` dibuat.
+    *   `Admin/DailyAttendanceController.php` dan view `admin/daily_attendance/manage.php` dibuat untuk input/edit absensi harian umum per kelas.
+    *   Rute dan navigasi "Absensi Harian Umum" ditambahkan untuk Admin/Staf TU.
+    *   Rekapitulasi presensi di Admin (`Admin/RecapController`) disesuaikan untuk juga menampilkan ringkasan absensi harian umum dalam kalender terpisah jika kelas dipilih.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 

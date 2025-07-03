@@ -35,24 +35,45 @@
         </div>
     </div>
 
-    <!-- Visual Calendar (Optional but recommended) -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Kalender Visual Absensi</h6>
+    <!-- Visual Calendars -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Kalender Absensi Harian Umum</h6>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($dailyStatusDataGeneral)) : ?>
+                        <div id="attendanceCalendarGeneral"></div>
+                        <small class="form-text text-muted mt-2">Kalender ini menampilkan status absensi harian umum Anda (dicatat oleh Admin/Staf TU).</small>
+                    <?php else : ?>
+                        <p class="text-center">Tidak ada data absensi harian umum untuk ditampilkan di kalender pada periode ini.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <?php if (!empty($dailyStatusData)) : ?>
-                <div id="attendanceCalendarSiswa"></div>
-            <?php else : ?>
-                <p class="text-center">Tidak ada data absensi untuk ditampilkan di kalender pada periode ini.</p>
-            <?php endif; ?>
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Kalender Absensi per Jam Pelajaran</h6>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($dailyStatusDataSchedule)) : ?>
+                        <div id="attendanceCalendarSchedule"></div>
+                        <small class="form-text text-muted mt-2">Kalender ini menampilkan ringkasan status absensi Anda per jam pelajaran (dicatat oleh Guru Mapel).</small>
+                    <?php else : ?>
+                        <p class="text-center">Tidak ada data absensi per jam pelajaran untuk ditampilkan di kalender pada periode ini.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Attendance Table -->
+
+    <!-- Attendance Table for Per-Hour/Schedule Based -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Detail Absensi</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Detail Absensi per Jam Pelajaran</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -146,51 +167,65 @@
             order: [[1, 'desc']] // Sort by date descending by default
         });
 
-        // FullCalendar for Siswa
-        var calendarElSiswa = document.getElementById('attendanceCalendarSiswa');
-        if (calendarElSiswa && typeof FullCalendar !== 'undefined') {
-            const dailyStatusDataSiswa = <?= json_encode($dailyStatusData ?? []) ?>;
-            let eventsSiswa = [];
-            for (const date in dailyStatusDataSiswa) {
-                let statusChar = dailyStatusDataSiswa[date];
-                let eventColor = '';
-                let titleText = '';
-
-                switch(statusChar) {
-                    case 'H': eventColor = 'rgba(40, 167, 69, 0.7)'; titleText = 'Hadir'; break; // Green
-                    case 'S': eventColor = 'rgba(255, 193, 7, 0.7)'; titleText = 'Sakit'; break;  // Yellow
-                    case 'I': eventColor = 'rgba(23, 162, 184, 0.7)'; titleText = 'Izin'; break;   // Info/Cyan
-                    case 'A': eventColor = 'rgba(220, 53, 69, 0.7)'; titleText = 'Alfa'; break;   // Red
-                    default: eventColor = 'rgba(108, 117, 125, 0.5)'; titleText = 'Tidak ada data'; break; // Grey
+        // Function to render FullCalendar
+        function renderStudentCalendar(elementId, eventData, defaultEmptyText = 'Tidak ada data absensi untuk kalender ini.') {
+            var calendarEl = document.getElementById(elementId);
+            if (calendarEl && typeof FullCalendar !== 'undefined') {
+                if (Object.keys(eventData).length === 0) {
+                    // calendarEl.innerHTML = `<p class="text-center text-muted fst-italic">${defaultEmptyText}</p>`;
+                    // The PHP part already handles empty message, so this JS part might not be strictly needed if PHP handles it before div creation.
+                    // However, this can be a fallback.
+                    return;
                 }
-                eventsSiswa.push({
-                    title: titleText,
-                    start: date,
-                    allDay: true,
-                    backgroundColor: eventColor,
-                    borderColor: eventColor.replace('0.7', '1').replace('0.5', '1'), // Darker border
-                    display: 'background' // Or 'block' to show title
-                });
-            }
 
-            var calendarSiswa = new FullCalendar.Calendar(calendarElSiswa, {
-                initialView: 'dayGridMonth',
-                locale: 'id', // Set locale to Indonesian
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth'
-                },
-                events: eventsSiswa,
-                dayCellDidMount: function(info) {
-                    // You can add custom rendering per day cell if needed
-                },
-                // eventContent: function(arg) { // To customize event rendering if not using background
-                //     return { html: `<b>${arg.event.title}</b>` };
-                // }
-            });
-            calendarSiswa.render();
+                let events = [];
+                for (const date in eventData) {
+                    let statusChar = eventData[date];
+                    let eventColor = '';
+                    let titleText = '';
+
+                    switch(statusChar) {
+                        case 'H': eventColor = 'rgba(40, 167, 69, 0.7)'; titleText = 'Hadir'; break;
+                        case 'S': eventColor = 'rgba(255, 193, 7, 0.7)'; titleText = 'Sakit'; break;
+                        case 'I': eventColor = 'rgba(23, 162, 184, 0.7)'; titleText = 'Izin'; break;
+                        case 'A': eventColor = 'rgba(220, 53, 69, 0.7)'; titleText = 'Alfa'; break;
+                        default: eventColor = 'rgba(108, 117, 125, 0.5)'; titleText = 'Tidak Diketahui'; break;
+                    }
+                    events.push({
+                        title: titleText,
+                        start: date,
+                        allDay: true,
+                        backgroundColor: eventColor,
+                        borderColor: eventColor.replace(/0\.\d+\)/, '1)'), // Darker border
+                        display: 'background'
+                    });
+                }
+
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'id',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth'
+                    },
+                    events: events,
+                    dayCellDidMount: function(info) {
+                        // You can add custom rendering per day cell if needed
+                    },
+                });
+                calendar.render();
+            }
         }
+
+        // Render General Daily Attendance Calendar
+        const dailyStatusDataGeneralSiswa = <?= json_encode($dailyStatusDataGeneral ?? []) ?>;
+        renderStudentCalendar('attendanceCalendarGeneral', dailyStatusDataGeneralSiswa, 'Tidak ada data absensi harian umum untuk ditampilkan di kalender pada periode ini.');
+
+        // Render Per-Hour/Schedule Attendance Calendar
+        const dailyStatusDataScheduleSiswa = <?= json_encode($dailyStatusDataSchedule ?? []) ?>;
+        renderStudentCalendar('attendanceCalendarSchedule', dailyStatusDataScheduleSiswa, 'Tidak ada data absensi per jam pelajaran untuk ditampilkan di kalender pada periode ini.');
+
     });
 </script>
 <?= $this->endSection() ?>
