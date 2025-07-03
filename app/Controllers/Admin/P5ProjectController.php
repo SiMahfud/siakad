@@ -7,8 +7,10 @@ use App\Models\P5ProjectModel;
 use App\Models\P5ThemeModel;
 use App\Models\P5SubElementModel;
 use App\Models\P5ProjectTargetSubElementModel;
-use App\Models\P5DimensionModel; // For better display of sub-elements
-use App\Models\P5ElementModel;   // For better display of sub-elements
+use App\Models\P5DimensionModel;
+use App\Models\P5ElementModel;
+use App\Models\StudentModel; // Needed for student allocation
+use App\Models\P5ProjectStudentModel; // Needed for student allocation
 
 
 class P5ProjectController extends BaseController
@@ -19,6 +21,8 @@ class P5ProjectController extends BaseController
     protected $p5ProjectTargetSubElementModel;
     protected $p5DimensionModel;
     protected $p5ElementModel;
+    protected $studentModel;
+    protected $p5ProjectStudentModel;
     protected $helpers = ['form', 'url', 'auth', 'text'];
 
     public function __construct()
@@ -29,6 +33,8 @@ class P5ProjectController extends BaseController
         $this->p5ProjectTargetSubElementModel = new P5ProjectTargetSubElementModel();
         $this->p5DimensionModel = new P5DimensionModel();
         $this->p5ElementModel = new P5ElementModel();
+        $this->studentModel = new StudentModel();
+        $this->p5ProjectStudentModel = new P5ProjectStudentModel();
     }
 
     public function index()
@@ -279,4 +285,115 @@ class P5ProjectController extends BaseController
     // public function manageStudents($project_id) {}
     // public function addStudentToProject($project_id) {}
     // public function removeStudentFromProject($project_id, $student_id) {}
+
+    public function manageStudents($project_id)
+    {
+        if (!has_permission('manage_p5_project_students')) { // New permission
+            return redirect()->to('/unauthorized');
+        }
+
+        $project = $this->p5ProjectModel->find($project_id);
+        if (!$project) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('P5 Project not found.');
+        }
+
+        $assignedStudents = $this->p5ProjectStudentModel
+            ->select('p5_project_students.id as p5_project_student_id, students.id as student_id, students.full_name, students.nis')
+            ->join('students', 'students.id = p5_project_students.student_id')
+            ->where('p5_project_students.p5_project_id', $project_id)
+            ->orderBy('students.full_name', 'ASC')
+            ->findAll();
+
+        $assignedStudentIds = array_column($assignedStudents, 'student_id');
+
+        $availableStudents = $this->studentModel
+            ->whereNotIn('id', $assignedStudentIds ?: [0]) // whereNotIn requires non-empty array or it errors
+            ->orderBy('full_name', 'ASC')
+            ->findAll();
+
+        // If you want to show class info for students:
+        // You would need to join with class_student and classes table for availableStudents
+        // And potentially for assignedStudents as well if that info is desired there.
+
+        $data = [
+            'title' => 'Manage Students for Project: ' . esc($project['name']),
+            'project' => $project,
+            'assigned_students' => $assignedStudents,
+            'available_students' => $availableStudents,
+            'validation' => \Config\Services::validation()
+        ];
+
+        return view('admin/p5projects/manage_students', $data);
+    }
+
+    public function addStudentToProject($project_id)
+    {
+        if (!has_permission('manage_p5_project_students')) {
+            return redirect()->to('/unauthorized');
+        }
+
+        $project = $this->p5ProjectModel->find($project_id);
+        if (!$project) {
+            return redirect()->back()->with('error', 'P5 Project not found.');
+        }
+
+        $studentIdsToAdd = $this->request->getPost('students_to_add'); // Expects an array of student IDs
+
+        if (empty($studentIdsToAdd)) {
+            return redirect()->back()->with('error', 'No students selected to add.');
+        }
+
+        $dataToInsert = [];
+        foreach ($studentIdsToAdd as $studentId) {
+            // Check if student is already in project to prevent duplicates (though UI should ideally prevent this)
+            $exists = $this->p5ProjectStudentModel
+                ->where('p5_project_id', $project_id)
+                ->where('student_id', $studentId)
+                ->first();
+
+            if (!$exists) {
+                $dataToInsert[] = [
+                    'p5_project_id' => $project_id,
+                    'student_id' => $studentId,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ];
+            }
+        }
+
+        if (!empty($dataToInsert)) {
+            if ($this->p5ProjectStudentModel->insertBatch($dataToInsert)) {
+                return redirect()->to('admin/p5projects/manage-students/' . $project_id)->with('message', 'Students added to project successfully.');
+            } else {
+                return redirect()->to('admin/p5projects/manage-students/' . $project_id)->with('error', 'Failed to add students to project.');
+            }
+        } else {
+            return redirect()->to('admin/p5projects/manage-students/' . $project_id)->with('message', 'Selected students were already in the project or no new students to add.');
+        }
+    }
+
+    public function removeStudentFromProject($project_id, $project_student_id) // Using p5_project_students.id for direct deletion
+    {
+        if (!has_permission('manage_p5_project_students')) {
+            return redirect()->to('/unauthorized');
+        }
+
+        $project = $this->p5ProjectModel->find($project_id);
+        if (!$project) {
+            return redirect()->to('admin/p5projects')->with('error', 'P5 Project not found.');
+        }
+
+        $projectStudentEntry = $this->p5ProjectStudentModel->find($project_student_id);
+        if (!$projectStudentEntry || $projectStudentEntry['p5_project_id'] != $project_id) {
+            return redirect()->to('admin/p5projects/manage-students/' . $project_id)->with('error', 'Student project entry not found or does not belong to this project.');
+        }
+
+        // Consider implications: if there are assessments for this student in this project, what happens?
+        // For now, direct delete. Could add checks or soft delete later.
+        if ($this->p5ProjectStudentModel->delete($project_student_id)) {
+            return redirect()->to('admin/p5projects/manage-students/' . $project_id)->with('message', 'Student removed from project successfully.');
+        } else {
+            return redirect()->to('admin/p5projects/manage-students/' . $project_id)->with('error', 'Failed to remove student from project.');
+        }
+    }
 }

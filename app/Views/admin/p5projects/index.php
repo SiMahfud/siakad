@@ -59,10 +59,9 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <a href="<?= site_url('admin/p5projects/edit/' . $project['id']) ?>" class="btn btn-sm btn-warning mb-1">Edit</a>
-                                        <button type="button" class="btn btn-sm btn-danger mb-1" onclick="confirmDelete('<?= site_url('admin/p5projects/delete/' . $project['id']) ?>')">Delete</button>
-                                        <!-- Add link to manage students later -->
-                                        <!-- <a href="<?= site_url('admin/p5projects/manage-students/' . $project['id']) ?>" class="btn btn-sm btn-info">Manage Students</a> -->
+                                        <a href="<?= site_url('admin/p5projects/edit/' . $project['id']) ?>" class="btn btn-sm btn-warning mb-1" title="Edit Project Details"><i class="fas fa-edit"></i></a>
+                                        <a href="<?= route_to('admin_p5project_manage_students', $project['id']) ?>" class="btn btn-sm btn-info mb-1" title="Manage Students"><i class="fas fa-users"></i></a>
+                                        <button type="button" class="btn btn-sm btn-danger mb-1" title="Delete Project" onclick="confirmDelete('<?= site_url('admin/p5projects/delete/' . $project['id']) ?>')"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

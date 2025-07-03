@@ -114,10 +114,19 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'filter'     => $p5ManagementFilter,
         'as'         => 'admin_p5projects'
     ]);
-    // Placeholder for P5 Project Student Management routes if needed separately
-    // $routes->get('p5projects/manage-students/(:num)', 'P5ProjectController::manageStudents/$1', ['filter' => $p5ManagementFilter]);
-    // $routes->post('p5projects/add-student/(:num)', 'P5ProjectController::addStudentToProject/$1', ['filter' => $p5ManagementFilter]);
-    // $routes->get('p5projects/remove-student/(:num)/(:num)', 'P5ProjectController::removeStudentFromProject/$1/$2', ['filter' => $p5ManagementFilter]);
+    // P5 Project Student Management routes
+    $routes->get('p5projects/manage-students/(:num)', 'P5ProjectController::manageStudents/$1', [
+        'as' => 'admin_p5project_manage_students',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->post('p5projects/add-student/(:num)', 'P5ProjectController::addStudentToProject/$1', [
+        'as' => 'admin_p5project_add_student',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->get('p5projects/remove-student/(:num)/(:num)', 'P5ProjectController::removeStudentFromProject/$1/$2', [
+        'as' => 'admin_p5project_remove_student',
+        'filter' => $p5ManagementFilter
+    ]);
 });
 
 // Guru routes
