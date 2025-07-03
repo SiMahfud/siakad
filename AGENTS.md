@@ -1,5 +1,7 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
+*Terakhir Diperbarui: 2024-07-30*
+
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
 ## 1. Ringkasan Teknologi
@@ -76,6 +78,18 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 *   `assessments.subject_id` -> `subjects.id` (Mata pelajaran yang dinilai)
 *   `assessments.class_id` -> `classes.id` (Kelas tempat penilaian dilakukan)
 *   `assessments.teacher_id` -> `teachers.id` (Guru yang melakukan penilaian/input nilai)
+
+*   **Relasi Modul P5:**
+    *   `p5_projects.p5_theme_id` -> `p5_themes.id` (Projek terkait dengan Tema P5)
+    *   `p5_elements.p5_dimension_id` -> `p5_dimensions.id` (Elemen P5 terkait dengan Dimensi P5)
+    *   `p5_sub_elements.p5_element_id` -> `p5_elements.id` (Sub-elemen P5 terkait dengan Elemen P5)
+    *   `p5_project_target_sub_elements.p5_project_id` -> `p5_projects.id` (Target sub-elemen untuk projek P5)
+    *   `p5_project_target_sub_elements.p5_sub_element_id` -> `p5_sub_elements.id` (Target sub-elemen P5)
+    *   `p5_project_students.p5_project_id` -> `p5_projects.id` (Siswa yang terlibat dalam projek P5)
+    *   `p5_project_students.student_id` -> `students.id` (Siswa yang terlibat dalam projek P5)
+    *   `p5_assessments.p5_project_student_id` -> `p5_project_students.id` (Penilaian P5 untuk siswa dalam projek)
+    *   `p5_assessments.p5_sub_element_id` -> `p5_sub_elements.id` (Penilaian P5 untuk sub-elemen tertentu)
+    *   `p5_assessments.assessed_by` -> `teachers.id` (Guru yang melakukan penilaian P5)
 
 *(Catatan: ON DELETE/ON UPDATE behavior seperti CASCADE atau SET NULL juga didefinisikan dalam migrasi).*
 
@@ -155,29 +169,29 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Controller `Admin/TeacherClassSubjectAssignmentController` dibuat dengan fungsi CRUD dasar (index, new, create, delete) untuk mengelola penugasan.
     *   Views `admin/assignments/index.php` dan `admin/assignments/new.php` dibuat.
     *   Rute resource `admin/assignments` ditambahkan dan diproteksi untuk Administrator Sistem.
-*   **[P] Modul Akademik Harian - Manajemen Jadwal Pelajaran**:
-    *   Tabel `schedules` dibuat (via Migrasi).
-    *   Model `ScheduleModel` dibuat dengan validasi dasar dan method helper `getScheduleDetails()`.
-    *   Controller `Admin/ScheduleController` dibuat dengan fungsi CRUD (index, new, create, edit, update, delete) untuk mengelola jadwal pelajaran.
-    *   Views `admin/schedules/index.php`, `new.php`, dan `edit.php` dibuat.
-    *   Rute resource `admin/schedules` ditambahkan dan diproteksi untuk Administrator Sistem dan Staf Tata Usaha.
-    *   Navigasi admin diperbarui untuk menyertakan link ke Manajemen Jadwal.
-    *   Guru dapat melihat jadwal mengajarnya sendiri via `Guru/ClassViewController::mySchedule()` dan view `guru/schedules/my_schedule.php`. Navigasi guru diperbarui.
-    *   Siswa dapat melihat jadwal kelasnya via `Siswa/ScheduleController::classSchedule()` dan view `siswa/schedules/class_schedule.php`. Navigasi siswa diperbarui.
-*   **[P] Modul Akademik Harian - Input Presensi Harian oleh Guru**:
-    *   Tabel `attendances` dibuat (via Migrasi) untuk mencatat kehadiran siswa per jadwal per tanggal.
-    *   Model `AttendanceModel` dibuat dengan konstanta status, validasi, dan method helper.
-    *   Controller `Guru/AttendanceController` dibuat dengan method `selectSchedule`, `showAttendanceForm`, dan `saveAttendance`.
-    *   Views `guru/attendances/select_schedule.php` dan `guru/attendances/attendance_form.php` dibuat.
-    *   Rute dan navigasi guru diperbarui.
-*   **[P] Modul Akademik Harian - Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)**:
-    *   Tabel `subject_offerings` dan `student_subject_choices` dibuat (via Migrasi).
-    *   Model `SubjectOfferingModel` dan `StudentSubjectChoiceModel` dibuat.
-    *   Controller `Admin/SubjectOfferingController` dibuat untuk CRUD penawaran mapel oleh admin. Views terkait dibuat.
-    *   Controller `Siswa/SubjectChoiceController` dibuat untuk siswa melihat penawaran dan membuat/membatalkan pilihan (via AJAX). View terkait dibuat.
-    *   Rute dan navigasi Admin & Siswa diperbarui.
+*   **[X] Modul Akademik Harian - Manajemen Jadwal Pelajaran**:
+    *   [X] Tabel `schedules` dibuat (via Migrasi).
+    *   [X] Model `ScheduleModel` dibuat dengan validasi dasar dan method helper `getScheduleDetails()`.
+    *   [X] Controller `Admin/ScheduleController` dibuat dengan fungsi CRUD (index, new, create, edit, update, delete) untuk mengelola jadwal pelajaran.
+    *   [X] Views `admin/schedules/index.php`, `new.php`, dan `edit.php` dibuat.
+    *   [X] Rute resource `admin/schedules` ditambahkan dan diproteksi untuk Administrator Sistem dan Staf Tata Usaha.
+    *   [X] Navigasi admin diperbarui untuk menyertakan link ke Manajemen Jadwal.
+    *   [X] Guru dapat melihat jadwal mengajarnya sendiri via `Guru/ClassViewController::mySchedule()` dan view `guru/schedules/my_schedule.php`. Navigasi guru diperbarui.
+    *   [X] Siswa dapat melihat jadwal kelasnya via `Siswa/ScheduleController::classSchedule()` dan view `siswa/schedules/class_schedule.php`. Navigasi siswa diperbarui.
+*   **[X] Modul Akademik Harian - Input Presensi Harian oleh Guru**:
+    *   [X] Tabel `attendances` dibuat (via Migrasi) untuk mencatat kehadiran siswa per jadwal per tanggal.
+    *   [X] Model `AttendanceModel` dibuat dengan konstanta status, validasi, dan method helper.
+    *   [X] Controller `Guru/AttendanceController` dibuat dengan method `selectSchedule`, `showAttendanceForm`, dan `saveAttendance`.
+    *   [X] Views `guru/attendances/select_schedule.php` dan `guru/attendances/attendance_form.php` dibuat.
+    *   [X] Rute dan navigasi guru diperbarui.
+*   **[X] Modul Akademik Harian - Pemilihan Mata Pelajaran Pilihan (Siswa Fase F)**:
+    *   [X] Tabel `subject_offerings` dan `student_subject_choices` dibuat (via Migrasi).
+    *   [X] Model `SubjectOfferingModel` dan `StudentSubjectChoiceModel` dibuat.
+    *   [X] Controller `Admin/SubjectOfferingController` dibuat untuk CRUD penawaran mapel oleh admin. Views terkait dibuat.
+    *   [X] Controller `Siswa/SubjectChoiceController` dibuat untuk siswa melihat penawaran dan membuat/membatalkan pilihan (via AJAX). View terkait dibuat.
+    *   [X] Rute dan navigasi Admin & Siswa diperbarui.
 *   **[X] Modul Akademik Harian - Rekapitulasi (Admin/Wali Kelas/Kepala Sekolah)**:
-    *   Controller `Admin/RecapController` dibuat.
+    *   [X] Controller `Admin/RecapController` dibuat.
     *   **Rekapitulasi Presensi**:
         *   Method `RecapController::attendance()` dan `AttendanceModel::getAttendanceRecap()`.
         *   View `admin/recaps/attendance_recap.php` dengan filter tanggal, kelas, dan ekspor DataTables.
