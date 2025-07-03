@@ -146,6 +146,32 @@
                             </li>
                         <?php endif; ?>
 
+
+                        <!-- Rekapitulasi Menu -->
+                        <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha', 'Kepala Sekolah', 'Guru'])): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'admin/recaps') !== false) ? 'active' : '' ?>"
+                                   href="#" id="rekapMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                   <i class="bi bi-clipboard-data"></i> Rekapitulasi
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="rekapMenuDropdown">
+                                    <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha', 'Kepala Sekolah', 'Guru'])): ?>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'admin/recaps/attendance') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('admin_recap_attendance') ?>">Rekap Presensi</a>
+                                    </li>
+                                    <?php endif; ?>
+                                    <?php if (hasRole(['Administrator Sistem', 'Staf Tata Usaha', 'Kepala Sekolah', 'Guru'])): // Peran yang bisa melihat rekap mapel pilihan ?>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'admin/recaps/subject-choices') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('admin_recap_subject_choices'); ?>">Rekap Pilihan Mapel</a>
+                                    </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
+
+
                         <!-- Add other role-specific menus here later -->
 
 

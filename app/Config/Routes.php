@@ -73,6 +73,17 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     // Fallback for any other /admin routes not specifically role-filtered above
     // They will just use the group's 'auth' filter (logged-in check only)
     // More specific routes should be defined above this if they need stricter role checks.
+
+    // Rekapitulasi Routes (Admin, Staf TU, Kepsek, Guru/Wali Kelas)
+    // Filter di controller akan membatasi data untuk Wali Kelas
+    $routes->get('recaps/attendance', 'RecapController::attendance', [
+        'as' => 'admin_recap_attendance',
+        'filter' => 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah,Guru'
+    ]);
+    $routes->get('recaps/subject-choices', 'RecapController::subjectChoices', [
+        'as' => 'admin_recap_subject_choices',
+        'filter' => 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah,Guru' // Guru di sini mungkin lebih ke TU Kurikulum atau Admin
+    ]);
 });
 
 // Guru routes
