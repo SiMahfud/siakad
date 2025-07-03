@@ -109,6 +109,12 @@
                                         <a class="dropdown-item <?= (strpos(uri_string(), 'guru/assessments/recap') !== false || strpos(uri_string(), 'guru/assessments/show-recap') !== false) ? 'active' : '' ?>"
                                            href="<?= route_to('guru_assessment_recap_select') ?>">Rekap Nilai</a>
                                     </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Wali Kelas</h6></li>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'wali-kelas/erapor/export') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('wali_kelas_erapor_form') ?>">Ekspor e-Rapor</a>
+                                    </li>
                                 </ul>
                             </li>
                         <?php endif; ?>

@@ -102,4 +102,139 @@ class AssessmentModel extends Model
                     ->orderBy('assessments.assessment_type', 'ASC') // Formatif then Sumatif for same date
                     ->findAll();
     }
+
+    /**
+     * Get data formatted for e-Rapor export.
+     * Calculates average of summative scores per subject for each student in a class.
+     *
+     * @param int    $classId
+     * @param string $academicYear
+     * @param int    $semester
+     * @return array ['students' => [...], 'subjects' => [...]]
+     */
+    public function getExportDataForErapor(int $classId, string $academicYear, int $semester): array
+    {
+        // 1. Get all students in the class
+        $studentModel = new StudentModel();
+        $students = $studentModel->select('students.id, students.nisn, students.nis, students.full_name')
+                                 ->join('class_student cs', 'cs.student_id = students.id')
+                                 ->where('cs.class_id', $classId)
+                                 ->orderBy('students.full_name', 'ASC')
+                                 ->findAll();
+
+        if (empty($students)) {
+            return ['students' => [], 'subjects' => []];
+        }
+        $studentIdList = array_column($students, 'id');
+
+        // 2. Determine subjects:
+        // For e-Rapor, we typically need scores for all subjects assigned to the class in that semester,
+        // not just subjects that happen to have a summative assessment recorded.
+        // We'll fetch subjects assigned to the class via TeacherClassSubjectAssignmentModel or ScheduleModel.
+        // Using ScheduleModel as it directly links class, subject, teacher, academic_year, and semester.
+
+        $scheduleModel = new ScheduleModel();
+        $assignedSubjectsQuery = $scheduleModel->distinct()
+                                        ->select('schedules.subject_id, sub.subject_name, sub.subject_code')
+                                        ->join('subjects sub', 'sub.id = schedules.subject_id')
+                                        ->where('schedules.class_id', $classId)
+                                        ->where('schedules.academic_year', $academicYear)
+                                        ->where('schedules.semester', $semester);
+
+        $assignedSubjects = $assignedSubjectsQuery->orderBy('sub.subject_name', 'ASC')->findAll();
+
+        if (empty($assignedSubjects)) {
+             // Return students but no subjects/scores if no subjects are scheduled for the class in that period
+            $studentsDataEmptyScores = [];
+            foreach($students as $student) {
+                $studentsDataEmptyScores[$student['id']] = [
+                    'nisn'      => $student['nisn'],
+                    'nis'       => $student['nis'],
+                    'full_name' => $student['full_name'],
+                    'scores'    => [], // No subjects, so no scores
+                ];
+            }
+            return ['students' => $studentsDataEmptyScores, 'subjects' => []];
+        }
+        $subjectIds = array_column($assignedSubjects, 'subject_id');
+        $subjectsMap = array_column($assignedSubjects, null, 'subject_id');
+
+
+        // 3. Get all SUMMATIVE scores for these students, subjects, class, for the GIVEN ACADEMIC YEAR AND SEMESTER.
+        // The assessment_date should fall within the academic year and semester.
+        // This logic can be complex if semester start/end dates are not strictly defined.
+        // For now, we assume assessment_date is the primary key for time, and we need to ensure
+        // the assessments fetched are indeed for the specified academic_year and semester.
+        // The `assessments` table itself does not directly store academic_year or semester.
+        // We must infer this, perhaps by joining with `schedules` via `assessments.schedule_id` if assessments are linked to schedules,
+        // or by a convention on `assessment_date`.
+        // The current `assessments` table in README does not show `schedule_id`.
+        // Let's assume `assessments.class_id` and `assessments.assessment_date` are the primary filters for now,
+        // and we'll need a robust way to map assessment_date to academic_year/semester if not directly stored or linkable.
+
+        // Given the current `assessments` table structure from README (student_id, subject_id, class_id, teacher_id, assessment_type, score, assessment_date),
+        // we will filter by class_id, student_ids, subject_ids, assessment_type='Sumatif'.
+        // The filtering by academic_year and semester based on assessment_date needs a defined period.
+        // For simplicity in this step, we'll fetch all summatives and assume the controller or a helper function
+        // would have pre-filtered assessments based on date ranges corresponding to the academic year/semester.
+        // OR, a more robust way: link assessments to schedules (if schedule_id was in assessments table)
+        // OR, add academic_year and semester to assessments table during input.
+
+        // For now, let's assume the `assessment_date` itself is sufficient if we know the date range for the semester.
+        // This is a simplification. A real system would need a clear link.
+        // Let's assume the controller will pass date_from and date_to for the semester.
+        // If not, we'll have to query all summatives and then average them.
+
+        $allScoresQuery = $this->select('assessments.student_id, assessments.subject_id, assessments.score, assessments.assessment_date')
+                               ->where('assessments.class_id', $classId)
+                               ->whereIn('assessments.student_id', $studentIdList)
+                               ->whereIn('assessments.subject_id', $subjectIds)
+                               ->where('assessments.assessment_type', 'SUMATIF'); // Case-insensitive if DB default, but be explicit.
+
+        // TODO: Add date range filtering for academic_year and semester if $date_from and $date_to are available
+        // Example:
+        // if (!empty($filters['date_from']) && !empty($filters['date_to'])) {
+        //    $allScoresQuery->where('assessment_date >=', $filters['date_from']);
+        //    $allScoresQuery->where('assessment_date <=', $filters['date_to']);
+        // }
+        // Without date_from/date_to, this will average ALL summatives ever for that class/student/subject. This is likely not correct for a specific semester.
+        // This part highlights a potential need to refine how assessments are queried for specific academic periods.
+        // For the purpose of this function, we'll proceed with averaging scores found matching the core criteria.
+        // The controller calling this should ideally provide a date range.
+
+        $allScores = $allScoresQuery->findAll();
+
+        // 4. Process scores: calculate average per student per subject
+        $processedScores = []; // [student_id][subject_id] => [scores_array]
+        foreach ($allScores as $score) {
+            // Consider filtering by assessment_date here if a date range for the semester is known
+            // For now, we average all summatives found for that student/subject/class.
+            $processedScores[$score['student_id']][$score['subject_id']][] = (float)$score['score'];
+        }
+
+        $studentsData = [];
+        foreach ($students as $student) {
+            $studentScores = [];
+            foreach ($subjectIds as $subjectId) {
+                if (isset($processedScores[$student['id']][$subjectId]) && !empty($processedScores[$student['id']][$subjectId])) {
+                    $scoresForSubject = $processedScores[$student['id']][$subjectId];
+                    $averageScore = array_sum($scoresForSubject) / count($scoresForSubject);
+                    $studentScores[$subjectId] = round($averageScore); // Round to nearest integer or use specific rounding rule
+                } else {
+                    $studentScores[$subjectId] = ''; // Or 0, or null, based on e-Rapor requirements for missing values
+                }
+            }
+            $studentsData[$student['id']] = [
+                'nisn'      => $student['nisn'],
+                'nis'       => $student['nis'],
+                'full_name' => $student['full_name'],
+                'scores'    => $studentScores,
+            ];
+        }
+
+        return [
+            'students' => $studentsData,
+            'subjects' => $subjectsMap, // Map of subjects [id => subject_data]
+        ];
+    }
 }

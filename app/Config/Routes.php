@@ -121,6 +121,13 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
     $routes->get('attendance/select-schedule', 'AttendanceController::selectSchedule', ['as' => 'guru_attendance_select_schedule']);
     $routes->get('attendance/form', 'AttendanceController::showAttendanceForm', ['as' => 'guru_attendance_form']); // Using GET to display form with params
     $routes->post('attendance/save', 'AttendanceController::saveAttendance', ['as' => 'guru_attendance_save']);
+
+    // Wali Kelas - Ekspor e-Rapor
+    // Namespace controller sudah App\Controllers\WaliKelas, jadi path relatif dari sana.
+    // Namun, karena controller ada di subdirektori WaliKelas, kita perlu menentukannya.
+    // Cara yang lebih eksplisit:
+    $routes->get('wali-kelas/erapor/export', '\App\Controllers\WaliKelas\EraporController::exportForm', ['as' => 'wali_kelas_erapor_form', 'filter' => 'auth:Guru']);
+    $routes->post('wali-kelas/erapor/process', '\App\Controllers\WaliKelas\EraporController::processExport', ['as' => 'wali_kelas_erapor_process', 'filter' => 'auth:Guru']);
 });
 
 // Siswa routes
