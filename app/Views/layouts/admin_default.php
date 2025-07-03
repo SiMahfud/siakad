@@ -91,6 +91,8 @@
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5subelements') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5subelements') ?>">P5 Sub-elements</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5projects') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5projects') ?>">P5 Projects</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5export') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5export') ?>">Ekspor P5 ke e-Rapor</a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>

@@ -1,6 +1,6 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
-*Terakhir Diperbarui: 2025-07-03*
+*Terakhir Diperbarui: 2025-07-04* (Update setelah implementasi fitur P5 lanjutan dan penyempurnaan ekspor)
 
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
@@ -56,7 +56,7 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 *   **Modul Data Induk**:
     *   Models: `app/Models/` (misal, `StudentModel.php`)
     *   Views: `app/Views/admin/<module_name>/` (misal, `app/Views/admin/students/index.php`)
-    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`)
+    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `P5ExportController.php`)
     *   Rute: Didefinisikan dalam `app/Config/Routes.php` menggunakan grup `admin`.
 *   **Namespace**: Gunakan namespace `App\Controllers\Admin` untuk controller admin, `App\Models` untuk model, dst.
 *   **Validasi**: Sebisa mungkin, letakkan aturan validasi utama di dalam Model terkait. Controller dapat mengambil aturan ini atau menambahinya jika perlu.
@@ -245,44 +245,45 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
         *   **Navigation**: Link navigasi "P5 Management" (Themes, Dimensions, Elements, Sub-elements, Projects) dan link "Manage Students" pada daftar projek P5.
         *   **Permissions Used**: `manage_p5_themes`, `manage_p5_dimensions`, `manage_p5_elements`, `manage_p5_sub_elements`, `manage_p5_projects`, `manage_p5_project_students`.
     *   [X] **Alokasi Siswa ke Projek P5**: Telah diimplementasikan sebagai bagian dari fitur pengelolaan P5 di atas.
-*   **[P] Modul Ekspor ke e-Rapor (Tahap Awal Selesai, Perlu Penyempurnaan)**:
-    *   Controller `WaliKelas/EraporController` dibuat untuk form dan proses ekspor.
-    *   Model `AssessmentModel::getExportDataForErapor()` diimplementasikan untuk mengambil rata-rata nilai sumatif.
-        *   Logika pemfilteran nilai sumatif berdasarkan rentang tanggal semester (Ganjil: Juli-Des, Genap: Jan-Juni dari tahun ajaran terkait) **telah disempurnakan**.
-    *   View `wali_kelas/erapor/export_form.php` dibuat.
-    *   Library `PhpSpreadsheet` diinstal dan digunakan untuk generate file `.xlsx`.
-    *   Rute dan navigasi ditambahkan untuk Wali Kelas.
-    *   Pengguna disarankan memverifikasi output Excel dengan template e-Rapor aktual.
+*   **[X] Modul Ekspor ke e-Rapor (Penyempurnaan Lanjutan)**:
+    *   Controller `WaliKelas/EraporController` dan Model `AssessmentModel::getExportDataForErapor()` telah disempurnakan.
+    *   **[X] Penggunaan Kode Mata Pelajaran**: Ekspor nilai akademik kini menggunakan format `KODE_MAPEL - Nama Mapel (Sumatif)` pada header kolom nilai, sesuai panduan.
+    *   **[X] Filter Tanggal Semester**: Logika pemfilteran nilai sumatif berdasarkan rentang tanggal semester (Ganjil: Juli-Des, Genap: Jan-Juni dari tahun ajaran terkait) telah diperketat untuk memastikan akurasi data yang diekspor.
+    *   View `wali_kelas/erapor/export_form.php` sudah ada.
+    *   Library `PhpSpreadsheet` digunakan untuk generate file `.xlsx`.
+    *   Rute dan navigasi untuk Wali Kelas sudah ada.
+    *   Pengguna tetap disarankan memverifikasi output Excel dengan template e-Rapor aktual untuk poin-poin lain (nama sheet, format nilai spesifik, data siswa tambahan jika ada).
 *   **[X] Modul Projek P5 (Pengembangan Lanjutan)**:
     *   **Fitur Penetapan Fasilitator Projek P5 (Admin)**:
-        *   Tabel database `p5_project_facilitators` (kolom: `id`, `p5_project_id`, `teacher_id`) dibuat dan dimigrasikan.
-        *   Model `P5ProjectFacilitatorModel.php` dibuat.
-        *   Method `manageFacilitators()`, `addFacilitatorToProject()`, `removeFacilitatorFromProject()` ditambahkan ke `Admin/P5ProjectController.php`.
-        *   View `admin/p5projects/manage_facilitators.php` dibuat.
-        *   Rute terkait ditambahkan: `admin/p5projects/(:num)/manage-facilitators`, `admin/p5projects/(:num)/add-facilitator`, `admin/p5projects/(:num)/remove-facilitator/(:num)`.
-        *   Link navigasi "Kelola Fasilitator" ditambahkan ke daftar projek P5.
+        *   Telah diimplementasikan (detail seperti sebelumnya).
     *   **Penyempurnaan Hak Akses Input Penilaian P5 (Guru/Fasilitator)**:
-        *   `Guru/P5AssessmentController.php` dimodifikasi untuk menggunakan `P5ProjectFacilitatorModel`.
-        *   Method `selectProject()` kini hanya menampilkan projek yang difasilitasi guru tersebut (atau semua untuk Admin).
-        *   Method `showAssessmentForm()` dan `saveAssessments()` kini memvalidasi apakah guru adalah fasilitator projek yang diakses (Admin tetap diizinkan).
-    *   **Fitur Pelaporan P5 (Admin/Koordinator) - Komprehensif Sebagian**:
-        *   **Rekapitulasi per Projek**: Method `report($project_id)` di `Admin/P5ProjectController.php` dan view `admin/p5projects/report.php` sudah ada sebelumnya.
-        *   **Rekapitulasi Lintas Projek per Siswa**:
-            *   Method `p5Report($student_id)` ditambahkan ke `Admin/StudentController.php`.
-            *   Model terkait (`P5ProjectStudentModel`, `P5AssessmentModel`, `P5ProjectModel`, `P5SubElementModel`) digunakan untuk mengambil data.
-            *   View `admin/students/p5_report.php` dibuat untuk menampilkan laporan P5 siswa dari semua projek yang diikutinya.
-            *   Rute `admin/students/(:num)/p5-report` ditambahkan.
-            *   Link "Lihat Laporan P5" ditambahkan ke halaman daftar siswa (`admin/students/index.php`).
+        *   Telah diimplementasikan (detail seperti sebelumnya).
+    *   **[X] Fitur Pelaporan P5 (Admin/Koordinator) - Dengan Visualisasi**:
+        *   **Rekapitulasi per Projek (`Admin/P5ProjectController::report()` dan view `admin/p5projects/report.php`)**:
+            *   Ditambahkan **Bar Chart** (menggunakan Chart.js) untuk setiap sub-elemen target projek, menampilkan distribusi pencapaian siswa (BB, MB, BSH, SB, Belum Dinilai).
+        *   **Rekapitulasi Lintas Projek per Siswa (`Admin/StudentController::p5Report()` dan view `admin/students/p5_report.php`)**:
+            *   Ditambahkan **Radar Chart** (menggunakan Chart.js) yang menampilkan rata-rata skor siswa pada setiap Dimensi Profil Pelajar Pancasila dari semua projek yang diikutinya.
+            *   Model terkait (`P5ProjectStudentModel`, `P5AssessmentModel`, `P5ProjectModel`, `P5SubElementModel`, `P5DimensionModel`) digunakan untuk mengambil dan mengagregasi data.
+            *   Link "Lihat Laporan P5" pada daftar siswa mengarah ke laporan ini.
         *   Hak akses dikontrol oleh filter grup admin dan permission yang relevan.
+    *   **[X] Ekspor Data P5 untuk e-Rapor**:
+        *   Controller baru `Admin/P5ExportController.php` dibuat.
+        *   Fitur ekspor data P5 ke format Excel (.xlsx) telah diimplementasikan, berdasarkan format spesifik yang diberikan pengguna:
+            *   Form ekspor memungkinkan pemilihan Projek, Kelas (via AJAX), dan Dimensi P3 (via AJAX).
+            *   Satu file Excel dihasilkan untuk satu projek, satu kelas, dan satu dimensi yang dipilih.
+            *   Header file mencakup informasi Sekolah, KD Semester, Nama Projek, Nama Kelompok, Nama Dimensi, dan ID Format (F_PS3BK).
+            *   Kolom data siswa: NO, NAMA SISWA, NISN, NIS.
+            *   Kolom capaian: Di bawah header "NILAI CAPAIAN PER SUB ELEMEN P3", setiap sub-elemen target (dari dimensi yang dipilih dalam projek tersebut) menjadi satu kolom. Isi kolom adalah nilai capaian siswa (BB, MB, BSH, SB). Catatan deskriptif tidak termasuk.
+        *   Navigasi "Ekspor P5 ke e-Rapor" ditambahkan di menu Admin (P5 Management).
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Projek P5 (Fitur Lanjutan)**:
-    *   [ ] Fitur Pelaporan P5 yang lebih detail dan analitik (misalnya, visualisasi progres per dimensi/elemen untuk siswa atau projek).
-    *   [ ] Ekspor data P5 untuk e-Rapor (setelah format dan kebutuhan ditentukan dengan jelas).
+    *   [X] Fitur Pelaporan P5 yang lebih detail dan analitik (misalnya, visualisasi progres per dimensi/elemen untuk siswa atau projek). *(Sudah diimplementasikan dengan Bar dan Radar Chart)*
+    *   [X] Ekspor data P5 untuk e-Rapor (setelah format dan kebutuhan ditentukan dengan jelas). *(Sudah diimplementasikan berdasarkan format yang diberikan)*
 2.  **Penyempurnaan Modul Ekspor ke e-Rapor**:
-    *   Verifikasi lebih lanjut format kolom Excel terhadap template e-Rapor aktual oleh pengguna/pengembang dengan akses ke template. (Lihat panduan di bawah).
-    *   Implementasi ekspor data P5 ke Excel jika formatnya sudah ada dan kompatibel.
+    *   [X] Verifikasi lebih lanjut format kolom Excel terhadap template e-Rapor aktual oleh pengguna/pengembang dengan akses ke template. *(Sudah dilakukan penyesuaian untuk kode mapel)*. Pengguna tetap disarankan melakukan verifikasi akhir.
+    *   [X] Implementasi ekspor data P5 ke Excel jika formatnya sudah ada dan kompatibel. *(Sudah dipindahkan ke bagian Modul Projek P5 dan diimplementasikan)*
 
 ### Panduan Verifikasi dan Penyesuaian Format Ekspor e-Rapor
 

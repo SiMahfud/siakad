@@ -151,6 +151,24 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'as' => 'admin_student_p5_report',
         'filter' => 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah' // Or specific P5 view permission
     ]);
+
+    // P5 Export Routes (within admin group)
+    $routes->get('p5export', 'P5ExportController::exportForm', [
+        'as' => 'admin_p5export_form',
+        'filter' => $p5ManagementFilter // Reuse existing filter or define a new one
+    ]);
+    $routes->post('p5export/process', 'P5ExportController::processExport', [
+        'as' => 'admin_p5export_process',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->get('p5export/ajax/classes/(:num)', 'P5ExportController::getClassesForProject/$1', [
+        'as' => 'admin_p5export_ajax_classes',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->get('p5export/ajax/dimensions/(:num)', 'P5ExportController::getDimensionsForProject/$1', [
+        'as' => 'admin_p5export_ajax_dimensions',
+        'filter' => $p5ManagementFilter
+    ]);
 });
 
 // Guru routes

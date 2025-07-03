@@ -225,18 +225,31 @@ class AssessmentModel extends Model
             $date_to = $endYear . '-06-30';
         }
 
-        if ($date_from && $date_to) {
-            $allScoresQuery->where('assessments.assessment_date >=', $date_from);
-            $allScoresQuery->where('assessments.assessment_date <=', $date_to);
-        } else {
-            // Log or handle the case where dates could not be determined,
-            // to prevent accidental export of all data.
-            // For safety, if dates are not determined, return empty or throw error.
-             log_message('error', "Could not determine date range for eRapor export. Academic Year: {$academicYear}, Semester: {$semester}");
-             // Depending on strictness, either return empty or proceed without date filter if that's acceptable fallback.
-             // Returning empty is safer to prevent incorrect data export.
-             // return ['students' => [], 'subjects' => $subjectsMap]; // Option: return students and subjects but no scores
+        if (!$date_from || !$date_to) {
+            log_message('error', "Could not determine valid date range for eRapor export. Academic Year: {$academicYear}, Semester: {$semester}. Exporting with empty scores for this period.");
+            // Return empty scores for all students for all subjects to prevent incorrect data export
+            $studentsDataEmptyScores = [];
+            foreach ($students as $student) {
+                $studentScores = [];
+                foreach ($subjectIds as $subjectId) {
+                    $studentScores[$subjectId] = ''; // Empty score
+                }
+                $studentsDataEmptyScores[$student['id']] = [
+                    'nisn'      => $student['nisn'],
+                    'nis'       => $student['nis'],
+                    'full_name' => $student['full_name'],
+                    'scores'    => $studentScores,
+                ];
+            }
+            return [
+                'students' => $studentsDataEmptyScores,
+                'subjects' => $subjectsMap,
+            ];
         }
+
+        // Proceed with $allScoresQuery only if date_from and date_to are valid
+        $allScoresQuery->where('assessments.assessment_date >=', $date_from);
+        $allScoresQuery->where('assessments.assessment_date <=', $date_to);
 
         $allScores = $allScoresQuery->findAll();
 

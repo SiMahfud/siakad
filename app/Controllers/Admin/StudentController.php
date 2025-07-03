@@ -14,6 +14,7 @@ class StudentController extends BaseController
     protected $p5AssessmentModel;
     protected $p5ProjectModel;
     protected $p5SubElementModel;
+    protected $p5DimensionModel; // Added for dimension names
 
     public function __construct()
     {
@@ -23,6 +24,7 @@ class StudentController extends BaseController
         $this->p5AssessmentModel = new \App\Models\P5AssessmentModel();
         $this->p5ProjectModel = new \App\Models\P5ProjectModel();
         $this->p5SubElementModel = new \App\Models\P5SubElementModel();
+        $this->p5DimensionModel = new \App\Models\P5DimensionModel(); // Added
         helper(['form', 'url', 'auth']); // Load form, URL, and auth helpers
     }
 
@@ -220,6 +222,56 @@ class StudentController extends BaseController
             'student' => $student,
             'reportData' => $reportData,
         ];
+
+        // --- Data preparation for Radar Chart ---
+        $dimensionScores = [];
+        $assessmentValueMapping = ['BB' => 1, 'MB' => 2, 'BSH' => 3, 'SB' => 4];
+
+        foreach ($reportData as $projectReport) {
+            foreach ($projectReport['target_sub_elements'] as $subElement) {
+                $assessment = $projectReport['assessments'][$subElement['id']] ?? null;
+                if ($assessment && isset($assessmentValueMapping[$assessment['assessment_value']])) {
+                    $score = $assessmentValueMapping[$assessment['assessment_value']];
+                    $dimensionName = $subElement['dimension_name'];
+
+                    if (!isset($dimensionScores[$dimensionName])) {
+                        $dimensionScores[$dimensionName] = ['total_score' => 0, 'count' => 0];
+                    }
+                    $dimensionScores[$dimensionName]['total_score'] += $score;
+                    $dimensionScores[$dimensionName]['count']++;
+                }
+            }
+        }
+
+        $radarChartData = ['labels' => [], 'scores' => []];
+        if (!empty($dimensionScores)) {
+            // Fetch all dimension names for consistent ordering if needed, or just use what's assessed
+            // For simplicity, using assessed dimensions. For consistency, query P5DimensionModel.
+            $allDimensions = $this->p5DimensionModel->orderBy('id', 'ASC')->findAll();
+            $orderedDimensionNames = array_column($allDimensions, 'name');
+
+            $dimensionAverages = [];
+            foreach ($dimensionScores as $dimName => $scores) {
+                if ($scores['count'] > 0) {
+                    $dimensionAverages[$dimName] = $scores['total_score'] / $scores['count'];
+                }
+            }
+
+            // Ensure radar chart data follows a consistent order of dimensions
+            foreach($orderedDimensionNames as $orderedDimName) {
+                if (isset($dimensionAverages[$orderedDimName])) {
+                    $radarChartData['labels'][] = esc($orderedDimName);
+                    $radarChartData['scores'][] = round($dimensionAverages[$orderedDimName], 2);
+                }
+                // Optionally, include dimensions with no score as 0 or skip them
+                // else {
+                //    $radarChartData['labels'][] = esc($orderedDimName);
+                //    $radarChartData['scores'][] = 0; // If you want to show all dimensions
+                // }
+            }
+        }
+        $data['radarChartData'] = $radarChartData;
+        // --- End Radar Chart Data ---
 
         return view('admin/students/p5_report', $data);
     }

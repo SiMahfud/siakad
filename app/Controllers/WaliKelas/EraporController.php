@@ -115,9 +115,10 @@ class EraporController extends BaseController
         // Header Kolom - sesuaikan dengan format e-Rapor yang sebenarnya
         $header = ['NISN', 'NIS', 'Nama Siswa'];
         foreach ($exportData['subjects'] as $subject) {
-            // Gunakan subject_code atau subject_name sebagai header, atau kombinasi
-            // e-Rapor mungkin memiliki kode mapel spesifik
-            $header[] = esc($subject['subject_name']) . " (Sumatif)";
+            // Menggunakan subject_code dan subject_name untuk header
+            // Sesuai AGENTS.md, e-Rapor mungkin memerlukan subject_code.
+            // Format: KODE - NAMA (Sumatif)
+            $header[] = esc($subject['subject_code'] ?? 'KODE_ERROR') . ' - ' . esc($subject['subject_name']) . " (Sumatif)";
         }
         $sheet->fromArray($header, NULL, 'A1');
 
