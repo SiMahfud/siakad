@@ -35,6 +35,10 @@ class P5ProjectController extends BaseController
         $this->p5ElementModel = new P5ElementModel();
         $this->studentModel = new StudentModel();
         $this->p5ProjectStudentModel = new P5ProjectStudentModel();
+        // Ensure P5AssessmentModel is loaded if not already via autoloader or other means
+        if (!isset($this->p5AssessmentModel)) {
+            $this->p5AssessmentModel = new \App\Models\P5AssessmentModel();
+        }
     }
 
     public function index()
@@ -395,5 +399,60 @@ class P5ProjectController extends BaseController
         } else {
             return redirect()->to('admin/p5projects/manage-students/' . $project_id)->with('error', 'Failed to remove student from project.');
         }
+    }
+
+    public function report($project_id)
+    {
+        if (!has_permission('manage_p5_projects')) { // Or a specific 'view_p5_reports' permission
+            return redirect()->to('/unauthorized');
+        }
+
+        $project = $this->p5ProjectModel->find($project_id);
+        if (!$project) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('P5 Project not found.');
+        }
+
+        // Get students in this project
+        $projectStudents = $this->p5ProjectStudentModel
+            ->select('p5_project_students.id as p5_project_student_id, students.id as student_id, students.full_name as student_name, students.nis')
+            ->join('students', 'students.id = p5_project_students.student_id')
+            ->where('p5_project_students.p5_project_id', $project_id)
+            ->orderBy('students.full_name', 'ASC')
+            ->findAll();
+
+        // Get target sub-elements for this project
+        $targetSubElements = $this->p5SubElementModel
+            ->select('p5_sub_elements.id, p5_sub_elements.name, p5_elements.name as element_name, p5_dimensions.name as dimension_name')
+            ->join('p5_project_target_sub_elements pstse', 'pstse.p5_sub_element_id = p5_sub_elements.id')
+            ->join('p5_elements', 'p5_elements.id = p5_sub_elements.p5_element_id')
+            ->join('p5_dimensions', 'p5_dimensions.id = p5_elements.p5_dimension_id')
+            ->where('pstse.p5_project_id', $project_id)
+            ->orderBy('p5_dimensions.id, p5_elements.id, p5_sub_elements.id')
+            ->findAll();
+
+        $assessmentsData = [];
+        if (!empty($projectStudents) && !empty($targetSubElements)) {
+            foreach ($projectStudents as $ps) {
+                foreach ($targetSubElements as $subElement) {
+                    $assessment = $this->p5AssessmentModel
+                        ->select('p5_assessments.assessment_value, p5_assessments.notes, teachers.full_name as assessor_name, p5_assessments.assessment_date')
+                        ->join('teachers', 'teachers.id = p5_assessments.assessed_by', 'left')
+                        ->where('p5_assessments.p5_project_student_id', $ps['p5_project_student_id'])
+                        ->where('p5_assessments.p5_sub_element_id', $subElement['id'])
+                        ->first();
+                    $assessmentsData[$ps['p5_project_student_id']][$subElement['id']] = $assessment;
+                }
+            }
+        }
+
+        $data = [
+            'title' => 'P5 Project Report: ' . esc($project['name']),
+            'project' => $project,
+            'projectStudents' => $projectStudents,
+            'targetSubElements' => $targetSubElements,
+            'assessmentsData' => $assessmentsData,
+        ];
+
+        return view('admin/p5projects/report', $data);
     }
 }

@@ -127,6 +127,11 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'as' => 'admin_p5project_remove_student',
         'filter' => $p5ManagementFilter
     ]);
+    // P5 Project Report route
+    $routes->get('p5projects/report/(:num)', 'P5ProjectController::report/$1', [
+        'as' => 'admin_p5project_report',
+        'filter' => $p5ManagementFilter // Or a more specific view permission
+    ]);
 });
 
 // Guru routes
@@ -171,6 +176,11 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
     // Cara yang lebih eksplisit:
     $routes->get('wali-kelas/erapor/export', '\App\Controllers\WaliKelas\EraporController::exportForm', ['as' => 'wali_kelas_erapor_form', 'filter' => 'auth:Guru']);
     $routes->post('wali-kelas/erapor/process', '\App\Controllers\WaliKelas\EraporController::processExport', ['as' => 'wali_kelas_erapor_process', 'filter' => 'auth:Guru']);
+
+    // P5 Assessment Routes for Guru/Facilitator
+    $routes->get('p5assessments', 'P5AssessmentController::selectProject', ['as' => 'guru_p5assessment_select_project']);
+    $routes->get('p5assessments/project/(:num)', 'P5AssessmentController::showAssessmentForm/$1', ['as' => 'guru_p5assessment_form']);
+    $routes->post('p5assessments/save/(:num)', 'P5AssessmentController::saveAssessments/$1', ['as' => 'guru_p5assessment_save']);
 });
 
 // Siswa routes

@@ -61,19 +61,20 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] CRUD untuk Projek P5 (termasuk pemilihan tema, target sub-elemen).
     *   [X] Alokasi Siswa ke Projek P5.
     *   [ ] Penentuan fasilitator/guru pendamping projek.
-*   **[ ] Fitur Penilaian P5 (Fasilitator/Guru)**
-    *   [ ] Antarmuka input penilaian kualitatif (BB, MB, BSH, SB) & catatan deskriptif per siswa per sub-elemen.
-*   **[ ] Fitur Pelaporan P5**
-    *   [ ] Rekapitulasi penilaian P5 (per siswa, per projek).
+*   **[P] Fitur Penilaian P5 (Fasilitator/Guru) (Dasar)**
+    *   [X] Antarmuka input penilaian kualitatif (BB, MB, BSH, SB) & catatan deskriptif per siswa per sub-elemen (Dasar).
+        *   *Catatan: Hak akses input penilaian saat ini terbuka untuk semua guru, perlu penyempurnaan setelah fitur penetapan fasilitator projek ada.*
+*   **[P] Fitur Pelaporan P5 (Dasar)**
+    *   [X] Rekapitulasi penilaian P5 per projek (per siswa, per sub-elemen) untuk Admin/Koordinator.
     *   [ ] Ekspor data P5 untuk e-Rapor (jika didukung).
 
 ### Modul Pendukung
 
-*   **[P] Modul Ekspor ke e-Rapor (Fitur Kunci - Tahap Awal)**
+*   **[X] Modul Ekspor ke e-Rapor (Fitur Kunci - Penyempurnaan Filter)**
     *   [X] Antarmuka Wali Kelas untuk parameter ekspor (Kelas, Tahun Ajaran, Semester).
-    *   [P] Proses penarikan data nilai sumatif (rata-rata per mapel).
-        *   *Catatan: Akurasi filter semester pada nilai sumatif perlu penyempurnaan.*
+    *   [X] Proses penarikan data nilai sumatif (rata-rata per mapel) dengan filter semester yang disempurnakan berdasarkan rentang tanggal.
     *   [X] Penyusunan & Unduh file Excel (.xlsx).
+        *   *Catatan: Pengguna disarankan memverifikasi format output Excel dengan template e-Rapor aktual.*
     *   [ ] Ekspor data P5 (menyusul setelah fitur penilaian & pelaporan P5 lengkap).
 
 ### Fitur Berdasarkan Peran Pengguna
