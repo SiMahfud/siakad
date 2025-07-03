@@ -220,19 +220,22 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
             *   `Admin/P5DimensionController.php`
             *   `Admin/P5ElementController.php` (mengelola relasi ke `p5_dimensions`)
             *   `Admin/P5SubElementController.php` (mengelola relasi ke `p5_elements`)
-            *   `Admin/P5ProjectController.php` (mengelola relasi ke `p5_themes`, `p5_project_target_sub_elements`, dan kini juga `p5_project_students`)
-                *   Metode baru: `manageStudents()`, `addStudentToProject()`, `removeStudentFromProject()`.
+            *   `Admin/P5ProjectController.php` (mengelola relasi ke `p5_themes`, `p5_project_target_sub_elements`, dan `p5_project_students`)
+                *   Metode: `index`, `new`, `create`, `edit`, `update`, `delete`.
+                *   Metode untuk alokasi siswa: `manageStudents()`, `addStudentToProject()`, `removeStudentFromProject()`.
         *   **Views**:
             *   `app/Views/admin/p5themes/` (index, new, edit)
             *   `app/Views/admin/p5dimensions/` (index, new, edit)
             *   `app/Views/admin/p5elements/` (index, new, edit) - Form menyertakan pemilihan Dimensi Induk.
             *   `app/Views/admin/p5subelements/` (index, new, edit) - Form menyertakan pemilihan Elemen Induk.
             *   `app/Views/admin/p5projects/` (index, new, edit) - Form menyertakan pemilihan Tema dan multi-seleksi Target Sub-elemen.
-            *   `app/Views/admin/p5projects/manage_students.php` - View baru untuk alokasi siswa ke projek.
-        *   **Routes**: Resource routes ditambahkan untuk `admin/p5themes`, `admin/p5dimensions`, `admin/p5elements`, `admin/p5subelements`, `admin/p5projects`.
-            *   Route tambahan untuk manajemen siswa projek P5: `admin/p5projects/manage-students/(:num)`, `admin/p5projects/add-student/(:num)`, `admin/p5projects/remove-student/(:num)/(:num)`.
-        *   **Navigation**: Link navigasi ditambahkan di bawah menu "P5 Management" di layout admin. Link "Manage Students" ditambahkan di halaman indeks projek P5.
-        *   **Permissions Used**: `manage_p5_themes`, `manage_p5_dimensions`, `manage_p5_elements`, `manage_p5_sub_elements`, `manage_p5_projects`, `manage_p5_project_students`. (Perlu dipastikan permission ini ada dan terpasang ke role yang sesuai).
+            *   `app/Views/admin/p5projects/manage_students.php` - View untuk alokasi siswa ke projek.
+        *   **Routes**:
+            *   Resource routes: `admin/p5themes`, `admin/p5dimensions`, `admin/p5elements`, `admin/p5subelements`, `admin/p5projects`.
+            *   Rute spesifik untuk P5 Project Student Management: `admin/p5projects/manage-students/(:num)`, `admin/p5projects/add-student/(:num)`, `admin/p5projects/remove-student/(:num)/(:num)`.
+        *   **Navigation**: Link navigasi "P5 Management" (Themes, Dimensions, Elements, Sub-elements, Projects) dan link "Manage Students" pada daftar projek P5.
+        *   **Permissions Used**: `manage_p5_themes`, `manage_p5_dimensions`, `manage_p5_elements`, `manage_p5_sub_elements`, `manage_p5_projects`, `manage_p5_project_students`.
+    *   [X] **Alokasi Siswa ke Projek P5**: Telah diimplementasikan sebagai bagian dari fitur pengelolaan P5 di atas.
     *   [ ] **Pengembangan Fitur (Selanjutnya)**:
         *   Fitur input penilaian P5 oleh Fasilitator/Guru.
 *   **[P] Modul Ekspor ke e-Rapor (Tahap Awal Selesai, Perlu Penyempurnaan)**:
