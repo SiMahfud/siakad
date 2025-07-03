@@ -1,6 +1,6 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
-*Terakhir Diperbarui: 2025-07-03* (Update setelah implementasi fitur Konfigurasi Global dan Dasbor KS)
+*Terakhir Diperbarui: 2025-07-03* (Update setelah implementasi fitur Notifikasi Absensi dan Rekap Presensi Visual)
 
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
@@ -54,20 +54,24 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 ## 3. Struktur Proyek & Konvensi Penting
 
 *   **Modul Data Induk**:
-    *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`)
-    *   Views: `app/Views/admin/<module_name>/` (misal, `app/Views/admin/students/index.php`, `app/Views/admin/settings/index.php`), `app/Views/kepala_sekolah/dashboard/index.php`
-    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `P5ExportController.php`, `SettingController.php`), `app/Controllers/KepalaSekolah/DashboardController.php`
-    *   Rute: Didefinisikan dalam `app/Config/Routes.php` menggunakan grup `admin` dan `kepala-sekolah`.
-*   **Namespace**: Gunakan namespace `App\Controllers\Admin` untuk controller admin, `App\Controllers\KepalaSekolah` untuk controller Kepala Sekolah, `App\Models` untuk model, dst.
-*   **Validasi**: Sebisa mungkin, letakkan aturan validasi utama di dalam Model terkait. Controller dapat mengambil aturan ini atau menambahinya jika perlu.
-*   **Layout Views**: Master layout admin adalah `app/Views/layouts/admin_default.php`. Views konten harus `extend` layout ini dan menempatkan konten dalam `section('content')`.
-*   **Helper**: Helper `form`, `url`, `auth` umumnya dibutuhkan. Helper kustom seperti `setting_helper.php` (`app/Helpers/setting_helper.php`) dibuat untuk fungsionalitas spesifik.
+    *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`, `NotificationModel.php`)
+    *   Views: `app/Views/admin/<module_name>/` (misal, `students/index.php`, `settings/index.php`), `app/Views/kepala_sekolah/dashboard/index.php`, `app/Views/notifications/index.php`
+    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `SettingController.php`), `app/Controllers/KepalaSekolah/DashboardController.php`, `app/Controllers/NotificationController.php`
+    *   Commands: `app/Commands/AttendanceAlertsCheckCommand.php`
+    *   Rute: Didefinisikan dalam `app/Config/Routes.php`.
+*   **Namespace**: Sesuai struktur direktori.
+*   **Validasi**: Diutamakan di Model.
+*   **Layout Views**: `app/Views/layouts/admin_default.php`.
+*   **Helper**: Helper standar (`form`, `url`, `auth`, `text`). Helper kustom (`setting_helper.php`, `notification_helper.php`) di `app/Helpers/`.
 
 ## 4. Ringkasan Relasi Database Utama
 
 Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam database SI-AKADEMIK. Untuk detail lengkap kolom dan tipe data, silakan merujuk ke file migrasi di `app/Database/Migrations/`.
 
-*   `users.role_id` -> `roles.id` (Menentukan peran pengguna)
+*   `users.role_id` -> `roles.id`
+*   `notifications.user_id` -> `users.id` (Penerima notifikasi)
+*   `notifications.student_id` -> `students.id` (Siswa terkait notifikasi)
+*   `students.user_id` -> `users.id`
 *   `students.user_id` -> `users.id` (Akun login untuk siswa)
 *   `students.parent_user_id` -> `users.id` (Akun login untuk orang tua siswa)
 *   `teachers.user_id` -> `users.id` (Akun login untuk guru)
@@ -273,27 +277,44 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Data ringkasan yang ditampilkan: Total Siswa, Total Guru, Total Kelas, Jumlah Projek P5 Aktif, Rata-rata Kehadiran Siswa Bulan Ini.
     *   View `kepala_sekolah/dashboard/index.php` dibuat untuk menampilkan data dalam bentuk kartu.
     *   Rute dan navigasi "Dasbor KS" untuk Kepala Sekolah ditambahkan.
+*   **[X] Notifikasi Otomatis untuk Ketidakhadiran Beruntun/Tinggi**:
+    *   Tabel `notifications` dibuat (user_id, student_id, type, message, link, is_read).
+    *   Command `php spark attendance:checkalerts` dibuat untuk:
+        *   Mengecek Alfa beruntun (default 3 hari).
+        *   Mengecek total Alfa dalam 30 hari (default 5 hari).
+        *   Mengecek total Sakit/Izin dalam 30 hari (default 7 hari).
+    *   `NotificationModel.php` dibuat untuk CRUD notifikasi.
+    *   `notification_helper.php` (dengan `get_unread_notifications_count()`, `get_unread_notifications()`, `time_ago()`) dibuat dan didaftarkan. Helper `text` juga didaftarkan.
+    *   `NotificationController.php` dibuat untuk menampilkan daftar notifikasi dan aksi "mark as read".
+    *   Indikator notifikasi (lonceng & counter) dan dropdown notifikasi ditambahkan di layout utama.
+    *   View `notifications/index.php` untuk daftar notifikasi dengan paginasi.
+    *   Rute untuk notifikasi ditambahkan.
+*   **[X] Rekapitulasi Presensi yang Lebih Interaktif & Visual (Admin/KS/Guru)**:
+    *   **Filter Lanjutan**: Rekap presensi (`Admin/RecapController::attendance()`) kini mendukung filter rentang tanggal (`date_from`, `date_to`). Filter status ditambahkan di UI tapi belum memfilter query rekap utama (bersifat informatif untuk tabel).
+    *   **Model Update**: `AttendanceModel::getAttendanceRecap()` diperbarui untuk mendukung rentang tanggal. Method baru `getDailyAttendanceSummaryForClass()` ditambahkan untuk data visualisasi harian.
+    *   **Kalender Presensi**: Di view rekap presensi kelas, ditambahkan kalender (FullCalendar.js) yang menampilkan ringkasan H/A/I/S per hari dengan pewarnaan.
+    *   **Grafik Tren Kehadiran**: Di view rekap presensi kelas, ditambahkan grafik garis (Chart.js) yang menampilkan tren persentase kehadiran harian.
+    *   View `admin/recaps/attendance_recap.php` diperbarui untuk menyertakan filter baru dan elemen visualisasi.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-*   **Verifikasi Akhir Format Ekspor**: Meskipun penyesuaian telah dilakukan, verifikasi output Excel (baik nilai akademik maupun P5) dengan **template e-Rapor aktual** oleh pengguna/pengembang dengan akses langsung ke template tersebut tetap menjadi prioritas untuk memastikan kompatibilitas 100%.
-*   **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
-    *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul.
-    *   Implementasi peran "Koordinator P5" jika diperlukan, dengan hak akses spesifik untuk manajemen dan pelaporan P5, mungkin termasuk akses ke ekspor P5.
-    *   Pastikan permission `manage_settings` (jika dibuat) diterapkan dengan benar untuk `SettingController`.
-*   **Integrasi Lebih Lanjut Pengaturan Global**:
-    *   Gunakan `get_setting('school_name')`, `get_setting('headmaster_name')`, dll., secara lebih luas di semua laporan atau dokumen yang memerlukan informasi sekolah.
-    *   Gunakan `get_setting('current_academic_year')` dan `get_setting('current_semester')` sebagai filter default atau pilihan default di lebih banyak fitur (misalnya, rekapitulasi, input nilai jika relevan).
-*   **Penyempurnaan Dasbor Eksekutif**:
-    *   Tambahkan lebih banyak metrik atau visualisasi ke dasbor Kepala Sekolah (misalnya, ringkasan pencapaian P5 sekolah, tren nilai).
-    *   Optimalkan query untuk data kehadiran jika menjadi berat.
-*   **Fitur Tambahan Guru**:
-    *   Fasilitas unggah materi ajar atau tugas per mata pelajaran/kelas.
+*   **Verifikasi Akhir Format Ekspor**: (Seperti sebelumnya)
+*   **Penyempurnaan Hak Akses (Minor/Lanjutan)**: (Seperti sebelumnya, termasuk peran Koordinator P5 dan permission `manage_settings`)
+*   **Integrasi Lebih Lanjut Pengaturan Global**: (Seperti sebelumnya)
+*   **Penyempurnaan Dasbor Eksekutif**: (Seperti sebelumnya)
+*   **Fungsionalitas Penuh Filter Status di Rekap Presensi**: Implementasikan logika agar filter status di rekap presensi benar-benar memfilter data tabel yang ditampilkan (misalnya, hanya menampilkan siswa yang memiliki status 'Alfa' dalam rentang tanggal terpilih).
+*   **Konfigurasi Threshold Notifikasi Absensi**: Pindahkan threshold notifikasi absensi dari hardcode di Command ke Pengaturan Umum Sekolah.
+*   **Pengelolaan Notifikasi Lebih Lanjut**:
+    *   Opsi untuk menghapus notifikasi.
+    *   Pengelompokan notifikasi berdasarkan tipe atau tanggal.
+*   **Optimalisasi Command Notifikasi**: Jika jumlah siswa sangat besar, optimalkan query di `AttendanceAlertsCheckCommand` atau pertimbangkan pemrosesan batch.
+*   **Penjadwalan Command (Cron Job)**: Ingatkan pengguna/admin untuk mengatur cron job agar `php spark attendance:checkalerts` berjalan secara periodik.
+*   **Fitur Tambahan Guru**: (Seperti sebelumnya)
 *   **Fitur Tambahan Wali Kelas**:
     *   Input catatan perilaku/perkembangan siswa.
     *   Mekanisme validasi kelengkapan nilai sebelum ekspor rapor.
 *   **Fitur Tambahan Siswa & Orang Tua**:
-    *   Rekap absensi pribadi untuk siswa.
+    *   Rekap absensi pribadi untuk siswa (mungkin dengan kalender visual juga).
     *   Notifikasi/Pesan (misalnya, pengumuman dari sekolah atau guru).
     *   Orang tua melihat status pemilihan mapel anak.
 *   **Maintenance & Backup**:

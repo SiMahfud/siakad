@@ -190,6 +190,14 @@ $routes->group('kepala-sekolah', ['namespace' => 'App\Controllers\KepalaSekolah'
     // Add other Kepala Sekolah specific routes here
 });
 
+// Notification Routes (Accessible by logged-in users)
+$routes->group('notifications', ['namespace' => 'App\Controllers', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('/', 'NotificationController::index', ['as' => 'notifications_index']);
+    $routes->get('mark-as-read/(:segment)', 'NotificationController::markAsRead/$1', ['as' => 'notification_mark_read']); // :segment can be id or 'all'
+    $routes->get('ajax-mark-as-read/(:num)', 'NotificationController::ajaxMarkAsRead/$1', ['as' => 'notification_ajax_mark_read']); // For AJAX single mark as read
+});
+
+
 // Guru routes
 $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth:Guru,Administrator Sistem'], static function ($routes) {
     // Assessment routes

@@ -89,7 +89,9 @@ class Autoload extends AutoloadConfig
      * @var list<string>
      */
     public $helpers = [
-        'auth', // Added auth_helper (auth_helper.php -> 'auth')
-        'setting' // Added setting_helper.php
+        'auth',
+        'setting',
+        'notification',
+        'text' // Added CodeIgniter's text helper for character_limiter
     ];
 }

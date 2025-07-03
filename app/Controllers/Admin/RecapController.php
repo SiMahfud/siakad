@@ -83,13 +83,17 @@ class RecapController extends BaseController
         $data['available_classes'] = $availableClasses;
 
         $selectedClassId = $this->request->getGet('class_id');
-        $dateFrom = $this->request->getGet('date_from') ?? date('Y-m-01');
-        $dateTo = $this->request->getGet('date_to') ?? date('Y-m-t');
+        $dateFrom = $this->request->getGet('date_from') ?? date('Y-m-01'); // Default to first day of current month
+        $dateTo = $this->request->getGet('date_to') ?? date('Y-m-t'); // Default to last day of current month
+        $statusFilter = $this->request->getGet('status') ?? 'ALL'; // Default to all statuses
 
         $data['selected_class_id'] = $selectedClassId;
         $data['date_from'] = $dateFrom;
         $data['date_to'] = $dateTo;
+        $data['selected_status'] = $statusFilter;
         $data['recap_data'] = [];
+        $data['daily_summary_for_visuals'] = [];
+        $data['status_map'] = \App\Models\AttendanceModel::getStatusMap(); // Pass status map to view for filter dropdown
 
         // Security check: if user is Wali Kelas, ensure selected_class_id is one of their classes
         if (has_role('Guru') && !(has_role('Administrator Sistem') || has_role('Staf Tata Usaha') || has_role('Kepala Sekolah'))) {
@@ -122,17 +126,29 @@ class RecapController extends BaseController
                 'class_id' => $selectedClassId,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
+                // 'status' => $statusFilter, // The model's getAttendanceRecap currently ignores this for the main summary.
+                                          // Status filter might be more for "who was alfa" rather than general HISA recap.
+                                          // Or it can be applied to the final $recapData array if needed.
             ];
             $recapData = $this->attendanceModel->getAttendanceRecap($filters);
             $data['recap_data'] = $recapData;
+
+            // Fetch daily summary for visuals (calendar and line chart)
+            if ($selectedClassId) { // Visuals are per class
+                 $data['daily_summary_for_visuals'] = $this->attendanceModel->getDailyAttendanceSummaryForClass($filters);
+            }
+
         } elseif ((has_role('Administrator Sistem') || has_role('Staf Tata Usaha') || has_role('Kepala Sekolah')) && !$selectedClassId && $dateFrom && $dateTo) {
             // Admin/Staff/Kepsek: if no class selected, show all students from all classes for the date range
+            // Visuals (calendar/chart) are disabled in this mode as they are per-class.
             $filters = [
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
+                // 'status' => $statusFilter, // Same note as above for status filter
             ];
             $recapData = $this->attendanceModel->getAttendanceRecap($filters);
             $data['recap_data'] = $recapData;
+            $data['daily_summary_for_visuals'] = []; // No class-specific visuals
         }
 
 

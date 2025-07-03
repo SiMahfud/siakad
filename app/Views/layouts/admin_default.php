@@ -228,6 +228,44 @@
                 </ul>
                 <ul class="navbar-nav">
                     <?php if ($session->get('is_logged_in')): ?>
+                        <?php
+                        helper('notification'); // Load notification helper
+                        $unreadCount = get_unread_notifications_count();
+                        $recentNotifications = get_unread_notifications(5); // Get 5 recent unread
+                        ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell-fill"></i>
+                                <?php if ($unreadCount > 0): ?>
+                                    <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" style="font-size: 0.6em; padding: 0.3em 0.5em;">
+                                        <?= $unreadCount ?>
+                                        <span class="visually-hidden">unread messages</span>
+                                    </span>
+                                <?php endif; ?>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notificationDropdown" style="width: 300px;">
+                                <li class="dropdown-header d-flex justify-content-between align-items-center">
+                                    Notifikasi
+                                    <a href="<?= site_url('notifications') ?>" class="small">Lihat Semua</a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <?php if (!empty($recentNotifications)): ?>
+                                    <?php foreach ($recentNotifications as $notif): ?>
+                                        <li>
+                                            <a class="dropdown-item text-wrap" href="<?= esc($notif['link'] ?? '#', 'attr') ?>" style="font-size: 0.9em;">
+                                                <small class="d-block text-muted"><?= esc(time_ago($notif['created_at'])) ?></small>
+                                                <?= esc(character_limiter($notif['message'], 70)) ?>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <li><p class="dropdown-item text-center small text-muted">Tidak ada notifikasi baru.</p></li>
+                                <?php endif; ?>
+                                 <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-center small" href="<?= site_url('notifications') ?>">Lihat Semua Notifikasi</a></li>
+                            </ul>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-person-circle"></i> <?= esc($session->get('full_name') ?? $session->get('username')) ?>
