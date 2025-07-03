@@ -253,29 +253,103 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Library `PhpSpreadsheet` diinstal dan digunakan untuk generate file `.xlsx`.
     *   Rute dan navigasi ditambahkan untuk Wali Kelas.
     *   Pengguna disarankan memverifikasi output Excel dengan template e-Rapor aktual.
-*   **[P] Modul Projek P5 (Fitur Penilaian & Pelaporan Dasar)**:
-    *   **Fitur Input Penilaian P5 (Guru/Fasilitator)**:
-        *   Controller `Guru/P5AssessmentController.php` dibuat (method: `selectProject`, `showAssessmentForm`, `saveAssessments`).
-        *   Views `guru/p5assessments/select_project.php` dan `guru/p5assessments/assessment_form.php` dibuat.
-        *   Rute ditambahkan: `guru/p5assessments`, `guru/p5assessments/project/(:num)`, `guru/p5assessments/save/(:num)`.
-        *   Navigasi ditambahkan di menu guru.
-        *   **CATATAN HAK AKSES**: Saat ini, semua guru dapat memilih dan menginput penilaian untuk semua projek P5. Ini perlu dibatasi hanya untuk fasilitator yang ditugaskan pada projek setelah fitur penetapan fasilitator diimplementasikan.
-    *   **Fitur Pelaporan P5 (Admin/Koordinator)**:
-        *   Method `report($project_id)` ditambahkan ke `Admin/P5ProjectController.php`.
-        *   View `admin/p5projects/report.php` dibuat, menampilkan rekapitulasi penilaian per siswa per sub-elemen untuk sebuah projek, lengkap dengan DataTables untuk ekspor.
-        *   Rute `admin/p5projects/report/(:num)` ditambahkan.
-        *   Link ke laporan ditambahkan pada halaman daftar projek P5 di admin.
-        *   Hak akses dikontrol oleh filter grup admin dan permission `manage_p5_projects`.
+*   **[X] Modul Projek P5 (Pengembangan Lanjutan)**:
+    *   **Fitur Penetapan Fasilitator Projek P5 (Admin)**:
+        *   Tabel database `p5_project_facilitators` (kolom: `id`, `p5_project_id`, `teacher_id`) dibuat dan dimigrasikan.
+        *   Model `P5ProjectFacilitatorModel.php` dibuat.
+        *   Method `manageFacilitators()`, `addFacilitatorToProject()`, `removeFacilitatorFromProject()` ditambahkan ke `Admin/P5ProjectController.php`.
+        *   View `admin/p5projects/manage_facilitators.php` dibuat.
+        *   Rute terkait ditambahkan: `admin/p5projects/(:num)/manage-facilitators`, `admin/p5projects/(:num)/add-facilitator`, `admin/p5projects/(:num)/remove-facilitator/(:num)`.
+        *   Link navigasi "Kelola Fasilitator" ditambahkan ke daftar projek P5.
+    *   **Penyempurnaan Hak Akses Input Penilaian P5 (Guru/Fasilitator)**:
+        *   `Guru/P5AssessmentController.php` dimodifikasi untuk menggunakan `P5ProjectFacilitatorModel`.
+        *   Method `selectProject()` kini hanya menampilkan projek yang difasilitasi guru tersebut (atau semua untuk Admin).
+        *   Method `showAssessmentForm()` dan `saveAssessments()` kini memvalidasi apakah guru adalah fasilitator projek yang diakses (Admin tetap diizinkan).
+    *   **Fitur Pelaporan P5 (Admin/Koordinator) - Komprehensif Sebagian**:
+        *   **Rekapitulasi per Projek**: Method `report($project_id)` di `Admin/P5ProjectController.php` dan view `admin/p5projects/report.php` sudah ada sebelumnya.
+        *   **Rekapitulasi Lintas Projek per Siswa**:
+            *   Method `p5Report($student_id)` ditambahkan ke `Admin/StudentController.php`.
+            *   Model terkait (`P5ProjectStudentModel`, `P5AssessmentModel`, `P5ProjectModel`, `P5SubElementModel`) digunakan untuk mengambil data.
+            *   View `admin/students/p5_report.php` dibuat untuk menampilkan laporan P5 siswa dari semua projek yang diikutinya.
+            *   Rute `admin/students/(:num)/p5-report` ditambahkan.
+            *   Link "Lihat Laporan P5" ditambahkan ke halaman daftar siswa (`admin/students/index.php`).
+        *   Hak akses dikontrol oleh filter grup admin dan permission yang relevan.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
 1.  **Modul Projek P5 (Fitur Lanjutan)**:
-    *   [ ] Implementasi fitur penetapan fasilitator/guru pendamping untuk setiap projek P5.
-    *   [ ] Penyempurnaan hak akses pada fitur Input Penilaian P5 agar hanya fasilitator terdaftar yang dapat menilai projeknya.
-    *   [ ] Fitur Pelaporan P5 yang lebih komprehensif (misalnya, rekapitulasi per siswa di semua projek, progres individu).
-    *   [ ] Ekspor data P5 untuk e-Rapor (jika formatnya didukung dan telah ditentukan).
+    *   [ ] Fitur Pelaporan P5 yang lebih detail dan analitik (misalnya, visualisasi progres per dimensi/elemen untuk siswa atau projek).
+    *   [ ] Ekspor data P5 untuk e-Rapor (setelah format dan kebutuhan ditentukan dengan jelas).
 2.  **Penyempurnaan Modul Ekspor ke e-Rapor**:
-    *   Verifikasi lebih lanjut format kolom Excel terhadap template e-Rapor aktual oleh pengguna/pengembang dengan akses ke template.
+    *   Verifikasi lebih lanjut format kolom Excel terhadap template e-Rapor aktual oleh pengguna/pengembang dengan akses ke template. (Lihat panduan di bawah).
+    *   Implementasi ekspor data P5 ke Excel jika formatnya sudah ada dan kompatibel.
+
+### Panduan Verifikasi dan Penyesuaian Format Ekspor e-Rapor
+
+Fitur ekspor ke e-Rapor (`WaliKelas/EraporController.php` dan `Models/AssessmentModel::getExportDataForErapor()`) menghasilkan file Excel (.xlsx) yang ditujukan untuk impor ke aplikasi e-Rapor Kemdikbud. Namun, format spesifik e-Rapor dapat bervariasi atau memiliki persyaratan detail. **Pengguna atau pengembang yang memiliki akses ke contoh template e-Rapor Kemdikbud yang valid sangat disarankan untuk melakukan verifikasi dan penyesuaian berikut:**
+
+1.  **Nama dan Urutan Sheet:**
+    *   Pastikan nama _sheet_ dalam file Excel sesuai dengan yang diharapkan oleh aplikasi e-Rapor. Saat ini, nama sheet default ("Worksheet") atau nama sheet pertama yang aktif yang digunakan.
+    *   Untuk mengganti nama sheet, gunakan: `$spreadsheet->getActiveSheet()->setTitle('NamaSheetSesuaiERapor');` di `EraporController::processExport()`.
+
+2.  **Header Kolom:**
+    *   **Urutan Kolom Data Siswa:** Verifikasi urutan kolom seperti `NISN`, `NIS`, `Nama Siswa`. File saat ini: `NISN, NIS, Nama Siswa`.
+    *   **Nama/Kode Mata Pelajaran:** Aplikasi e-Rapor mungkin mengharapkan **kode mata pelajaran** resmi, bukan hanya nama mata pelajaran. Saat ini, header mapel adalah `Nama Mata Pelajaran (Sumatif)`.
+        *   Data kode mapel (`subject_code`) tersedia di `subjects` table dan bisa diambil dalam `AssessmentModel::getExportDataForErapor()` pada bagian query `$assignedSubjectsQuery`.
+        *   Sesuaikan bagian ini di `EraporController::processExport()`:
+            ```php
+            // Contoh jika menggunakan subject_code:
+            // $header[] = esc($subject['subject_code']);
+            // atau kombinasi:
+            // $header[] = esc($subject['subject_code']) . ' - ' . esc($subject['subject_name']);
+            $header[] = esc($subject['subject_name']) . " (Sumatif)"; // Baris saat ini
+            ```
+    *   **Kolom Tambahan:** Periksa apakah ada kolom wajib lain sebelum atau sesudah daftar mata pelajaran (misalnya, jenis kelamin, tanggal lahir, dll.). Jika ada, data ini perlu:
+        *   Ditambahkan ke query pengambilan data siswa di `AssessmentModel::getExportDataForErapor()`.
+        *   Dimasukkan ke dalam array `$header` dan `$rowData` di `EraporController::processExport()`.
+
+3.  **Format Data:**
+    *   **Format Nilai:** Nilai saat ini dibulatkan ke bilangan bulat terdekat (`round($averageScore)`). Pastikan format ini diterima (misalnya, apakah perlu desimal, atau format teks). Jika perlu format spesifik, sesuaikan pembulatan atau konversi tipe data saat memasukkan ke `$rowData`.
+    *   **Penanganan Nilai Kosong/Belum Diisi:** Saat ini, nilai yang tidak ada akan diekspor sebagai string kosong (`''`). Verifikasi apakah e-Rapor mengharapkan format lain (misalnya, angka 0, "Belum Ada Nilai", atau sel kosong). Ini diatur di `AssessmentModel` pada bagian:
+        ```php
+        // $studentScores[$subjectId] = ''; // Baris saat ini
+        ```
+    *   **Format Tanggal (jika ada kolom tanggal):** Pastikan format tanggal (misalnya, `dd-mm-yyyy` atau `yyyy-mm-dd`) sesuai.
+
+4.  **Data Siswa Tambahan:**
+    *   Jika e-Rapor memerlukan data siswa yang belum ada di ekspor (misal, tempat lahir, nama orang tua), query di `AssessmentModel::getExportDataForErapor()` pada bagian `$studentModel->select(...)` perlu dimodifikasi untuk mengambil field tambahan dari tabel `students` atau tabel terkait lainnya. Kemudian, data tersebut harus ditambahkan ke `$rowData` di `EraporController`.
+
+5.  **Baris Header Tambahan atau Baris Awal:**
+    *   Beberapa template mungkin memiliki beberapa baris header atau informasi sekolah di baris-baris awal. Jika demikian, penulisan data utama (`$sheet->fromArray($header, NULL, 'A1');` dan `$sheet->fromArray($rowData, NULL, 'A' . $rowIndex);`) mungkin perlu disesuaikan agar mulai dari baris yang benar.
+
+**Contoh Penyesuaian (Ilustratif):**
+
+*   **Menggunakan Kode Mapel sebagai Header di `EraporController.php`:**
+    ```php
+    // Ganti:
+    // $header[] = esc($subject['subject_name']) . " (Sumatif)";
+    // Dengan (jika subject_code sudah ada di $exportData['subjects'][$subjectId]['subject_code']):
+    // $header[] = esc($subject['subject_code']);
+    ```
+
+*   **Menambahkan Jenis Kelamin ke Ekspor:**
+    1.  Di `AssessmentModel.php` (`getExportDataForErapor`):
+        ```php
+        // Ubah query siswa:
+        // $students = $studentModel->select('students.id, students.nisn, students.nis, students.full_name, students.gender') ...
+        // Tambahkan ke array output siswa:
+        // 'gender' => $student['gender'],
+        ```
+    2.  Di `EraporController.php` (`processExport`):
+        ```php
+        // Tambahkan ke header:
+        // $header = ['NISN', 'NIS', 'Nama Siswa', 'Jenis Kelamin', ...];
+        // Tambahkan ke rowData:
+        // $rowData = [ ..., $student['gender'] ?? '', ...];
+        ```
+
+Dengan melakukan verifikasi dan penyesuaian ini, diharapkan file Excel yang dihasilkan dapat kompatibel secara penuh dengan aplikasi e-Rapor Kemdikbud yang digunakan sekolah.
+
 3.  **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
     *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul.
     *   Implementasi peran "Koordinator P5" jika diperlukan, dengan hak akses spesifik.
