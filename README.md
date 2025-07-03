@@ -63,10 +63,12 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
         *   [X] Model (`TeacherClassSubjectAssignmentModel`)
         *   [X] Controller (`Admin/TeacherClassSubjectAssignmentController`) dengan fungsi CRUD dasar (index, new, create, delete).
         *   [X] Views (daftar, tambah penugasan - dengan Bootstrap 5).
-*   **[X] Modul Akademik Harian** (Semua fitur dasar MVP selesai)
+*   **[X] Modul Akademik Harian** (Semua fitur dasar MVP selesai, Rekap ditambahkan)
     *   [X] Manajemen Jadwal Pelajaran (Admin: CRUD; Guru & Siswa: View)
-    *   [P] Input Presensi Harian oleh Guru (Guru: Input; Rekap Admin/Wali Kelas: Belum)
-    *   [P] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F) (Admin: Setup; Siswa: Pilih; Rekap Admin/Wali Kelas: Belum)
+    *   [X] Input Presensi Harian oleh Guru (Guru: Input)
+    *   [X] Rekapitulasi Presensi (Admin/Wali Kelas/Kepala Sekolah: View, Filter, Export)
+    *   [X] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F) (Admin: Setup; Siswa: Pilih)
+    *   [X] Rekapitulasi Pilihan Mata Pelajaran (Admin/Wali Kelas/Kepala Sekolah: View, Filter, Export)
 *   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal)**
     *   [X] Struktur Tabel Database (`assessments`)
     *   [X] Model (`AssessmentModel`) dengan validasi dasar (termasuk rentang skor, tanggal valid).
@@ -101,8 +103,8 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
     *   [X] Mengelola Jadwal Pelajaran (CRUD).
     *   [X] Mengelola Penawaran Mata Pelajaran Pilihan (CRUD).
-    *   [ ] Melihat Rekap Presensi (Belum).
-    *   [ ] Melihat Rekap Pemilihan Mapel (Belum).
+    *   [X] Melihat Rekap Presensi.
+    *   [X] Melihat Rekap Pemilihan Mapel.
     *   [ ] Mengatur konfigurasi tahun ajaran, data sekolah, struktur kurikulum.
     *   [ ] Mengelola data master tema dan dimensi P5.
     *   [ ] Maintenance dan backup database.
@@ -111,12 +113,12 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Mengatur pembagian siswa ke dalam rombel.
     *   [X] Mengelola Jadwal Pelajaran (CRUD).
     *   [X] Mengelola Penawaran Mata Pelajaran Pilihan (CRUD).
-    *   [ ] Melihat Rekap Presensi (Belum).
-    *   [ ] Melihat Rekap Pemilihan Mapel (Belum).
+    *   [X] Melihat Rekap Presensi.
+    *   [X] Melihat Rekap Pemilihan Mapel.
 *   **Kepala Sekolah**:
     *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
-    *   [ ] Melihat Rekap Presensi (Belum).
-    *   [ ] Melihat Rekap Pemilihan Mapel (Belum).
+    *   [X] Melihat Rekap Presensi.
+    *   [X] Melihat Rekap Pemilihan Mapel.
     *   [ ] Dasbor eksekutif.
     *   [ ] Memantau aktivitas guru.
     *   [ ] Membuat dan menyebarkan pengumuman.
@@ -129,8 +131,8 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 *   **Wali Kelas**:
     *   (Semua fitur Guru Mata Pelajaran)
     *   [X] Melihat daftar siswa di kelas perwalian.
-    *   [ ] Memantau rekapitulasi absensi dan nilai kelas perwalian (Rekap Presensi Belum).
-    *   [ ] Membimbing siswa memilih mapel pilihan (Melihat Rekap Pemilihan Mapel Belum).
+    *   [X] Memantau rekapitulasi absensi kelas perwalian (via Rekap Presensi).
+    *   [X] Melihat Rekap Pemilihan Mapel (untuk memantau pilihan siswa secara umum, jika relevan).
     *   [ ] Menginput catatan perilaku/perkembangan siswa.
     *   [ ] Validasi Kelengkapan Nilai.
     *   [ ] Ekspor Data ke e-Rapor.

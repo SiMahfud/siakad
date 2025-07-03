@@ -147,6 +147,8 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
             *   **Siswa**: `Siswa/NilaiController::index()` dan view `siswa/nilai/index.php` untuk menampilkan nilai siswa yang login. Tabel rekap menggunakan DataTables.net (termasuk export dan filter per kolom). Link navigasi "Transkrip Nilai".
             *   **Orang Tua**: `Ortu/NilaiController::index()` (pemilihan anak) & `showStudentRecap()`. Views `ortu/nilai/select_student.php` & `ortu/nilai/recap_display.php`. Tabel rekap menggunakan DataTables.net (termasuk export dan filter per kolom). Link navigasi "Nilai Anak".
             *   Model `AssessmentModel` memiliki `getAssessmentsForRecap()`. `StudentModel` memiliki `findByParentUserId()`. `TeacherClassSubjectAssignmentModel` memiliki `getDistinctSubjectsForClass()`.
+*   **[X] Manajemen Siswa dalam Kelas (Admin/TU)**:
+    *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`) telah diimplementasikan di `Admin/ClassController::manageStudents()`, `addStudentToClass()`, `removeStudentFromClass()`.
 *   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
     *   Tabel `teacher_class_subject_assignments` dibuat (via Migrasi).
     *   Model `TeacherClassSubjectAssignmentModel` dibuat, termasuk method helper `getAssignmentsDetails()` dan `getSubjectsForTeacherInClass()`.
@@ -174,27 +176,36 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Controller `Admin/SubjectOfferingController` dibuat untuk CRUD penawaran mapel oleh admin. Views terkait dibuat.
     *   Controller `Siswa/SubjectChoiceController` dibuat untuk siswa melihat penawaran dan membuat/membatalkan pilihan (via AJAX). View terkait dibuat.
     *   Rute dan navigasi Admin & Siswa diperbarui.
-    *   Rekapitulasi pilihan untuk Admin/Wali Kelas belum diimplementasikan (opsional awal).
+*   **[X] Modul Akademik Harian - Rekapitulasi (Admin/Wali Kelas/Kepala Sekolah)**:
+    *   Controller `Admin/RecapController` dibuat.
+    *   **Rekapitulasi Presensi**:
+        *   Method `RecapController::attendance()` dan `AttendanceModel::getAttendanceRecap()`.
+        *   View `admin/recaps/attendance_recap.php` dengan filter tanggal, kelas, dan ekspor DataTables.
+        *   Menampilkan total H, I, S, A dan persentase kehadiran per siswa.
+    *   **Rekapitulasi Pilihan Mata Pelajaran**:
+        *   Method `RecapController::subjectChoices()` dan `StudentSubjectChoiceModel::getSubjectChoiceRecap()`.
+        *   View `admin/recaps/subject_choice_recap.php` dengan filter tahun ajaran, semester, mapel, dan opsi sertakan nama siswa, serta ekspor DataTables.
+        *   Menampilkan jumlah peminat per mapel, sisa kuota, dan daftar siswa (opsional).
+    *   Rute dan navigasi menu "Rekapitulasi" ditambahkan.
+*   **[X] Penyempurnaan Hak Akses (Lanjutan) (Sebagian Besar Selesai)**:
+    *   Implementasi hak akses granular telah ditingkatkan:
+        *   Guru hanya dapat mengelola data (input nilai, input presensi, lihat rekap presensi) yang terkait langsung dengan kelas/mapel yang diajar atau kelas perwaliannya.
+        *   Siswa hanya dapat melihat data (jadwal, nilai) miliknya sendiri.
+        *   Orang tua hanya dapat melihat data (nilai) anak-anaknya.
+        *   Pengecekan kepemilikan data untuk operasi sensitif seperti edit/hapus asesmen telah diimplementasikan (hanya pembuat atau admin).
+    *   Fitur untuk guru melihat daftar kelas yang diampu dan siswa di dalamnya telah tersedia (`Guru/ClassViewController`).
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Akademik Harian (Lanjutan)**:
-    *   Rekapitulasi presensi untuk Admin/Wali Kelas (opsional dari tahap presensi).
-    *   Rekapitulasi pilihan mapel untuk Admin/Wali Kelas (opsional dari tahap pemilihan mapel).
-2.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
+1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-3.  **[X] Penyempurnaan Hak Akses (Lanjutan)**:
-    *   Implementasi hak akses yang lebih granular (misal, guru hanya bisa mengelola data yang terkait langsung dengan dirinya/mapelnya/kelas walinya, siswa hanya lihat data sendiri).
-        *   Guru dapat melihat daftar kelas yang mereka ampu (sebagai wali kelas atau pengajar mapel).
-        *   Guru dapat melihat daftar siswa di kelas-kelas yang relevan tersebut.
-    *   Pengecekan kepemilikan data secara lebih komprehensif (contoh pada modul asesmen untuk edit/hapus).
-4.  **[X] Manajemen Siswa dalam Kelas**:
-    *   Fungsionalitas untuk menambah/mengeluarkan siswa dari sebuah kelas (mengelola tabel `class_student`) - **SELESAI**.
-5.  **Modul Projek P5**:
+2.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
-6.  **Modul Ekspor ke e-Rapor**:
+3.  **Modul Ekspor ke e-Rapor**:
     *   Ini adalah fitur kunci dan kompleks yang memerlukan koordinasi terkait format template Excel.
+4.  **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
+    *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul, terutama untuk fitur-fitur baru yang akan dikembangkan.
 
 ## 7. Perintah Berguna CodeIgniter Spark
 
