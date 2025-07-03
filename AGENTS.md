@@ -248,23 +248,37 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 *   **[P] Modul Ekspor ke e-Rapor (Tahap Awal Selesai, Perlu Penyempurnaan)**:
     *   Controller `WaliKelas/EraporController` dibuat untuk form dan proses ekspor.
     *   Model `AssessmentModel::getExportDataForErapor()` diimplementasikan untuk mengambil rata-rata nilai sumatif.
-        *   **CATATAN PENTING:** Logika pemfilteran nilai sumatif berdasarkan rentang tanggal semester yang akurat **perlu penyempurnaan** untuk memastikan data yang diekspor hanya dari semester yang dipilih. Saat ini merata-ratakan semua sumatif yang cocok (siswa, kelas, mapel) tanpa filter tanggal yang ketat.
+        *   Logika pemfilteran nilai sumatif berdasarkan rentang tanggal semester (Ganjil: Juli-Des, Genap: Jan-Juni dari tahun ajaran terkait) **telah disempurnakan**.
     *   View `wali_kelas/erapor/export_form.php` dibuat.
     *   Library `PhpSpreadsheet` diinstal dan digunakan untuk generate file `.xlsx`.
     *   Rute dan navigasi ditambahkan untuk Wali Kelas.
+    *   Pengguna disarankan memverifikasi output Excel dengan template e-Rapor aktual.
+*   **[P] Modul Projek P5 (Fitur Penilaian & Pelaporan Dasar)**:
+    *   **Fitur Input Penilaian P5 (Guru/Fasilitator)**:
+        *   Controller `Guru/P5AssessmentController.php` dibuat (method: `selectProject`, `showAssessmentForm`, `saveAssessments`).
+        *   Views `guru/p5assessments/select_project.php` dan `guru/p5assessments/assessment_form.php` dibuat.
+        *   Rute ditambahkan: `guru/p5assessments`, `guru/p5assessments/project/(:num)`, `guru/p5assessments/save/(:num)`.
+        *   Navigasi ditambahkan di menu guru.
+        *   **CATATAN HAK AKSES**: Saat ini, semua guru dapat memilih dan menginput penilaian untuk semua projek P5. Ini perlu dibatasi hanya untuk fasilitator yang ditugaskan pada projek setelah fitur penetapan fasilitator diimplementasikan.
+    *   **Fitur Pelaporan P5 (Admin/Koordinator)**:
+        *   Method `report($project_id)` ditambahkan ke `Admin/P5ProjectController.php`.
+        *   View `admin/p5projects/report.php` dibuat, menampilkan rekapitulasi penilaian per siswa per sub-elemen untuk sebuah projek, lengkap dengan DataTables untuk ekspor.
+        *   Rute `admin/p5projects/report/(:num)` ditambahkan.
+        *   Link ke laporan ditambahkan pada halaman daftar projek P5 di admin.
+        *   Hak akses dikontrol oleh filter grup admin dan permission `manage_p5_projects`.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **Modul Projek P5 (Fitur Lanjutan)**:
-    *   [ ] Fitur input penilaian P5 oleh Fasilitator/Guru.
-    *   [ ] Fitur Pelaporan P5 (rekapitulasi penilaian per siswa, progres projek, dll.).
-3.  **Penyempurnaan Modul Ekspor ke e-Rapor**:
-    *   Penyempurnaan logika pemfilteran data nilai sumatif per semester.
-    *   Verifikasi format kolom Excel terhadap template e-Rapor aktual.
-4.  **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
-    *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul, terutama untuk fitur-fitur baru yang akan dikembangkan.
+1.  **Modul Projek P5 (Fitur Lanjutan)**:
+    *   [ ] Implementasi fitur penetapan fasilitator/guru pendamping untuk setiap projek P5.
+    *   [ ] Penyempurnaan hak akses pada fitur Input Penilaian P5 agar hanya fasilitator terdaftar yang dapat menilai projeknya.
+    *   [ ] Fitur Pelaporan P5 yang lebih komprehensif (misalnya, rekapitulasi per siswa di semua projek, progres individu).
+    *   [ ] Ekspor data P5 untuk e-Rapor (jika formatnya didukung dan telah ditentukan).
+2.  **Penyempurnaan Modul Ekspor ke e-Rapor**:
+    *   Verifikasi lebih lanjut format kolom Excel terhadap template e-Rapor aktual oleh pengguna/pengembang dengan akses ke template.
+3.  **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
+    *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul.
+    *   Implementasi peran "Koordinator P5" jika diperlukan, dengan hak akses spesifik.
 
 ## 7. Perintah Berguna CodeIgniter Spark
 

@@ -202,6 +202,42 @@ class AssessmentModel extends Model
         // For the purpose of this function, we'll proceed with averaging scores found matching the core criteria.
         // The controller calling this should ideally provide a date range.
 
+        // Determine date range for the given academic year and semester
+        $yearParts = explode('/', $academicYear); // Expects format like "2023/2024"
+        $startYear = intval($yearParts[0]);
+        // If academic year is just "2023", endYear will be same as startYear.
+        // For "2023/2024", startYear = 2023, endYear = 2024.
+        $endYear = isset($yearParts[1]) ? intval($yearParts[1]) : $startYear;
+
+
+        $date_from = null;
+        $date_to = null;
+
+        if ($semester == 1) { // Semester Ganjil (July to December of startYear)
+            $date_from = $startYear . '-07-01';
+            $date_to = $startYear . '-12-31';
+        } elseif ($semester == 2) { // Semester Genap (January to June of endYear)
+            // If academic year is "2023/2024", semester 2 is Jan-June 2024.
+            // If academic year is "2023" (single year), semester 2 implies Jan-June of that same year,
+            // which might be unusual unless it's a short course.
+            // Assuming standard academic year structure.
+            $date_from = $endYear . '-01-01';
+            $date_to = $endYear . '-06-30';
+        }
+
+        if ($date_from && $date_to) {
+            $allScoresQuery->where('assessments.assessment_date >=', $date_from);
+            $allScoresQuery->where('assessments.assessment_date <=', $date_to);
+        } else {
+            // Log or handle the case where dates could not be determined,
+            // to prevent accidental export of all data.
+            // For safety, if dates are not determined, return empty or throw error.
+             log_message('error', "Could not determine date range for eRapor export. Academic Year: {$academicYear}, Semester: {$semester}");
+             // Depending on strictness, either return empty or proceed without date filter if that's acceptable fallback.
+             // Returning empty is safer to prevent incorrect data export.
+             // return ['students' => [], 'subjects' => $subjectsMap]; // Option: return students and subjects but no scores
+        }
+
         $allScores = $allScoresQuery->findAll();
 
         // 4. Process scores: calculate average per student per subject
