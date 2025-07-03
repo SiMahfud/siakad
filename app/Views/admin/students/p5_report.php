@@ -5,11 +5,24 @@
     <h1 class="h3 mb-2 text-gray-800"><?= esc($title) ?></h1>
     <p class="mb-4">
         <strong>Siswa:</strong> <?= esc($student['full_name']) ?> (NISN: <?= esc($student['nisn'] ?? 'N/A') ?>, NIS: <?= esc($student['nis'] ?? 'N/A') ?>)<br>
-        <a href="<?= site_url('admin/students/edit/' . $student['id']) ?>">&laquo; Kembali ke Detail Siswa</a>
+        <a href="<?= site_url('admin/students') ?>">&laquo; Kembali ke Daftar Siswa</a> |
+        <a href="<?= site_url('admin/students/edit/' . $student['id']) ?>">Edit Detail Siswa</a>
     </p>
 
+    <!-- Radar Chart Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Ringkasan Profil Dimensi P5 Siswa</h6>
+        </div>
+        <div class="card-body">
+            <div id="radarChartContainer" style="position: relative; height:50vh; width:100%;">
+                <canvas id="studentDimensionRadarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <?php if (empty($reportData)) : ?>
-        <div class="alert alert-info">Siswa ini belum mengikuti atau belum memiliki penilaian pada projek P5 manapun.</div>
+        <div class="alert alert-info mt-4">Siswa ini belum mengikuti atau belum memiliki penilaian pada projek P5 manapun untuk ditampilkan detailnya.</div>
     <?php else : ?>
         <?php foreach ($reportData as $projectReport) : ?>
             <div class="card shadow mb-4">
@@ -76,8 +89,102 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Any specific scripts for this page can go here
-    // For example, if using DataTables for each project table (might be overkill if tables are small)
+    document.addEventListener('DOMContentLoaded', function () {
+        <?php if (isset($radarChartData) && !empty($radarChartData['labels']) && !empty($radarChartData['scores'])): ?>
+        const radarCtx = document.getElementById('studentDimensionRadarChart').getContext('2d');
+        new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: <?= json_encode($radarChartData['labels']) ?>,
+                datasets: [{
+                    label: 'Rata-rata Skor Dimensi P5',
+                    data: <?= json_encode($radarChartData['scores']) ?>,
+                    fill: true,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 162, 235)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 4, // Assuming BB=1, MB=2, BSH=3, SB=4
+                        ticks: {
+                           stepSize: 1,
+                           backdropColor: 'rgba(255, 255, 255, 0.75)', // Make ticks more readable
+                           font: {
+                               size: 10
+                           },
+                           callback: function(value, index, values) {
+                                // Custom labels for radar ticks
+                                switch(value) {
+                                    case 1: return 'BB';
+                                    case 2: return 'MB';
+                                    case 3: return 'BSH';
+                                    case 4: return 'SB';
+                                    default: return ''; // For 0 or other values
+                                }
+                            }
+                        },
+                        pointLabels: {
+                           font: {
+                               size: 11 // Adjust size of dimension labels
+                           }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Ringkasan Profil Dimensi P5 Siswa',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.r !== null) {
+                                    // Map numeric value back to descriptive for tooltip if desired, or show score
+                                    // For now, show the score directly.
+                                    label += context.parsed.r.toFixed(2);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        <?php else: ?>
+        const radarContainer = document.getElementById('radarChartContainer');
+        if(radarContainer){
+            radarContainer.innerHTML = '<p class="text-center"><em>Belum ada data penilaian P5 yang cukup untuk menampilkan ringkasan profil dimensi siswa.</em></p>';
+        }
+        <?php endif; ?>
+    });
 </script>
 <?= $this->endSection() ?>

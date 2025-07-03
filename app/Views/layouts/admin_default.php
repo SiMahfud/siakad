@@ -91,13 +91,22 @@
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5subelements') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5subelements') ?>">P5 Sub-elements</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5projects') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5projects') ?>">P5 Projects</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/p5export') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/p5export') ?>">Ekspor P5 ke e-Rapor</a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
 
                         <?php if (isAdmin()): ?>
-                        <li class="nav-item">
-                            <a class="nav-link <?= (strpos(uri_string(), 'admin/users') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">User Management</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'admin/users') !== false || strpos(uri_string(), 'admin/settings') !== false) ? 'active' : '' ?>"
+                               href="#" id="adminMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Administrasi
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="adminMenuDropdown">
+                                <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/users') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">User Management</a></li>
+                                <li><a class="dropdown-item <?= (strpos(uri_string(), 'admin/settings') !== false) ? 'active' : '' ?>" href="<?= site_url('admin/settings') ?>">Pengaturan Umum</a></li>
+                            </ul>
                         </li>
                         <?php endif; ?>
 
@@ -167,6 +176,14 @@
                                            href="<?= site_url('siswa/subject-choices') ?>">Pilih Mata Pelajaran</a>
                                     </li>
                                 </ul>
+                            </li>
+                        <?php endif; ?>
+
+                        <!-- Kepala Sekolah Menu -->
+                        <?php if (hasRole('Kepala Sekolah')): ?>
+                            <li class="nav-item">
+                                <a class="nav-link <?= (strpos(uri_string(), 'kepala-sekolah/dashboard') !== false) ? 'active' : '' ?>"
+                                   href="<?= route_to('ks_dashboard') ?>"><i class="bi bi-speedometer2"></i> Dasbor KS</a>
                             </li>
                         <?php endif; ?>
 

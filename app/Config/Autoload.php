@@ -89,6 +89,7 @@ class Autoload extends AutoloadConfig
      * @var list<string>
      */
     public $helpers = [
-        'auth' // Added auth_helper (auth_helper.php -> 'auth')
+        'auth', // Added auth_helper (auth_helper.php -> 'auth')
+        'setting' // Added setting_helper.php
     ];
 }

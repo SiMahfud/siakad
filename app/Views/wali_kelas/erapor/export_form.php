@@ -46,14 +46,17 @@
                             <label for="academic_year">Tahun Ajaran</label>
                             <select class="form-control" id="academic_year" name="academic_year" required>
                                 <option value="">-- Pilih Tahun Ajaran --</option>
-                                <?php if (!empty($academic_years)) : ?>
-                                    <?php foreach ($academic_years as $ay) : ?>
+                                <?php if (!empty($available_academic_years)) : ?>
+                                    <?php foreach ($available_academic_years as $ay) : ?>
                                         <option value="<?= esc($ay['academic_year'], 'attr'); ?>" <?= ($current_academic_year == $ay['academic_year']) ? 'selected' : ''; ?>>
                                             <?= esc($ay['academic_year']); ?>
                                         </option>
                                     <?php endforeach; ?>
-                                <?php else: ?>
-                                    <option value="" disabled>Data tahun ajaran tidak tersedia</option>
+                                <?php elseif ($current_academic_year) : // Jika ada default tapi list kosong, tampilkan defaultnya ?>
+                                    <option value="<?= esc($current_academic_year, 'attr'); ?>" selected><?= esc($current_academic_year); ?> (Default dari Pengaturan)</option>
+                                <?php endif; ?>
+                                <?php if (empty($available_academic_years) && !$current_academic_year) : ?>
+                                     <option value="" disabled>Data tahun ajaran tidak tersedia</option>
                                 <?php endif; ?>
                             </select>
                         </div>
@@ -61,16 +64,23 @@
                             <label for="semester">Semester</label>
                             <select class="form-control" id="semester" name="semester" required>
                                 <option value="">-- Pilih Semester --</option>
-                                <?php if (!empty($semesters)) :?>
-                                    <?php foreach ($semesters as $sem) : ?>
-                                        <option value="<?= esc($sem['semester'], 'attr'); ?>" <?= ($current_semester == $sem['semester']) ? 'selected' : ''; ?>>
-                                            <?= ($sem['semester'] == 1) ? 'Ganjil' : (($sem['semester'] == 2) ? 'Genap' : esc($sem['semester'])); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                     <option value="1" <?= ($current_semester == '1') ? 'selected' : ''; ?>>Ganjil</option>
-                                     <option value="2" <?= ($current_semester == '2') ? 'selected' : ''; ?>>Genap</option>
-                                     <option value="" disabled>Data semester lain tidak tersedia</option>
+                                <?php
+                                $semester_options = [];
+                                if (!empty($available_semesters)) {
+                                    foreach ($available_semesters as $sem) {
+                                        $semester_options[$sem['semester']] = ($sem['semester'] == 1) ? 'Ganjil' : (($sem['semester'] == 2) ? 'Genap' : esc($sem['semester']));
+                                    }
+                                } else { // Fallback if no semesters from offerings
+                                    $semester_options = ['1' => 'Ganjil', '2' => 'Genap'];
+                                }
+
+                                foreach ($semester_options as $value => $label) : ?>
+                                    <option value="<?= esc($value, 'attr'); ?>" <?= ($current_semester == $value) ? 'selected' : ''; ?>>
+                                        <?= esc($label); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                                <?php if (empty($semester_options) && !$current_semester) : ?>
+                                    <option value="" disabled>Data semester tidak tersedia</option>
                                 <?php endif; ?>
                             </select>
                         </div>

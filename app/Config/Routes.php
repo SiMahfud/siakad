@@ -151,6 +151,43 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'as' => 'admin_student_p5_report',
         'filter' => 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah' // Or specific P5 view permission
     ]);
+
+    // P5 Export Routes (within admin group)
+    $routes->get('p5export', 'P5ExportController::exportForm', [
+        'as' => 'admin_p5export_form',
+        'filter' => $p5ManagementFilter // Reuse existing filter or define a new one
+    ]);
+    $routes->post('p5export/process', 'P5ExportController::processExport', [
+        'as' => 'admin_p5export_process',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->get('p5export/ajax/classes/(:num)', 'P5ExportController::getClassesForProject/$1', [
+        'as' => 'admin_p5export_ajax_classes',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->get('p5export/ajax/dimensions/(:num)', 'P5ExportController::getDimensionsForProject/$1', [
+        'as' => 'admin_p5export_ajax_dimensions',
+        'filter' => $p5ManagementFilter
+    ]);
+
+    // Settings Routes (Admin)
+    // It's good practice to use a specific permission like 'manage_settings'
+    // For now, defaulting to 'Administrator Sistem' if 'manage_settings' isn't explicitly defined/used elsewhere for roles.
+    $settingsFilter = 'auth:Administrator Sistem'; // Replace with 'auth:manage_settings' once permission is set up
+    $routes->get('settings', 'SettingController::index', [
+        'as' => 'admin_settings',
+        'filter' => $settingsFilter
+    ]);
+    $routes->post('settings/save', 'SettingController::save', [
+        'as' => 'admin_settings_save',
+        'filter' => $settingsFilter
+    ]);
+});
+
+// Kepala Sekolah Routes
+$routes->group('kepala-sekolah', ['namespace' => 'App\Controllers\KepalaSekolah', 'filter' => 'auth:Kepala Sekolah'], static function ($routes) {
+    $routes->get('dashboard', 'DashboardController::index', ['as' => 'ks_dashboard']);
+    // Add other Kepala Sekolah specific routes here
 });
 
 // Guru routes

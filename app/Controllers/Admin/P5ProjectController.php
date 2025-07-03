@@ -458,6 +458,32 @@ class P5ProjectController extends BaseController
             'assessmentsData' => $assessmentsData,
         ];
 
+        // Prepare data for charts
+        $subElementChartData = [];
+        $assessmentLevels = ['BB', 'MB', 'BSH', 'SB', '-']; // Include '-' for not assessed
+
+        if (!empty($targetSubElements) && !empty($projectStudents)) {
+            foreach ($targetSubElements as $subElement) {
+                $counts = array_fill_keys($assessmentLevels, 0);
+                foreach ($projectStudents as $ps) {
+                    $assessmentValue = $assessmentsData[$ps['p5_project_student_id']][$subElement['id']]['assessment_value'] ?? '-';
+                    if (array_key_exists($assessmentValue, $counts)) {
+                        $counts[$assessmentValue]++;
+                    } else {
+                        // Fallback for unexpected values, though ideally assessment_value is constrained
+                        $counts['-']++;
+                    }
+                }
+                $subElementChartData[$subElement['id']] = [
+                    'name' => esc($subElement['name']),
+                    'dimension_name' => esc($subElement['dimension_name']),
+                    'element_name' => esc($subElement['element_name']),
+                    'counts' => $counts,
+                ];
+            }
+        }
+        $data['subElementChartData'] = $subElementChartData;
+
         return view('admin/p5projects/report', $data);
     }
 
