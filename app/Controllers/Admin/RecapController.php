@@ -20,10 +20,12 @@ class RecapController extends BaseController
     protected $studentSubjectChoiceModel;
     protected $subjectOfferingModel;
     protected $subjectModel;
+    protected $dailyAttendanceModel; // Added
 
     public function __construct()
     {
         $this->attendanceModel = new AttendanceModel();
+        $this->dailyAttendanceModel = new \App\Models\DailyAttendanceModel(); // Added
         $this->classModel = new ClassModel();
         $this->studentModel = new StudentModel();
         $this->teacherModel = new TeacherModel();
@@ -92,7 +94,8 @@ class RecapController extends BaseController
         $data['date_to'] = $dateTo;
         $data['selected_status'] = $statusFilter;
         $data['recap_data'] = [];
-        $data['daily_summary_for_visuals'] = [];
+        $data['daily_summary_for_visuals'] = []; // For per-hour attendance visuals
+        $data['daily_general_attendance_summary'] = []; // For daily general attendance summary
         $data['status_map'] = \App\Models\AttendanceModel::getStatusMap(); // Pass status map to view for filter dropdown
 
         // Security check: if user is Wali Kelas, ensure selected_class_id is one of their classes
@@ -133,22 +136,42 @@ class RecapController extends BaseController
             $recapData = $this->attendanceModel->getAttendanceRecap($filters);
             $data['recap_data'] = $recapData;
 
-            // Fetch daily summary for visuals (calendar and line chart)
+            // Fetch daily summary for visuals (calendar and line chart) - Per Hour/Schedule Based
             if ($selectedClassId) { // Visuals are per class
                  $data['daily_summary_for_visuals'] = $this->attendanceModel->getDailyAttendanceSummaryForClass($filters);
+
+                 // Fetch general daily attendance summary for the selected class and date range
+                 $dailyGeneralAttendanceRaw = $this->dailyAttendanceModel
+                    ->select('attendance_date, status, COUNT(id) as count')
+                    ->where('class_id', $selectedClassId)
+                    ->where('attendance_date >=', $dateFrom)
+                    ->where('attendance_date <=', $dateTo)
+                    ->groupBy('attendance_date, status')
+                    ->findAll();
+
+                $processedDailyGeneral = [];
+                foreach($dailyGeneralAttendanceRaw as $row){
+                    if(!isset($processedDailyGeneral[$row['attendance_date']])){
+                        $processedDailyGeneral[$row['attendance_date']] = ['H'=>0, 'S'=>0, 'I'=>0, 'A'=>0];
+                    }
+                    $statusChar = \App\Models\DailyAttendanceModel::getStatusCharMap()[$row['status']] ?? '?';
+                    $processedDailyGeneral[$row['attendance_date']][$statusChar] = $row['count'];
+                }
+                $data['daily_general_attendance_summary'] = $processedDailyGeneral;
             }
 
         } elseif ((has_role('Administrator Sistem') || has_role('Staf Tata Usaha') || has_role('Kepala Sekolah')) && !$selectedClassId && $dateFrom && $dateTo) {
             // Admin/Staff/Kepsek: if no class selected, show all students from all classes for the date range
-            // Visuals (calendar/chart) are disabled in this mode as they are per-class.
+            // Visuals (calendar/chart for per-hour) are disabled in this mode as they are per-class.
+            // General daily attendance summary is also not shown in "all classes" mode to avoid complexity.
             $filters = [
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
-                // 'status' => $statusFilter, // Same note as above for status filter
             ];
             $recapData = $this->attendanceModel->getAttendanceRecap($filters);
             $data['recap_data'] = $recapData;
-            $data['daily_summary_for_visuals'] = []; // No class-specific visuals
+            $data['daily_summary_for_visuals'] = [];
+            $data['daily_general_attendance_summary'] = [];
         }
 
 

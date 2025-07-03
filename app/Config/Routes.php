@@ -182,6 +182,19 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'as' => 'admin_settings_save',
         'filter' => $settingsFilter
     ]);
+
+    // Daily Attendance (Admin/Staf TU)
+    $dailyAttendanceFilter = 'auth:Administrator Sistem,Staf Tata Usaha'; // Define who can manage daily attendance
+    $routes->get('daily-attendance', 'DailyAttendanceController::index', [
+        'as' => 'admin_daily_attendance_index',
+        'filter' => $dailyAttendanceFilter
+    ]);
+    // The manage method is implicitly handled by index with GET parameters (class_id, date)
+    // $routes->get('daily-attendance/manage', 'DailyAttendanceController::manage', ['filter' => $dailyAttendanceFilter]);
+    $routes->post('daily-attendance/save', 'DailyAttendanceController::save', [
+        'as' => 'admin_daily_attendance_save',
+        'filter' => $dailyAttendanceFilter
+    ]);
 });
 
 // Kepala Sekolah Routes
