@@ -71,6 +71,31 @@
                             </script>
                         </div>
                     <?php endif; ?>
+                    <div class="form-group col-md-4">
+                        <label for="status">Filter Status (untuk tabel)</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="ALL" <?= ($selected_status == 'ALL') ? 'selected' : ''; ?>>Semua Status</option>
+                            <?php
+                            // Assuming $status_map is passed from controller: ['1' => 'Hadir', '2' => 'Sakit', ...]
+                            // Or use the static method directly if not passed (but passing is cleaner)
+                            $statuses = $status_map ?? \App\Models\AttendanceModel::getStatusMap();
+                            $statusChars = ['H' => \App\Models\AttendanceModel::STATUS_HADIR,
+                                            'S' => \App\Models\AttendanceModel::STATUS_SAKIT,
+                                            'I' => \App\Models\AttendanceModel::STATUS_IZIN,
+                                            'A' => \App\Models\AttendanceModel::STATUS_ALFA];
+                            ?>
+                            <?php foreach ($statuses as $code => $name) : ?>
+                            <?php
+                                // Find the character key for the numeric code for selection check
+                                $charKeyForSelect = array_search($code, $statusChars);
+                            ?>
+                                <option value="<?= esc($code, 'attr'); ?>" <?= ($selected_status == $code) ? 'selected' : ''; ?>>
+                                    <?= esc($name); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="form-text text-muted">Filter status ini hanya berlaku untuk data tabel, tidak untuk visualisasi kalender/grafik.</small>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Tampilkan Rekap</button>
                 <a href="<?= current_url(); ?>" class="btn btn-secondary">Reset Filter</a>
@@ -78,11 +103,42 @@
         </div>
     </div>
 
+    <!-- Visualizations: Calendar and Chart -->
+    <?php if ($selected_class_id && !empty($daily_summary_for_visuals)) : ?>
+        <div class="row">
+            <div class="col-lg-7 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Kalender Presensi Kelas</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="attendanceCalendar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Grafik Tren Kehadiran Harian (%)</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="attendanceTrendChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php elseif ($selected_class_id && empty($this->request->getGet('date_from'))): ?>
+        <!-- No action, initial load for a class, visuals will load after filter application -->
+    <?php elseif ($selected_class_id) : ?>
+         <div class="alert alert-info">Tidak ada data presensi untuk visualisasi pada rentang tanggal dan kelas yang dipilih.</div>
+    <?php endif; ?>
+
+
     <!-- Rekap Data Table -->
     <?php if (!empty($recap_data)) : ?>
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Hasil Rekapitulasi</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Tabel Detail Rekapitulasi Presensi</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -191,5 +247,120 @@
         }
         <?php endif; ?>
     });
+
+    <?php if ($selected_class_id && !empty($daily_summary_for_visuals)) : ?>
+    // Load FullCalendar and Chart.js
+    // Ensure these are loaded. If they are in admin_default.php globally, this is not needed.
+    // Otherwise, load them here. For simplicity, assuming they might not be global yet.
+    // Chart.js is often loaded globally for other charts. FullCalendar might be specific.
+    </script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // FullCalendar
+        var calendarEl = document.getElementById('attendanceCalendar');
+        if (calendarEl) {
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    // Convert daily_summary_for_visuals to FullCalendar events
+                    // Example: highlight days with low attendance or show counts
+                    let events = [];
+                    const dailyData = <?= json_encode($daily_summary_for_visuals) ?>;
+                    for (const date in dailyData) {
+                        const dayInfo = dailyData[date];
+                        let title = `H: ${dayInfo.H}, A: ${dayInfo.A}, I: ${dayInfo.I}, S: ${dayInfo.S}`;
+                        let eventColor = '#28a745'; // Green for good attendance by default
+                        if (dayInfo.A > 0) eventColor = '#dc3545'; // Red if any Alfa
+                        else if (dayInfo.I > 0 || dayInfo.S > 0) eventColor = '#ffc107'; // Yellow for Izin/Sakit
+
+                        events.push({
+                            title: title,
+                            start: date,
+                            allDay: true,
+                            backgroundColor: eventColor,
+                            borderColor: eventColor,
+                            // extendedProps: dayInfo // Optional: pass full day data
+                        });
+                    }
+                    successCallback(events);
+                },
+                eventDidMount: function(info) {
+                    // Optional: Add tooltip using Bootstrap's tooltip or Tippy.js
+                    // Example with Bootstrap tooltip (requires Popper.js)
+                    if (info.event.title) {
+                        var tooltip = new bootstrap.Tooltip(info.el, {
+                            title: info.event.title,
+                            placement: 'top',
+                            trigger: 'hover',
+                            container: 'body'
+                        });
+                    }
+                },
+                // dateClick: function(info) {
+                //    alert('Clicked on: ' + info.dateStr);
+                //    // Potentially load details for this day
+                // }
+            });
+            calendar.render();
+        }
+
+        // Chart.js - Line Chart for Attendance Trend
+        var trendChartEl = document.getElementById('attendanceTrendChart');
+        if (trendChartEl) {
+            const dailyDataForChart = <?= json_encode($daily_summary_for_visuals) ?>;
+            let labels = [];
+            let percentageData = [];
+
+            // Sort keys (dates) to ensure chart is in chronological order
+            let sortedDates = Object.keys(dailyDataForChart).sort();
+
+            sortedDates.forEach(date => {
+                labels.push(new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })); // Format date
+                percentageData.push(dailyDataForChart[date].percentage_hadir_on_day || 0);
+            });
+
+            new Chart(trendChartEl, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '% Kehadiran Harian',
+                        data: percentageData,
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Persentase Kehadiran (%)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+    <?php endif; ?>
 </script>
 <?= $this->endSection() ?>

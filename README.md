@@ -40,10 +40,11 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 
 ### Modul Akademik & Penilaian
 
-*   **[X] Modul Akademik Harian (MVP)**
+*   **[X] Modul Akademik Harian (MVP & Penyempurnaan)**
     *   [X] Manajemen Jadwal Pelajaran (Admin: CRUD; Guru & Siswa: View)
     *   [X] Input Presensi Harian oleh Guru
-    *   [X] Rekapitulasi Presensi (View, Filter, Export untuk Admin/Wali Kelas/Kepala Sekolah)
+    *   [X] Rekapitulasi Presensi (View, Filter Rentang Tanggal, Export untuk Admin/Wali Kelas/Kepala Sekolah). **Dilengkapi Kalender Presensi Visual & Grafik Tren Kehadiran per Kelas.**
+    *   [X] **Notifikasi Otomatis Ketidakhadiran Siswa** (untuk Wali Kelas, Ortu, Admin) berdasarkan threshold (Alfa beruntun, total Alfa, total Sakit/Izin).
     *   [X] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F: Pilih; Admin: Setup)
     *   [X] Rekapitulasi Pilihan Mata Pelajaran (View, Filter, Export untuk Admin/Wali Kelas/Kepala Sekolah)
 *   **[X] Modul Penilaian (Bank Nilai) (Fungsional Dasar)**
@@ -101,9 +102,10 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Melihat Rekap Presensi.
     *   [X] Melihat Rekap Pemilihan Mapel.
     *   [X] (Jika diberi akses) Mengelola data master P5 dan Projek P5.
+    *   [X] Menerima Notifikasi terkait absensi siswa di kelas perwalian (jika juga Wali Kelas).
 *   **Kepala Sekolah**:
     *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
-    *   [X] Melihat Rekap Presensi.
+    *   [X] Melihat Rekap Presensi (termasuk visualisasi kalender/grafik per kelas).
     *   [X] Melihat Rekap Pemilihan Mapel.
     *   [X] Melihat laporan P5 per projek (dengan visualisasi).
     *   [X] Melihat laporan P5 per siswa (dengan visualisasi).
@@ -115,11 +117,13 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Menginput Presensi Harian.
     *   [X] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada, termasuk edit/hapus.
     *   [X] Melihat daftar kelas yang diajar dan siswa di dalamnya.
+    *   [X] Menerima Notifikasi terkait absensi siswa di kelas perwaliannya (jika Wali Kelas).
     *   [ ] Mengunggah materi ajar/tugas.
 *   **Wali Kelas**:
     *   (Semua fitur Guru Mata Pelajaran)
     *   [X] Melihat daftar siswa di kelas perwalian.
-    *   [X] Memantau rekapitulasi absensi kelas perwalian (via Rekap Presensi).
+    *   [X] Memantau rekapitulasi absensi kelas perwalian (via Rekap Presensi, termasuk visualisasi kalender/grafik).
+    *   [X] Menerima Notifikasi terkait absensi siswa di kelas perwaliannya.
     *   [X] Melihat Rekap Pemilihan Mapel (untuk memantau pilihan siswa secara umum, jika relevan).
     *   [X] Ekspor Data Nilai Akademik ke e-Rapor (dengan kode mapel dan filter semester yang disempurnakan).
     *   [ ] Menginput catatan perilaku/perkembangan siswa.
@@ -129,9 +133,11 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 *   **Siswa**:
     *   [X] Melihat Jadwal Pelajaran Kelas.
     *   [X] Melakukan Pemilihan Mata Pelajaran Pilihan (Fase F).
+    *   [X] Melihat Notifikasi terkait dirinya (jika ada, misal dari Wali Kelas).
     *   [ ] Melihat rekap absensi pribadi.
     *   [X] Melihat transkrip nilai sementara.
 *   **Orang Tua / Wali**:
+    *   [X] Menerima Notifikasi terkait absensi anaknya.
     *   [ ] Memantau kehadiran dan rekap absensi anak.
     *   [ ] Melihat status pemilihan mapel anak (Belum).
     *   [X] Melihat transkrip nilai sementara anak.

@@ -137,48 +137,60 @@ class AttendanceModel extends Model
         $builder = $this->db->table($this->table . ' a'); // Alias table to 'a'
         $builder->select([
             's.id as student_id',
-            's.nis', // Assuming 'nis' is the correct column name in 'students' table
+            's.nis',
             's.full_name',
             'c.class_name',
-            'c.id as class_id_for_recap', // To ensure we get class_id in results
+            'c.id as class_id_for_recap',
             'COALESCE(SUM(CASE WHEN a.status = ' . self::STATUS_HADIR . ' THEN 1 ELSE 0 END), 0) as total_hadir',
             'COALESCE(SUM(CASE WHEN a.status = ' . self::STATUS_IZIN . ' THEN 1 ELSE 0 END), 0) as total_izin',
             'COALESCE(SUM(CASE WHEN a.status = ' . self::STATUS_SAKIT . ' THEN 1 ELSE 0 END), 0) as total_sakit',
             'COALESCE(SUM(CASE WHEN a.status = ' . self::STATUS_ALFA . ' THEN 1 ELSE 0 END), 0) as total_alfa',
         ]);
-        // Join with students table first
         $builder->join('students s', 's.id = a.student_id');
-        // Then join students with class_student to get their class_id
         $builder->join('class_student cs', 'cs.student_id = s.id', 'left');
-        // Then join class_student with classes table
         $builder->join('classes c', 'c.id = cs.class_id', 'left');
-
 
         if (!empty($filters['class_id'])) {
             $builder->where('cs.class_id', $filters['class_id']);
         }
-        // If filtering by student, it's usually for a specific student's recap,
-        // but the general recap is per class or all students.
-        // For this general recap, we typically don't filter by a single student_id here,
-        // but rather group by student_id.
-        // if (!empty($filters['student_id'])) {
-        //     $builder->where('a.student_id', $filters['student_id']);
-        // }
         if (!empty($filters['date_from'])) {
             $builder->where('a.attendance_date >=', $filters['date_from']);
         }
         if (!empty($filters['date_to'])) {
             $builder->where('a.attendance_date <=', $filters['date_to']);
         }
+        // Filter by status if provided
+        if (!empty($filters['status']) && $filters['status'] !== 'ALL') {
+             // If filtering by a specific status, we sum only that status and others will be 0 for that row.
+             // This might change the meaning of total_hadir, total_izin etc.
+             // A better approach for "show only students with X status" is more complex.
+             // For now, this will filter the records that contribute to the SUMs.
+             // This means if status 'A' is selected, only 'A' records are counted.
+             // This might not be the direct intention for a recap which usually shows all statuses.
+             // Let's reconsider this: the filter 'status' should probably filter WHICH students appear,
+             // or which records are considered AT ALL, not change the SUM structure.
+             // For now, let's assume the filter means "only consider attendance records with this status"
+             // This will effectively make other counts zero for the period if a specific status is chosen.
+             // This is NOT ideal for a summary that shows all H,I,S,A counts.
+             // A more accurate way for "filter by status" would be to get students who HAVE that status, then show their full recap.
+             // Given the current simple filter, we will apply it directly to the `a.status` in the WHERE clause.
+             // This means if you filter by 'H', it will only count 'H' and other totals will be based on those filtered records.
+             // This is probably not what the user expects for a full HISA recap.
+             //
+             // **Correction**: The filter 'status' should probably be applied AFTER aggregation or not at all
+             // in this type of summary. If the goal is to see "students who were Alfa", that's a different query.
+             // For now, I will IGNORE the $filters['status'] in the main aggregation query
+             // and assume it will be used for display filtering or a different type of report.
+             // The per-day visual calendar will use status more directly.
+        }
+
 
         $builder->groupBy('s.id, s.nis, s.full_name, c.class_name, c.id');
         $builder->orderBy('c.class_name', 'ASC');
         $builder->orderBy('s.full_name', 'ASC');
-
         $resultsWithAttendance = $builder->get()->getResultArray();
 
-        // Now, get all students from the selected class (or all students if no class filter for admin)
-        // to ensure all students are listed, even with 0 attendance.
+        // Logic to include all students from the class even if they have no attendance records
         $studentQuery = $this->db->table('students s_main');
         $studentQuery->select('s_main.id as student_id, s_main.nis, s_main.full_name, c_main.class_name, c_main.id as class_id');
         $studentQuery->join('class_student cs_main', 'cs_main.student_id = s_main.id');
@@ -186,10 +198,14 @@ class AttendanceModel extends Model
 
         if (!empty($filters['class_id'])) {
             $studentQuery->where('cs_main.class_id', $filters['class_id']);
+        } else if (!(has_role('Administrator Sistem') || has_role('Staf Tata Usaha') || has_role('Kepala Sekolah'))) {
+            // Non-admins must select a class if they have access to multiple, or it defaults if only one.
+            // This scenario should be handled by controller to ensure a class_id is always present for non-admins.
+            // If somehow it reaches here without class_id for non-admin, return empty to be safe.
+            return [];
         }
-        // If admin and no class selected, this could be very large.
-        // Consider adding a warning or limiting this if no class is selected for admin.
-        // For now, let's assume if no class_id, it's for all students (potentially large).
+        // For Admin/Staff/Kepsek without class_id, it will fetch all students. This can be large.
+        // The controller should ideally enforce class selection or provide warnings for "all students" view.
 
         $studentQuery->orderBy('c_main.class_name', 'ASC');
         $studentQuery->orderBy('s_main.full_name', 'ASC');
@@ -205,32 +221,24 @@ class AttendanceModel extends Model
             if (isset($attendanceMap[$student['student_id']])) {
                 $studentData = $attendanceMap[$student['student_id']];
             } else {
-                // Student has no attendance records in the period, initialize with zeros
                 $studentData = [
                     'student_id' => $student['student_id'],
                     'nis' => $student['nis'],
                     'full_name' => $student['full_name'],
                     'class_name' => $student['class_name'],
                     'class_id_for_recap' => $student['class_id'],
-                    'total_hadir' => 0,
-                    'total_izin' => 0,
-                    'total_sakit' => 0,
-                    'total_alfa' => 0,
+                    'total_hadir' => 0, 'total_izin' => 0, 'total_sakit' => 0, 'total_alfa' => 0,
                 ];
             }
 
-            // Calculate total_days_for_percentage
-            // This is the number of distinct days there were schedules for the student's class in the date range.
             $distinctScheduledDays = 0;
-            $classIdForSchedule = !empty($filters['class_id']) ? $filters['class_id'] : $studentData['class_id_for_recap'];
+            $classIdForScheduleCalc = $studentData['class_id_for_recap']; // Use student's actual class for day count
 
-            if ($classIdForSchedule) {
-                // Count distinct attendance_date from attendances table,
-                // but ensure these attendances belong to the specific class_id.
-                $activityDaysDb = $this->db->table($this->table . ' adays'); // alias attendances to adays
+            if ($classIdForScheduleCalc) {
+                $activityDaysDb = $this->db->table($this->table . ' adays');
                 $activityDaysDb->distinct()->select('adays.attendance_date');
-                $activityDaysDb->join('schedules sch_eff', 'sch_eff.id = adays.schedule_id'); // Join to schedules to filter by class
-                $activityDaysDb->where('sch_eff.class_id', $classIdForSchedule);
+                $activityDaysDb->join('schedules sch_eff', 'sch_eff.id = adays.schedule_id');
+                $activityDaysDb->where('sch_eff.class_id', $classIdForScheduleCalc);
 
                 if (!empty($filters['date_from'])) {
                     $activityDaysDb->where('adays.attendance_date >=', $filters['date_from']);
@@ -239,20 +247,10 @@ class AttendanceModel extends Model
                     $activityDaysDb->where('adays.attendance_date <=', $filters['date_to']);
                 }
                 $distinctScheduledDays = $activityDaysDb->countAllResults();
-
-            } else if (has_role('Administrator Sistem') || has_role('Staf Tata Usaha') || has_role('Kepala Sekolah')) {
-                // Admin/Staff/Kepsek without class filter - count distinct attendance dates globally for the period
-                $globalActivityDaysDb = $this->db->table($this->table . ' att_global'); // alias attendances
-                $globalActivityDaysDb->distinct()->select('att_global.attendance_date');
-                if (!empty($filters['date_from'])) {
-                    $globalActivityDaysDb->where('att_global.attendance_date >=', $filters['date_from']);
-                }
-                if (!empty($filters['date_to'])) {
-                    $globalActivityDaysDb->where('att_global.attendance_date <=', $filters['date_to']);
-                }
-                $distinctScheduledDays = $globalActivityDaysDb->countAllResults();
             }
-
+            // If no class_id (e.g. admin view all), total_days_for_percentage might be less meaningful
+            // or would need to be calculated based on a global academic calendar.
+            // For now, it's based on days with any attendance record for that student's class.
 
             $studentData['total_days_for_percentage'] = $distinctScheduledDays;
             if ($distinctScheduledDays > 0) {
@@ -263,39 +261,96 @@ class AttendanceModel extends Model
             $finalRecap[] = $studentData;
         }
 
-        // If no class filter was applied (e.g. Admin viewing all), $allStudentsInScope might be too broad or empty if not handled well.
-        // If $filters['class_id'] is empty and user is Admin/Staff, $allStudentsInScope will list all students in DB.
-        // In this case, $resultsWithAttendance already contains all students who had attendance.
-        // We might only want to iterate $resultsWithAttendance if no class_id is specified for admin.
-        if (empty($filters['class_id']) && (has_role('Administrator Sistem') || has_role('Staf Tata Usaha') || has_role('Kepala Sekolah'))) {
-            // For global recap, the initial $resultsWithAttendance is more appropriate as it's based on actual attendance records.
-            // We'll recalculate percentage for this set.
-            $recalculatedGlobalRecap = [];
-            foreach($resultsWithAttendance as $row) {
-                 $globalActivityDaysDb = $this->db->table('attendances att_global_recalc');
-                 $globalActivityDaysDb->distinct()->select('att_global_recalc.attendance_date');
-                 if (!empty($filters['date_from'])) {
-                    $globalActivityDaysDb->where('att_global_recalc.attendance_date >=', $filters['date_from']);
-                }
-                if (!empty($filters['date_to'])) {
-                    $globalActivityDaysDb->where('att_global_recalc.attendance_date <=', $filters['date_to']);
-                }
-                // If we want this per class of the student in the row:
-                // $globalActivityDaysDb->where('att_global_recalc.class_id', $row['class_id_for_recap']);
-
-                $distinctScheduledDaysGlobal = $globalActivityDaysDb->countAllResults();
-                $row['total_days_for_percentage'] = $distinctScheduledDaysGlobal;
-                 if ($distinctScheduledDaysGlobal > 0) {
-                    $row['percentage_hadir'] = round(($row['total_hadir'] / $distinctScheduledDaysGlobal) * 100, 2);
-                } else {
-                    $row['percentage_hadir'] = 0;
-                }
-                $recalculatedGlobalRecap[] = $row;
-            }
-            return $recalculatedGlobalRecap;
-        }
-
+        // If admin views all classes, the $allStudentsInScope loop handles it.
+        // The previous complex logic for admin global recap might be redundant now.
+        // The key is that $allStudentsInScope should correctly reflect the scope (all students if admin & no class, or students of a class).
 
         return $finalRecap;
+    }
+
+    /**
+     * Get daily attendance summary for a class within a date range.
+     * Used for calendar view and potentially line chart.
+     * @param array $filters ['class_id', 'date_from', 'date_to']
+     * @return array ['YYYY-MM-DD' => ['H' => count, 'I' => count, 'S' => count, 'A' => count, 'total_students_in_class_on_day' => count]]
+     */
+    public function getDailyAttendanceSummaryForClass(array $filters): array
+    {
+        if (empty($filters['class_id']) || empty($filters['date_from']) || empty($filters['date_to'])) {
+            return [];
+        }
+
+        $builder = $this->db->table($this->table . ' a');
+        $builder->select('a.attendance_date, a.status, COUNT(a.id) as count');
+        $builder->join('schedules sch', 'sch.id = a.schedule_id');
+        $builder->where('sch.class_id', $filters['class_id']);
+        $builder->where('a.attendance_date >=', $filters['date_from']);
+        $builder->where('a.attendance_date <=', $filters['date_to']);
+        $builder->groupBy('a.attendance_date, a.status');
+        $results = $builder->get()->getResultArray();
+
+        $summary = [];
+        $statusMap = array_flip(self::getStatusMap()); // Get 'Hadir' => 1, etc.
+
+        // Get total students in class for percentage calculation on each day
+        // This assumes student enrollment in a class is constant for the period.
+        // A more complex system might track student enrollment changes over time.
+        $studentModel = new StudentModel();
+        $totalStudentsInClass = $studentModel->join('class_student cs', 'cs.student_id = students.id')
+                                           ->where('cs.class_id', $filters['class_id'])
+                                           ->countAllResults();
+
+        foreach ($results as $row) {
+            $date = $row['attendance_date'];
+            if (!isset($summary[$date])) {
+                $summary[$date] = [
+                    'H' => 0, 'S' => 0, 'I' => 0, 'A' => 0, // Using actual status codes from constants
+                    'total_scheduled_students_on_day' => 0, // Will be populated based on distinct students with entries for the day
+                    'percentage_hadir_on_day' => 0
+                ];
+            }
+            // Map numeric status back to H, S, I, A if necessary, or use numeric status directly
+            $statusKey = array_search($row['status'], $statusMap); // e.g., 1 -> 'Hadir' ; need to ensure status map is correct
+            // Assuming $row['status'] IS 'H', 'S', 'I', 'A' from the database.
+            // The constants are 1,2,3,4. The table stores 1,2,3,4.
+            // So we need to map 1 to 'H', 2 to 'S' etc. for keys in summary array.
+
+            $statusChar = '';
+            switch ($row['status']) {
+                case self::STATUS_HADIR: $statusChar = 'H'; break;
+                case self::STATUS_SAKIT: $statusChar = 'S'; break;
+                case self::STATUS_IZIN:  $statusChar = 'I'; break;
+                case self::STATUS_ALFA:  $statusChar = 'A'; break;
+            }
+            if ($statusChar) {
+                $summary[$date][$statusChar] = (int)$row['count'];
+            }
+        }
+
+        // Calculate total scheduled students and percentage for each day
+        // This requires knowing how many students *should* have had an attendance record on that day.
+        // This is usually the total number of students in the class for that day.
+        // Simpler: count distinct student_id from attendance table for that day and class_id.
+        $distinctStudentsPerDay = $this->db->table($this->table . ' a_dist')
+            ->select('a_dist.attendance_date, COUNT(DISTINCT a_dist.student_id) as distinct_student_count')
+            ->join('schedules sch_dist', 'sch_dist.id = a_dist.schedule_id')
+            ->where('sch_dist.class_id', $filters['class_id'])
+            ->where('a_dist.attendance_date >=', $filters['date_from'])
+            ->where('a_dist.attendance_date <=', $filters['date_to'])
+            ->groupBy('a_dist.attendance_date')
+            ->get()->getResultArray();
+
+        $distinctStudentCountMap = array_column($distinctStudentsPerDay, 'distinct_student_count', 'attendance_date');
+
+        foreach ($summary as $date => &$dayData) {
+            $dayData['total_scheduled_students_on_day'] = $distinctStudentCountMap[$date] ?? 0; // Number of students with entries
+            // $dayData['total_students_in_class_on_day'] = $totalStudentsInClass; // Total enrollment
+            if ($dayData['total_scheduled_students_on_day'] > 0) {
+                 $dayData['percentage_hadir_on_day'] = round(($dayData['H'] / $dayData['total_scheduled_students_on_day']) * 100, 2);
+            }
+        }
+        unset($dayData); // Unset reference
+
+        return $summary;
     }
 }
