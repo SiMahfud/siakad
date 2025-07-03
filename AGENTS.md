@@ -1,6 +1,6 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
-*Terakhir Diperbarui: 2025-07-04* (Update setelah implementasi fitur P5 lanjutan dan penyempurnaan ekspor)
+*Terakhir Diperbarui: 2025-07-03* (Update setelah implementasi fitur Konfigurasi Global dan Dasbor KS)
 
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
@@ -54,14 +54,14 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 ## 3. Struktur Proyek & Konvensi Penting
 
 *   **Modul Data Induk**:
-    *   Models: `app/Models/` (misal, `StudentModel.php`)
-    *   Views: `app/Views/admin/<module_name>/` (misal, `app/Views/admin/students/index.php`)
-    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `P5ExportController.php`)
-    *   Rute: Didefinisikan dalam `app/Config/Routes.php` menggunakan grup `admin`.
-*   **Namespace**: Gunakan namespace `App\Controllers\Admin` untuk controller admin, `App\Models` untuk model, dst.
+    *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`)
+    *   Views: `app/Views/admin/<module_name>/` (misal, `app/Views/admin/students/index.php`, `app/Views/admin/settings/index.php`), `app/Views/kepala_sekolah/dashboard/index.php`
+    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `P5ExportController.php`, `SettingController.php`), `app/Controllers/KepalaSekolah/DashboardController.php`
+    *   Rute: Didefinisikan dalam `app/Config/Routes.php` menggunakan grup `admin` dan `kepala-sekolah`.
+*   **Namespace**: Gunakan namespace `App\Controllers\Admin` untuk controller admin, `App\Controllers\KepalaSekolah` untuk controller Kepala Sekolah, `App\Models` untuk model, dst.
 *   **Validasi**: Sebisa mungkin, letakkan aturan validasi utama di dalam Model terkait. Controller dapat mengambil aturan ini atau menambahinya jika perlu.
 *   **Layout Views**: Master layout admin adalah `app/Views/layouts/admin_default.php`. Views konten harus `extend` layout ini dan menempatkan konten dalam `section('content')`.
-*   **Helper**: Helper `form` dan `url` umumnya dibutuhkan di controller yang menangani form dan view.
+*   **Helper**: Helper `form`, `url`, `auth` umumnya dibutuhkan. Helper kustom seperti `setting_helper.php` (`app/Helpers/setting_helper.php`) dibuat untuk fungsionalitas spesifik.
 
 ## 4. Ringkasan Relasi Database Utama
 
@@ -245,45 +245,62 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
         *   **Navigation**: Link navigasi "P5 Management" (Themes, Dimensions, Elements, Sub-elements, Projects) dan link "Manage Students" pada daftar projek P5.
         *   **Permissions Used**: `manage_p5_themes`, `manage_p5_dimensions`, `manage_p5_elements`, `manage_p5_sub_elements`, `manage_p5_projects`, `manage_p5_project_students`.
     *   [X] **Alokasi Siswa ke Projek P5**: Telah diimplementasikan sebagai bagian dari fitur pengelolaan P5 di atas.
-*   **[X] Modul Ekspor ke e-Rapor (Penyempurnaan Lanjutan)**:
-    *   Controller `WaliKelas/EraporController` dan Model `AssessmentModel::getExportDataForErapor()` telah disempurnakan.
-    *   **[X] Penggunaan Kode Mata Pelajaran**: Ekspor nilai akademik kini menggunakan format `KODE_MAPEL - Nama Mapel (Sumatif)` pada header kolom nilai, sesuai panduan.
-    *   **[X] Filter Tanggal Semester**: Logika pemfilteran nilai sumatif berdasarkan rentang tanggal semester (Ganjil: Juli-Des, Genap: Jan-Juni dari tahun ajaran terkait) telah diperketat untuk memastikan akurasi data yang diekspor.
-    *   View `wali_kelas/erapor/export_form.php` sudah ada.
-    *   Library `PhpSpreadsheet` digunakan untuk generate file `.xlsx`.
-    *   Rute dan navigasi untuk Wali Kelas sudah ada.
-    *   Pengguna tetap disarankan memverifikasi output Excel dengan template e-Rapor aktual untuk poin-poin lain (nama sheet, format nilai spesifik, data siswa tambahan jika ada).
-*   **[X] Modul Projek P5 (Pengembangan Lanjutan)**:
-    *   **Fitur Penetapan Fasilitator Projek P5 (Admin)**:
-        *   Telah diimplementasikan (detail seperti sebelumnya).
-    *   **Penyempurnaan Hak Akses Input Penilaian P5 (Guru/Fasilitator)**:
-        *   Telah diimplementasikan (detail seperti sebelumnya).
+    *   **[X] Fitur Penetapan Fasilitator Projek P5 (Admin)**: Telah diimplementasikan.
+    *   **[X] Penyempurnaan Hak Akses Input Penilaian P5 (Guru/Fasilitator)**: Telah diimplementasikan.
     *   **[X] Fitur Pelaporan P5 (Admin/Koordinator) - Dengan Visualisasi**:
-        *   **Rekapitulasi per Projek (`Admin/P5ProjectController::report()` dan view `admin/p5projects/report.php`)**:
-            *   Ditambahkan **Bar Chart** (menggunakan Chart.js) untuk setiap sub-elemen target projek, menampilkan distribusi pencapaian siswa (BB, MB, BSH, SB, Belum Dinilai).
-        *   **Rekapitulasi Lintas Projek per Siswa (`Admin/StudentController::p5Report()` dan view `admin/students/p5_report.php`)**:
-            *   Ditambahkan **Radar Chart** (menggunakan Chart.js) yang menampilkan rata-rata skor siswa pada setiap Dimensi Profil Pelajar Pancasila dari semua projek yang diikutinya.
-            *   Model terkait (`P5ProjectStudentModel`, `P5AssessmentModel`, `P5ProjectModel`, `P5SubElementModel`, `P5DimensionModel`) digunakan untuk mengambil dan mengagregasi data.
-            *   Link "Lihat Laporan P5" pada daftar siswa mengarah ke laporan ini.
-        *   Hak akses dikontrol oleh filter grup admin dan permission yang relevan.
+        *   Rekapitulasi per Projek (`Admin/P5ProjectController::report()`): Ditambahkan **Bar Chart** (Chart.js) untuk distribusi pencapaian sub-elemen.
+        *   Rekapitulasi Lintas Projek per Siswa (`Admin/StudentController::p5Report()`): Ditambahkan **Radar Chart** (Chart.js) untuk profil dimensi siswa.
     *   **[X] Ekspor Data P5 untuk e-Rapor**:
-        *   Controller baru `Admin/P5ExportController.php` dibuat.
-        *   Fitur ekspor data P5 ke format Excel (.xlsx) telah diimplementasikan, berdasarkan format spesifik yang diberikan pengguna:
-            *   Form ekspor memungkinkan pemilihan Projek, Kelas (via AJAX), dan Dimensi P3 (via AJAX).
-            *   Satu file Excel dihasilkan untuk satu projek, satu kelas, dan satu dimensi yang dipilih.
-            *   Header file mencakup informasi Sekolah, KD Semester, Nama Projek, Nama Kelompok, Nama Dimensi, dan ID Format (F_PS3BK).
-            *   Kolom data siswa: NO, NAMA SISWA, NISN, NIS.
-            *   Kolom capaian: Di bawah header "NILAI CAPAIAN PER SUB ELEMEN P3", setiap sub-elemen target (dari dimensi yang dipilih dalam projek tersebut) menjadi satu kolom. Isi kolom adalah nilai capaian siswa (BB, MB, BSH, SB). Catatan deskriptif tidak termasuk.
-        *   Navigasi "Ekspor P5 ke e-Rapor" ditambahkan di menu Admin (P5 Management).
+        *   Controller `Admin/P5ExportController.php` dibuat.
+        *   Fitur ekspor data P5 ke Excel (.xlsx) dengan pemilihan Projek, Kelas, dan Dimensi (via AJAX). Format output sesuai spesifikasi pengguna (1 projek, 1 kelas, 1 dimensi per file, nilai BB/MB/BSH/SB per sub-elemen target, tanpa catatan deskriptif).
+        *   Navigasi ditambahkan di menu Admin.
+*   **[X] Modul Ekspor ke e-Rapor (Nilai Akademik - Penyempurnaan Lanjutan)**:
+    *   Controller `WaliKelas/EraporController` dan Model `AssessmentModel::getExportDataForErapor()` telah disempurnakan.
+    *   **[X] Penggunaan Kode Mata Pelajaran**: Ekspor nilai akademik kini menggunakan format `KODE_MAPEL - Nama Mapel (Sumatif)` pada header kolom nilai.
+    *   **[X] Filter Tanggal Semester**: Logika pemfilteran nilai sumatif berdasarkan rentang tanggal semester diperketat.
+    *   Pengguna tetap disarankan memverifikasi output Excel dengan template e-Rapor aktual untuk poin-poin lain (nama sheet, format nilai spesifik, dll.).
+*   **[X] Fitur Konfigurasi Global/Sekolah (Admin)**:
+    *   Tabel `settings` (dengan kolom `key`, `value`) dibuat melalui migrasi.
+    *   `SettingModel.php` dibuat dengan method `getSetting()`, `getAllSettings()`, `saveSetting()`, `saveSettings()`.
+    *   `Admin/SettingController.php` dibuat untuk menangani tampilan form dan penyimpanan pengaturan.
+        *   Pengaturan yang dikelola: `school_name`, `school_address`, `headmaster_name`, `headmaster_nip`, `current_academic_year`, `current_semester`, `current_academic_year_semester_code`.
+    *   View `admin/settings/index.php` dibuat untuk form input pengaturan.
+    *   Helper `setting_helper.php` (dengan fungsi `get_setting()`, `get_all_settings()`) dibuat dan didaftarkan.
+    *   Rute dan navigasi "Pengaturan Umum" untuk Admin ditambahkan.
+    *   Integrasi awal: `get_setting()` digunakan untuk nama sekolah di ekspor P5 dan default tahun ajaran/semester di form ekspor e-Rapor (Wali Kelas).
+*   **[X] Dasbor Eksekutif Sederhana (Kepala Sekolah)**:
+    *   `KepalaSekolah/DashboardController.php` dibuat untuk mengambil data ringkasan.
+    *   Data ringkasan yang ditampilkan: Total Siswa, Total Guru, Total Kelas, Jumlah Projek P5 Aktif, Rata-rata Kehadiran Siswa Bulan Ini.
+    *   View `kepala_sekolah/dashboard/index.php` dibuat untuk menampilkan data dalam bentuk kartu.
+    *   Rute dan navigasi "Dasbor KS" untuk Kepala Sekolah ditambahkan.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
-1.  **Modul Projek P5 (Fitur Lanjutan)**:
-    *   [X] Fitur Pelaporan P5 yang lebih detail dan analitik (misalnya, visualisasi progres per dimensi/elemen untuk siswa atau projek). *(Sudah diimplementasikan dengan Bar dan Radar Chart)*
-    *   [X] Ekspor data P5 untuk e-Rapor (setelah format dan kebutuhan ditentukan dengan jelas). *(Sudah diimplementasikan berdasarkan format yang diberikan)*
-2.  **Penyempurnaan Modul Ekspor ke e-Rapor**:
-    *   [X] Verifikasi lebih lanjut format kolom Excel terhadap template e-Rapor aktual oleh pengguna/pengembang dengan akses ke template. *(Sudah dilakukan penyesuaian untuk kode mapel)*. Pengguna tetap disarankan melakukan verifikasi akhir.
-    *   [X] Implementasi ekspor data P5 ke Excel jika formatnya sudah ada dan kompatibel. *(Sudah dipindahkan ke bagian Modul Projek P5 dan diimplementasikan)*
+*   **Verifikasi Akhir Format Ekspor**: Meskipun penyesuaian telah dilakukan, verifikasi output Excel (baik nilai akademik maupun P5) dengan **template e-Rapor aktual** oleh pengguna/pengembang dengan akses langsung ke template tersebut tetap menjadi prioritas untuk memastikan kompatibilitas 100%.
+*   **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
+    *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul.
+    *   Implementasi peran "Koordinator P5" jika diperlukan, dengan hak akses spesifik untuk manajemen dan pelaporan P5, mungkin termasuk akses ke ekspor P5.
+    *   Pastikan permission `manage_settings` (jika dibuat) diterapkan dengan benar untuk `SettingController`.
+*   **Integrasi Lebih Lanjut Pengaturan Global**:
+    *   Gunakan `get_setting('school_name')`, `get_setting('headmaster_name')`, dll., secara lebih luas di semua laporan atau dokumen yang memerlukan informasi sekolah.
+    *   Gunakan `get_setting('current_academic_year')` dan `get_setting('current_semester')` sebagai filter default atau pilihan default di lebih banyak fitur (misalnya, rekapitulasi, input nilai jika relevan).
+*   **Penyempurnaan Dasbor Eksekutif**:
+    *   Tambahkan lebih banyak metrik atau visualisasi ke dasbor Kepala Sekolah (misalnya, ringkasan pencapaian P5 sekolah, tren nilai).
+    *   Optimalkan query untuk data kehadiran jika menjadi berat.
+*   **Fitur Tambahan Guru**:
+    *   Fasilitas unggah materi ajar atau tugas per mata pelajaran/kelas.
+*   **Fitur Tambahan Wali Kelas**:
+    *   Input catatan perilaku/perkembangan siswa.
+    *   Mekanisme validasi kelengkapan nilai sebelum ekspor rapor.
+*   **Fitur Tambahan Siswa & Orang Tua**:
+    *   Rekap absensi pribadi untuk siswa.
+    *   Notifikasi/Pesan (misalnya, pengumuman dari sekolah atau guru).
+    *   Orang tua melihat status pemilihan mapel anak.
+*   **Maintenance & Backup**:
+    *   Fitur atau panduan untuk backup database (terutama jika beralih ke MySQL).
+*   **Pengoptimalan & Keamanan**:
+    *   Review performa query database, terutama pada fitur rekapitulasi dan pelaporan.
+    *   Audit keamanan berkala.
 
 ### Panduan Verifikasi dan Penyesuaian Format Ekspor e-Rapor
 

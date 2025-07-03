@@ -157,9 +157,9 @@ class P5ExportController extends BaseController
         $sheet->setCellValue('A1', 'FORMAT IMPORT NILAI PROJEK PROFIL PELAJAR PANCASILA');
         $sheet->mergeCells('A1:F1'); // Merge for title
         $sheet->setCellValue('A2', 'SEKOLAH');
-        $sheet->setCellValue('B2', ': SMAN 1 CAMPURDARAT'); // Assuming this is fixed
+        $sheet->setCellValue('B2', ': ' . (get_setting('school_name') ?: 'SMAN 1 CAMPURDARAT'));
         $sheet->setCellValue('A3', 'KD SEMESTER');
-        $sheet->setCellValue('B3', ': ' . ($this->request->getPost('kd_semester') ?: date('Y').(date('m') <= 6 ? '1' : '2'))); // Example: 20242
+        $sheet->setCellValue('B3', ': ' . ($this->request->getPost('kd_semester') ?: get_setting('current_academic_year_semester_code', date('Y').(date('m') <= 6 ? '1' : '2')))); // Example: 20242
         $sheet->setCellValue('A4', 'PROJEK P5');
         $sheet->setCellValue('B4', ': ' . $project['name']);
         $sheet->setCellValue('A5', 'KELOMPOK');

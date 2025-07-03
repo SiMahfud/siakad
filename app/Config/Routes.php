@@ -169,6 +169,25 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'as' => 'admin_p5export_ajax_dimensions',
         'filter' => $p5ManagementFilter
     ]);
+
+    // Settings Routes (Admin)
+    // It's good practice to use a specific permission like 'manage_settings'
+    // For now, defaulting to 'Administrator Sistem' if 'manage_settings' isn't explicitly defined/used elsewhere for roles.
+    $settingsFilter = 'auth:Administrator Sistem'; // Replace with 'auth:manage_settings' once permission is set up
+    $routes->get('settings', 'SettingController::index', [
+        'as' => 'admin_settings',
+        'filter' => $settingsFilter
+    ]);
+    $routes->post('settings/save', 'SettingController::save', [
+        'as' => 'admin_settings_save',
+        'filter' => $settingsFilter
+    ]);
+});
+
+// Kepala Sekolah Routes
+$routes->group('kepala-sekolah', ['namespace' => 'App\Controllers\KepalaSekolah', 'filter' => 'auth:Kepala Sekolah'], static function ($routes) {
+    $routes->get('dashboard', 'DashboardController::index', ['as' => 'ks_dashboard']);
+    // Add other Kepala Sekolah specific routes here
 });
 
 // Guru routes

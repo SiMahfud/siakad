@@ -65,18 +65,18 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Antarmuka input penilaian kualitatif (BB, MB, BSH, SB) & catatan deskriptif per siswa per sub-elemen.
     *   [X] Hak akses input penilaian P5 kini dibatasi hanya untuk fasilitator yang ditugaskan pada projek tersebut (Administrator Sistem tetap memiliki akses penuh).
 *   **[X] Fitur Pelaporan P5 (Dasar & Komprehensif Sebagian)**
-    *   [X] Rekapitulasi penilaian P5 per projek (per siswa, per sub-elemen) untuk Admin/Koordinator.
-    *   [X] Rekapitulasi penilaian P5 per siswa (lintas projek) untuk Admin/Koordinator.
-    *   [ ] Ekspor data P5 untuk e-Rapor (jika didukung).
+    *   [X] Rekapitulasi penilaian P5 per projek (per siswa, per sub-elemen) untuk Admin/Koordinator, **dengan visualisasi Bar Chart per sub-elemen**.
+    *   [X] Rekapitulasi penilaian P5 per siswa (lintas projek) untuk Admin/Koordinator, **dengan visualisasi Radar Chart untuk profil dimensi siswa**.
+    *   [X] Ekspor data P5 untuk e-Rapor (berdasarkan format spesifik yang diberikan).
 
 ### Modul Pendukung
 
-*   **[X] Modul Ekspor ke e-Rapor (Fitur Kunci - Penyempurnaan Filter)**
+*   **[X] Modul Ekspor ke e-Rapor (Fitur Kunci - Penyempurnaan Lanjutan)**
     *   [X] Antarmuka Wali Kelas untuk parameter ekspor (Kelas, Tahun Ajaran, Semester).
-    *   [X] Proses penarikan data nilai sumatif (rata-rata per mapel) dengan filter semester yang disempurnakan berdasarkan rentang tanggal.
+    *   [X] Proses penarikan data nilai sumatif (rata-rata per mapel) dengan filter semester yang disempurnakan berdasarkan rentang tanggal dan **penggunaan kode mata pelajaran** pada header output Excel.
     *   [X] Penyusunan & Unduh file Excel (.xlsx).
-        *   *Catatan: Pengguna disarankan memverifikasi format output Excel dengan template e-Rapor aktual.*
-    *   [ ] Ekspor data P5 (menyusul setelah fitur penilaian & pelaporan P5 lengkap).
+        *   *Catatan: Pengguna tetap disarankan memverifikasi output Excel dengan template e-Rapor aktual.*
+    *   [X] Ekspor data P5 (diimplementasikan sebagai fitur terpisah di bawah modul P5 Admin).
 
 ### Fitur Berdasarkan Peran Pengguna
 *   **Administrator Sistem**:
@@ -86,8 +86,12 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Mengelola Penawaran Mata Pelajaran Pilihan (CRUD).
     *   [X] Melihat Rekap Presensi.
     *   [X] Melihat Rekap Pemilihan Mapel.
-    *   [ ] Mengatur konfigurasi tahun ajaran, data sekolah, struktur kurikulum.
-    *   [ ] Mengelola data master tema dan dimensi P5.
+    *   [X] Mengelola data master tema, dimensi, elemen, sub-elemen P5 (CRUD).
+    *   [X] Mengelola Projek P5 (CRUD, alokasi siswa, penentuan fasilitator).
+    *   [X] Melihat laporan P5 per projek (dengan visualisasi).
+    *   [X] Melihat laporan P5 per siswa (dengan visualisasi).
+    *   [X] Melakukan ekspor data P5 ke format e-Rapor.
+    *   [X] Mengatur Konfigurasi Global Sekolah (Nama Sekolah, Alamat, Kepsek, Tahun/Semester Aktif, Kode Semester e-Rapor).
     *   [ ] Maintenance dan backup database.
 *   **Staf Tata Usaha (TU)**:
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
@@ -96,17 +100,20 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Mengelola Penawaran Mata Pelajaran Pilihan (CRUD).
     *   [X] Melihat Rekap Presensi.
     *   [X] Melihat Rekap Pemilihan Mapel.
+    *   [X] (Jika diberi akses) Mengelola data master P5 dan Projek P5.
 *   **Kepala Sekolah**:
     *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
     *   [X] Melihat Rekap Presensi.
     *   [X] Melihat Rekap Pemilihan Mapel.
-    *   [ ] Dasbor eksekutif.
+    *   [X] Melihat laporan P5 per projek (dengan visualisasi).
+    *   [X] Melihat laporan P5 per siswa (dengan visualisasi).
+    *   [X] Dasbor Eksekutif Sederhana (Jumlah Siswa, Guru, Kelas, P5 Aktif, Rata-rata Kehadiran).
     *   [ ] Memantau aktivitas guru.
     *   [ ] Membuat dan menyebarkan pengumuman.
 *   **Guru Mata Pelajaran**:
     *   [X] Melihat Jadwal Mengajar.
     *   [X] Menginput Presensi Harian.
-    *   [P] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada.
+    *   [X] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada, termasuk edit/hapus.
     *   [X] Melihat daftar kelas yang diajar dan siswa di dalamnya.
     *   [ ] Mengunggah materi ajar/tugas.
 *   **Wali Kelas**:
@@ -114,9 +121,10 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Melihat daftar siswa di kelas perwalian.
     *   [X] Memantau rekapitulasi absensi kelas perwalian (via Rekap Presensi).
     *   [X] Melihat Rekap Pemilihan Mapel (untuk memantau pilihan siswa secara umum, jika relevan).
+    *   [X] Ekspor Data Nilai Akademik ke e-Rapor (dengan kode mapel dan filter semester yang disempurnakan).
     *   [ ] Menginput catatan perilaku/perkembangan siswa.
     *   [ ] Validasi Kelengkapan Nilai.
-    *   [P] Ekspor Data ke e-Rapor (Tahap Awal: nilai sumatif).
+    *   [ ] Mengelola Projek P5 (jika ditunjuk sebagai Koordinator P5).
     *   [ ] Mengelola Projek P5 (jika ditunjuk sebagai Koordinator P5).
 *   **Siswa**:
     *   [X] Melihat Jadwal Pelajaran Kelas.

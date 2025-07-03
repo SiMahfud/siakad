@@ -53,16 +53,21 @@ class EraporController extends BaseController
 
         // Ambil tahun ajaran dan semester unik dari subject_offerings untuk filter
         // Ini mungkin perlu disesuaikan jika ada sumber data tahun ajaran/semester yang lebih definitif
-        $academicYears = $this->subjectOfferingModel->distinct()->select('academic_year')->orderBy('academic_year', 'DESC')->findAll();
-        $semesters = $this->subjectOfferingModel->distinct()->select('semester')->orderBy('semester', 'ASC')->findAll(); // Asumsi 1=Ganjil, 2=Genap
+        $availableAcademicYears = $this->subjectOfferingModel->distinct()->select('academic_year')->orderBy('academic_year', 'DESC')->findAll();
+        $availableSemesters = $this->subjectOfferingModel->distinct()->select('semester')->orderBy('semester', 'ASC')->findAll(); // Asumsi 1=Ganjil, 2=Genap
+
+        // Get default values from settings
+        $defaultAcademicYear = get_setting('current_academic_year', '');
+        $defaultSemester = get_setting('current_semester', '');
+
 
         $data = [
             'title' => 'Ekspor Data ke e-Rapor',
             'classes' => $classes,
-            'academic_years' => $academicYears,
-            'semesters' => $semesters,
-            'current_academic_year' => $this->request->getGet('academic_year'),
-            'current_semester' => $this->request->getGet('semester'),
+            'available_academic_years' => $availableAcademicYears,
+            'available_semesters' => $availableSemesters,
+            'current_academic_year' => $this->request->getGet('academic_year') ?: $defaultAcademicYear,
+            'current_semester' => $this->request->getGet('semester') ?: $defaultSemester,
             'current_class_id' => $this->request->getGet('class_id'),
         ];
 
