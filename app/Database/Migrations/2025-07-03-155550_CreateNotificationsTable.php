@@ -59,6 +59,6 @@ class CreateNotificationsTable extends Migration
 
     public function down()
     {
-        //
+        $this->forge->dropTable('notifications');
     }
 }

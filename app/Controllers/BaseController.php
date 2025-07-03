@@ -62,7 +62,7 @@ abstract class BaseController extends Controller
      * @param string|null $message Optional custom message.
      * @return string
      */
-    protected functionshowUnauthorized(string $message = null): string
+    protected function showUnauthorized(string $message = null): string
     {
         $data['pageTitle'] = 'Access Forbidden';
         $data['error_message'] = $message ?? 'You do not have the necessary permissions to view this page.';
