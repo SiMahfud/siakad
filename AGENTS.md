@@ -199,9 +199,45 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **Modul Projek P5**:
-    *   Desain detail tabel jika diperlukan.
-    *   Implementasi fitur terkait P5.
+2.  **[X] Modul Projek P5 (Struktur Data & Model Dasar)**:
+    *   [X] **Skema Database**: 8 tabel baru telah dirancang dan dimigrasikan:
+        *   `p5_themes`: Tema-tema P5.
+        *   `p5_projects`: Detail projek P5, terhubung ke `p5_themes`.
+        *   `p5_dimensions`: Dimensi Profil Pelajar Pancasila.
+        *   `p5_elements`: Elemen turunan dari dimensi, terhubung ke `p5_dimensions`.
+        *   `p5_sub_elements`: Sub-elemen spesifik, terhubung ke `p5_elements`.
+        *   `p5_project_target_sub_elements`: Sub-elemen yang menjadi target dalam sebuah projek, menghubungkan `p5_projects` dan `p5_sub_elements`.
+        *   `p5_project_students`: Siswa yang berpartisipasi dalam projek, menghubungkan `p5_projects` dan `students`.
+        *   `p5_assessments`: Penilaian kualitatif P5, menghubungkan `p5_project_students`, `p5_sub_elements`, dan `teachers` (sebagai penilai).
+    *   [X] **Model**: Model untuk setiap tabel P5 telah dibuat (`P5ThemeModel`, `P5ProjectModel`, `P5DimensionModel`, `P5ElementModel`, `P5SubElementModel`, `P5ProjectTargetSubElementModel`, `P5ProjectStudentModel`, `P5AssessmentModel`) dengan:
+        *   Properti dasar (`$table`, `$primaryKey`, `$allowedFields`, `$useTimestamps`).
+        *   Aturan validasi awal.
+        *   Aturan validasi kustom `valid_date_range_if_set` ditambahkan di `App\Validation\CustomRules.php` dan diterapkan pada `P5ProjectModel` untuk memastikan `end_date` tidak lebih awal dari `start_date`. Aturan ini juga telah didaftarkan di `Config\Validation.php` dan pesan errornya ditambahkan di `Language\en\Validation.php`.
+        *   Metode helper dasar di `P5ProjectStudentModel` (misalnya, `getProject()`, `getStudent()`).
+    *   [X] **Pengembangan Fitur Pengelolaan P5 (Admin/Koordinator)**:
+        *   **Controllers**:
+            *   `Admin/P5ThemeController.php`
+            *   `Admin/P5DimensionController.php`
+            *   `Admin/P5ElementController.php` (mengelola relasi ke `p5_dimensions`)
+            *   `Admin/P5SubElementController.php` (mengelola relasi ke `p5_elements`)
+            *   `Admin/P5ProjectController.php` (mengelola relasi ke `p5_themes`, `p5_project_target_sub_elements`, dan `p5_project_students`)
+                *   Metode: `index`, `new`, `create`, `edit`, `update`, `delete`.
+                *   Metode untuk alokasi siswa: `manageStudents()`, `addStudentToProject()`, `removeStudentFromProject()`.
+        *   **Views**:
+            *   `app/Views/admin/p5themes/` (index, new, edit)
+            *   `app/Views/admin/p5dimensions/` (index, new, edit)
+            *   `app/Views/admin/p5elements/` (index, new, edit) - Form menyertakan pemilihan Dimensi Induk.
+            *   `app/Views/admin/p5subelements/` (index, new, edit) - Form menyertakan pemilihan Elemen Induk.
+            *   `app/Views/admin/p5projects/` (index, new, edit) - Form menyertakan pemilihan Tema dan multi-seleksi Target Sub-elemen.
+            *   `app/Views/admin/p5projects/manage_students.php` - View untuk alokasi siswa ke projek.
+        *   **Routes**:
+            *   Resource routes: `admin/p5themes`, `admin/p5dimensions`, `admin/p5elements`, `admin/p5subelements`, `admin/p5projects`.
+            *   Rute spesifik untuk P5 Project Student Management: `admin/p5projects/manage-students/(:num)`, `admin/p5projects/add-student/(:num)`, `admin/p5projects/remove-student/(:num)/(:num)`.
+        *   **Navigation**: Link navigasi "P5 Management" (Themes, Dimensions, Elements, Sub-elements, Projects) dan link "Manage Students" pada daftar projek P5.
+        *   **Permissions Used**: `manage_p5_themes`, `manage_p5_dimensions`, `manage_p5_elements`, `manage_p5_sub_elements`, `manage_p5_projects`, `manage_p5_project_students`.
+    *   [X] **Alokasi Siswa ke Projek P5**: Telah diimplementasikan sebagai bagian dari fitur pengelolaan P5 di atas.
+    *   [ ] **Pengembangan Fitur (Selanjutnya)**:
+        *   Fitur input penilaian P5 oleh Fasilitator/Guru.
 *   **[P] Modul Ekspor ke e-Rapor (Tahap Awal Selesai, Perlu Penyempurnaan)**:
     *   Controller `WaliKelas/EraporController` dibuat untuk form dan proses ekspor.
     *   Model `AssessmentModel::getExportDataForErapor()` diimplementasikan untuk mengambil rata-rata nilai sumatif.

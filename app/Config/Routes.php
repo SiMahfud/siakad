@@ -84,6 +84,49 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'as' => 'admin_recap_subject_choices',
         'filter' => 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah,Guru' // Guru di sini mungkin lebih ke TU Kurikulum atau Admin
     ]);
+
+    // P5 Module Management: Administrator Sistem & Staf Tata Usaha (or a new P5 Coordinator role)
+    // For now, let's use Admin & Staf TU
+    $p5ManagementFilter = 'auth:Administrator Sistem,Staf Tata Usaha';
+
+    $routes->resource('p5themes', [
+        'controller' => 'P5ThemeController',
+        'filter'     => $p5ManagementFilter,
+        'as'         => 'admin_p5themes'
+    ]);
+    $routes->resource('p5dimensions', [
+        'controller' => 'P5DimensionController',
+        'filter'     => $p5ManagementFilter,
+        'as'         => 'admin_p5dimensions'
+    ]);
+    $routes->resource('p5elements', [
+        'controller' => 'P5ElementController',
+        'filter'     => $p5ManagementFilter,
+        'as'         => 'admin_p5elements'
+    ]);
+    $routes->resource('p5subelements', [
+        'controller' => 'P5SubElementController',
+        'filter'     => $p5ManagementFilter,
+        'as'         => 'admin_p5subelements'
+    ]);
+    $routes->resource('p5projects', [
+        'controller' => 'P5ProjectController',
+        'filter'     => $p5ManagementFilter,
+        'as'         => 'admin_p5projects'
+    ]);
+    // P5 Project Student Management routes
+    $routes->get('p5projects/manage-students/(:num)', 'P5ProjectController::manageStudents/$1', [
+        'as' => 'admin_p5project_manage_students',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->post('p5projects/add-student/(:num)', 'P5ProjectController::addStudentToProject/$1', [
+        'as' => 'admin_p5project_add_student',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->get('p5projects/remove-student/(:num)/(:num)', 'P5ProjectController::removeStudentFromProject/$1/$2', [
+        'as' => 'admin_p5project_remove_student',
+        'filter' => $p5ManagementFilter
+    ]);
 });
 
 // Guru routes
