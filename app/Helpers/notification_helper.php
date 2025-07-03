@@ -75,3 +75,16 @@ if (!function_exists('time_ago')) {
         }
     }
 }
+
+if (!function_exists('day_name_id')) {
+    /**
+     * Get Indonesian day name from day index (0 for Sunday, 1 for Monday, etc.)
+     * @param int $dayIndex
+     * @return string
+     */
+    function day_name_id(int $dayIndex): string
+    {
+        $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        return $days[$dayIndex] ?? '';
+    }
+}

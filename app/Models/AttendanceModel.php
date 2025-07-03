@@ -116,21 +116,81 @@ class AttendanceModel extends Model
      */
     public function getStudentAttendanceSummary(int $studentId, string $startDate, string $endDate, array $statusFilter = []): array
     {
-        $builder = $this->select('attendances.*, schedules.start_time, schedules.end_time, subjects.subject_name')
+        $builder = $this->select('attendances.id as attendance_id, attendances.attendance_date, attendances.status, attendances.remarks, schedules.start_time, schedules.end_time, subjects.subject_name, users.full_name as recorded_by_name')
                         ->join('schedules', 'schedules.id = attendances.schedule_id')
                         ->join('subjects', 'subjects.id = schedules.subject_id')
+                        ->join('users', 'users.id = attendances.recorded_by_user_id', 'left') // Join with users table
                         ->where('attendances.student_id', $studentId)
                         ->where('attendances.attendance_date >=', $startDate)
                         ->where('attendances.attendance_date <=', $endDate);
 
-        if (!empty($statusFilter)) {
-            $builder->whereIn('attendances.status', $statusFilter);
+        if (!empty($statusFilter) && $statusFilter !== ['ALL']) { // Assuming 'ALL' means no status filter
+             if(is_array($statusFilter) && !empty($statusFilter) && $statusFilter[0] !== 'ALL'){ // Ensure it's a valid array and not just ['ALL']
+                $builder->whereIn('attendances.status', $statusFilter);
+            }
         }
 
         return $builder->orderBy('attendances.attendance_date', 'ASC')
                        ->orderBy('schedules.start_time', 'ASC')
                        ->findAll();
     }
+
+    /**
+     * Get daily attendance status for a student within a date range.
+     * If multiple statuses on the same day, prioritize Non-Hadir (A > S > I > H).
+     *
+     * @param int    $studentId
+     * @param string $startDate (Y-m-d format)
+     * @param string $endDate (Y-m-d format)
+     * @return array ['YYYY-MM-DD' => 'StatusChar (H/S/I/A)']
+     */
+    public function getDailyAttendanceStatusForStudent(int $studentId, string $startDate, string $endDate): array
+    {
+        $records = $this->select('attendance_date, status')
+                        ->where('student_id', $studentId)
+                        ->where('attendance_date >=', $startDate)
+                        ->where('attendance_date <=', $endDate)
+                        ->orderBy('attendance_date', 'ASC')
+                        ->orderBy('status', 'DESC') // Prioritize A (4) > S (2) > I (3) > H (1) if multiple entries on same day
+                                                // Note: Izin (3) is higher than Sakit (2) in value, so order by status DESC
+                                                // A (4), I (3), S (2), H (1)
+                        ->findAll();
+
+        $dailyStatus = [];
+        $statusPriority = [
+            self::STATUS_ALFA => 4,
+            self::STATUS_IZIN => 3,
+            self::STATUS_SAKIT => 2,
+            self::STATUS_HADIR => 1,
+        ];
+        $statusChars = array_flip(self::getStatusMap()); // [1 => 'Hadir', 2 => 'Sakit', ...] -> ['Hadir' => 1, ...] - no, other way around
+        $statusCharsMap = [];
+        foreach(self::getStatusMap() as $code => $text){
+            $statusCharsMap[$code] = substr($text, 0, 1); // H, S, I, A
+        }
+
+
+        foreach ($records as $record) {
+            $date = $record['attendance_date'];
+            $currentStatusPriority = $statusPriority[$record['status']];
+
+            if (!isset($dailyStatus[$date]) || $currentStatusPriority > $statusPriority[$dailyStatus[$date]['numeric_status']]) {
+                 $dailyStatus[$date] = [
+                    'char_status' => $statusCharsMap[$record['status']],
+                    'numeric_status' => $record['status'] // Store numeric too for priority check
+                 ];
+            }
+        }
+
+        // Flatten to just char_status
+        $result = [];
+        foreach($dailyStatus as $date => $statusData){
+            $result[$date] = $statusData['char_status'];
+        }
+
+        return $result;
+    }
+
 
     public function getAttendanceRecap(array $filters = [])
     {

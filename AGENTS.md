@@ -55,8 +55,9 @@ Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau p
 
 *   **Modul Data Induk**:
     *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`, `NotificationModel.php`)
-    *   Views: `app/Views/admin/<module_name>/` (misal, `students/index.php`, `settings/index.php`), `app/Views/kepala_sekolah/dashboard/index.php`, `app/Views/notifications/index.php`
-    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `SettingController.php`), `app/Controllers/KepalaSekolah/DashboardController.php`, `app/Controllers/NotificationController.php`
+    *   Models: `app/Models/` (misal, `StudentModel.php`, `SettingModel.php`, `NotificationModel.php`, `AttendanceModel.php`)
+    *   Views: `app/Views/admin/<module_name>/` (misal, `students/index.php`, `settings/index.php`, `recaps/attendance_recap.php`), `app/Views/kepala_sekolah/dashboard/index.php`, `app/Views/notifications/index.php`, `app/Views/siswa/attendance/my_recap.php`, `app/Views/ortu/attendance/select_child.php`, `app/Views/ortu/attendance/child_recap.php`
+    *   Controllers: `app/Controllers/Admin/` (misal, `StudentController.php`, `SettingController.php`, `RecapController.php`), `app/Controllers/KepalaSekolah/DashboardController.php`, `app/Controllers/NotificationController.php`, `app/Controllers/Siswa/AttendanceController.php`, `app/Controllers/Ortu/AttendanceController.php`
     *   Commands: `app/Commands/AttendanceAlertsCheckCommand.php`
     *   Rute: Didefinisikan dalam `app/Config/Routes.php`.
 *   **Namespace**: Sesuai struktur direktori.
@@ -71,7 +72,6 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 *   `users.role_id` -> `roles.id`
 *   `notifications.user_id` -> `users.id` (Penerima notifikasi)
 *   `notifications.student_id` -> `students.id` (Siswa terkait notifikasi)
-*   `students.user_id` -> `users.id`
 *   `students.user_id` -> `users.id` (Akun login untuk siswa)
 *   `students.parent_user_id` -> `users.id` (Akun login untuk orang tua siswa)
 *   `teachers.user_id` -> `users.id` (Akun login untuk guru)
@@ -295,6 +295,14 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   **Kalender Presensi**: Di view rekap presensi kelas, ditambahkan kalender (FullCalendar.js) yang menampilkan ringkasan H/A/I/S per hari dengan pewarnaan.
     *   **Grafik Tren Kehadiran**: Di view rekap presensi kelas, ditambahkan grafik garis (Chart.js) yang menampilkan tren persentase kehadiran harian.
     *   View `admin/recaps/attendance_recap.php` diperbarui untuk menyertakan filter baru dan elemen visualisasi.
+*   **[X] Fitur Rekap Absensi Siswa**:
+    *   Controller `Siswa/AttendanceController.php` dan view `siswa/attendance/my_recap.php` dibuat.
+    *   Siswa dapat melihat detail absensi pribadi dengan filter rentang tanggal dan kalender visual (FullCalendar).
+    *   Rute dan navigasi ditambahkan.
+*   **[X] Fitur Rekap Absensi Orang Tua**:
+    *   Controller `Ortu/AttendanceController.php` dan views `ortu/attendance/select_child.php` & `ortu/attendance/child_recap.php` dibuat.
+    *   Orang tua dapat memilih anak (jika >1) dan melihat detail absensi anak dengan filter rentang tanggal dan kalender visual.
+    *   Rute dan navigasi ditambahkan.
 
 ## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
 
@@ -314,7 +322,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   Input catatan perilaku/perkembangan siswa.
     *   Mekanisme validasi kelengkapan nilai sebelum ekspor rapor.
 *   **Fitur Tambahan Siswa & Orang Tua**:
-    *   Rekap absensi pribadi untuk siswa (mungkin dengan kalender visual juga).
+    *   [X] Rekap absensi pribadi untuk siswa (mungkin dengan kalender visual juga). *(Sudah diimplementasikan)*
     *   Notifikasi/Pesan (misalnya, pengumuman dari sekolah atau guru).
     *   Orang tua melihat status pemilihan mapel anak.
 *   **Maintenance & Backup**:

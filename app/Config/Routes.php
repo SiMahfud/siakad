@@ -251,6 +251,7 @@ $routes->group('guru', ['namespace' => 'App\Controllers\Guru', 'filter' => 'auth
 $routes->group('siswa', ['namespace' => 'App\Controllers\Siswa', 'filter' => 'auth:Siswa'], static function ($routes) {
     $routes->get('nilai', 'NilaiController::index', ['as' => 'siswa_nilai_index']);
     $routes->get('my-schedule', 'ScheduleController::classSchedule', ['as' => 'siswa_my_schedule']);
+    $routes->get('absensi', 'AttendanceController::myAttendance', ['as' => 'siswa_absensi_recap']);
 
     // Subject Choice Routes for Siswa
     $routes->get('subject-choices', 'SubjectChoiceController::index', ['as' => 'siswa_subject_choices_index']);
@@ -262,6 +263,9 @@ $routes->group('siswa', ['namespace' => 'App\Controllers\Siswa', 'filter' => 'au
 $routes->group('ortu', ['namespace' => 'App\Controllers\Ortu', 'filter' => 'auth:Orang Tua'], static function ($routes) {
     $routes->get('nilai', 'NilaiController::index', ['as' => 'ortu_nilai_index']);
     $routes->get('nilai/(:num)', 'NilaiController::showStudentRecap/$1', ['as' => 'ortu_nilai_recap_siswa']);
+
+    $routes->get('absensi', 'AttendanceController::selectChild', ['as' => 'ortu_absensi_select_child']);
+    $routes->get('absensi/anak/(:num)', 'AttendanceController::viewChildAttendance/$1', ['as' => 'ortu_absensi_anak_recap']);
     // Add other orang tua specific routes here
 });
 
