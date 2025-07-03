@@ -1,6 +1,6 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
-*Terakhir Diperbarui: 2024-07-30*
+*Terakhir Diperbarui: 2025-07-03*
 
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
