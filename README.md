@@ -134,11 +134,11 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Melihat Jadwal Pelajaran Kelas.
     *   [X] Melakukan Pemilihan Mata Pelajaran Pilihan (Fase F).
     *   [X] Melihat Notifikasi terkait dirinya (jika ada, misal dari Wali Kelas).
-    *   [ ] Melihat rekap absensi pribadi.
+    *   [X] Melihat Rekap Absensi Pribadi (dengan tabel detail dan kalender visual).
     *   [X] Melihat transkrip nilai sementara.
 *   **Orang Tua / Wali**:
     *   [X] Menerima Notifikasi terkait absensi anaknya.
-    *   [ ] Memantau kehadiran dan rekap absensi anak.
+    *   [X] Memantau Kehadiran dan Rekap Absensi Anak (dengan tabel detail dan kalender visual per anak).
     *   [ ] Melihat status pemilihan mapel anak (Belum).
     *   [X] Melihat transkrip nilai sementara anak.
     *   [ ] Menerima pengumuman dan pesan.

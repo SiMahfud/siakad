@@ -170,6 +170,10 @@
                                         <a class="dropdown-item <?= (strpos(uri_string(), 'siswa/nilai') !== false) ? 'active' : '' ?>"
                                            href="<?= route_to('siswa_nilai_index') ?>">Transkrip Nilai</a>
                                     </li>
+                                     <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'siswa/absensi') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('siswa_absensi_recap') ?>">Rekap Absensi Saya</a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item <?= (strpos(uri_string(), 'siswa/subject-choices') !== false) ? 'active' : '' ?>"
@@ -189,9 +193,21 @@
 
                         <!-- Orang Tua Menu -->
                         <?php if (hasRole('Orang Tua')): ?>
-                            <li class="nav-item">
-                                <a class="nav-link <?= (strpos(uri_string(), 'ortu/nilai') !== false) ? 'active' : '' ?>"
-                                   href="<?= route_to('ortu_nilai_index') ?>">Nilai Anak</a>
+                             <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle <?= (strpos(uri_string(), 'ortu/') !== false) ? 'active' : '' ?>"
+                                   href="#" id="ortuMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                   <i class="bi bi-people-fill"></i> Menu Orang Tua
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="ortuMenuDropdown">
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'ortu/nilai') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('ortu_nilai_index') ?>">Nilai Anak</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item <?= (strpos(uri_string(), 'ortu/absensi') !== false) ? 'active' : '' ?>"
+                                           href="<?= route_to('ortu_absensi_select_child') ?>">Absensi Anak</a>
+                                    </li>
+                                </ul>
                             </li>
                         <?php endif; ?>
 
