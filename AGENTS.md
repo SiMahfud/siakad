@@ -199,9 +199,22 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 
 1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
     *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **Modul Projek P5**:
-    *   Desain detail tabel jika diperlukan.
-    *   Implementasi fitur terkait P5.
+2.  **[X] Modul Projek P5 (Struktur Data & Model Dasar)**:
+    *   [X] **Skema Database**: 8 tabel baru telah dirancang dan dimigrasikan:
+        *   `p5_themes`: Tema-tema P5.
+        *   `p5_projects`: Detail projek P5, terhubung ke `p5_themes`.
+        *   `p5_dimensions`: Dimensi Profil Pelajar Pancasila.
+        *   `p5_elements`: Elemen turunan dari dimensi, terhubung ke `p5_dimensions`.
+        *   `p5_sub_elements`: Sub-elemen spesifik, terhubung ke `p5_elements`.
+        *   `p5_project_target_sub_elements`: Sub-elemen yang menjadi target dalam sebuah projek, menghubungkan `p5_projects` dan `p5_sub_elements`.
+        *   `p5_project_students`: Siswa yang berpartisipasi dalam projek, menghubungkan `p5_projects` dan `students`.
+        *   `p5_assessments`: Penilaian kualitatif P5, menghubungkan `p5_project_students`, `p5_sub_elements`, dan `teachers` (sebagai penilai).
+    *   [X] **Model**: Model untuk setiap tabel P5 telah dibuat (`P5ThemeModel`, `P5ProjectModel`, `P5DimensionModel`, `P5ElementModel`, `P5SubElementModel`, `P5ProjectTargetSubElementModel`, `P5ProjectStudentModel`, `P5AssessmentModel`) dengan:
+        *   Properti dasar (`$table`, `$primaryKey`, `$allowedFields`, `$useTimestamps`).
+        *   Aturan validasi awal.
+        *   Aturan validasi kustom `valid_date_range_if_set` ditambahkan di `App\Validation\CustomRules.php` dan diterapkan pada `P5ProjectModel` untuk memastikan `end_date` tidak lebih awal dari `start_date`. Aturan ini juga telah didaftarkan di `Config\Validation.php` dan pesan errornya ditambahkan di `Language\en\Validation.php`.
+        *   Metode helper dasar di `P5ProjectStudentModel` (misalnya, `getProject()`, `getStudent()`).
+    *   [ ] **Pengembangan Fitur**: Implementasi fitur CRUD untuk pengelolaan data P5 (oleh Koordinator/Admin) dan fitur input penilaian P5 (oleh Fasilitator/Guru) masih perlu dilakukan.
 *   **[P] Modul Ekspor ke e-Rapor (Tahap Awal Selesai, Perlu Penyempurnaan)**:
     *   Controller `WaliKelas/EraporController` dibuat untuk form dan proses ekspor.
     *   Model `AssessmentModel::getExportDataForErapor()` diimplementasikan untuk mengambil rata-rata nilai sumatif.

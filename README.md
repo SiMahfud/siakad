@@ -86,17 +86,52 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Tampilan rekap nilai per siswa dan per mata pelajaran (Guru: pemilihan konteks, tampilan tabel, aksi Edit/Hapus; Siswa: tampilan nilai per mapel; Ortu: pemilihan anak & tampilan nilai anak).
     *   [X] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks (Filter kelas berdasarkan wali kelas; Filter mapel berdasarkan penugasan guru di kelas tersebut).
     *   [X] Fitur edit/hapus data penilaian yang sudah dimasukkan (Controller, View dasar, Rute, Hak Akses dasar, terintegrasi di halaman rekap).
-*   **[ ] Modul Projek P5**
-    *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
-    *   [ ] Pengaturan projek oleh koordinator
-    *   [ ] Pencatatan penilaian kualitatif (BB, MB, BSH, SB) oleh fasilitator
+*   **[X] Modul Projek P5 (Struktur Data & Model)**
+    *   [X] Struktur Tabel Database (8 tabel: `p5_themes`, `p5_projects`, `p5_dimensions`, `p5_elements`, `p5_sub_elements`, `p5_project_target_sub_elements`, `p5_project_students`, `p5_assessments`)
+    *   [X] Model class untuk semua tabel P5 dengan properti dasar, validasi, dan helper.
+    *   [ ] Pengaturan projek oleh koordinator (Belum diimplementasikan)
+    *   [ ] Pencatatan penilaian kualitatif (BB, MB, BSH, SB) oleh fasilitator (Belum diimplementasikan)
 *   **[P] Modul Ekspor ke e-Rapor (Fitur Kunci - Tahap Awal)**
     *   [X] Antarmuka Wali Kelas untuk memilih parameter ekspor (Kelas, Tahun Ajaran, Semester).
     *   [P] Proses penarikan data nilai sumatif (rata-rata sumatif per mapel).
         *   *Catatan: Akurasi filter per semester pada nilai sumatif perlu penyempurnaan.*
     *   [X] Penyusunan data ke format Excel (.xlsx) menggunakan PhpSpreadsheet.
     *   [X] Tombol unduh file Excel.
-    *   [ ] Ekspor data P5 (Menyusul setelah Modul P5).
+    *   [X] Ekspor data P5 (Menyusul setelah Modul P5).
+
+### Modul Projek Penguatan Profil Pelajar Pancasila (P5)
+
+*   **[X] Desain Database & Model P5**
+    *   [X] Perancangan skema database untuk P5, mencakup 8 tabel baru:
+        *   `p5_themes`: Menyimpan tema-tema P5 yang tersedia.
+        *   `p5_projects`: Detail projek P5 yang dilaksanakan, terkait dengan tema.
+        *   `p5_dimensions`: Dimensi-dimensi Profil Pelajar Pancasila.
+        *   `p5_elements`: Elemen-elemen turunan dari setiap dimensi.
+        *   `p5_sub_elements`: Sub-elemen spesifik dari setiap elemen yang menjadi target capaian.
+        *   `p5_project_target_sub_elements`: Menghubungkan projek P5 dengan sub-elemen yang menjadi targetnya.
+        *   `p5_project_students`: Mencatat siswa yang terlibat dalam suatu projek P5.
+        *   `p5_assessments`: Menyimpan data penilaian kualitatif P5 per siswa per sub-elemen.
+    *   [X] Pembuatan dan eksekusi migrasi database untuk semua tabel P5.
+    *   [X] Pembuatan Model class untuk setiap tabel P5 (`P5ThemeModel`, `P5ProjectModel`, `P5DimensionModel`, `P5ElementModel`, `P5SubElementModel`, `P5ProjectTargetSubElementModel`, `P5ProjectStudentModel`, `P5AssessmentModel`).
+        *   [X] Konfigurasi properti dasar, `$allowedFields`, timestamps, dan aturan validasi awal.
+        *   [X] Penambahan aturan validasi kustom `valid_date_range_if_set` untuk `P5ProjectModel` (memastikan tanggal akhir tidak lebih awal dari tanggal mulai jika keduanya diisi).
+        *   [X] Penambahan metode helper dasar pada `P5ProjectStudentModel` (contoh: `getProject()`, `getStudent()`).
+*   **[ ] Fitur Pengelolaan P5 (Koordinator/Admin)**
+    *   [ ] CRUD untuk Tema P5.
+    *   [ ] CRUD untuk Dimensi, Elemen, dan Sub-elemen P5.
+    *   [ ] Pembuatan Projek P5:
+        *   [ ] Pemilihan Tema.
+        *   [ ] Penentuan nama, deskripsi, rentang tanggal projek.
+        *   [ ] Pemilihan target sub-elemen yang akan dicapai dalam projek.
+        *   [ ] Penentuan fasilitator/guru pendamping projek.
+        *   [ ] Alokasi siswa ke dalam projek.
+*   **[ ] Fitur Penilaian P5 (Fasilitator/Guru)**
+    *   [ ] Antarmuka untuk memilih projek dan siswa.
+    *   [ ] Input penilaian kualitatif (BB, MB, BSH, SB) dan catatan deskriptif untuk setiap sub-elemen target per siswa.
+*   **[ ] Fitur Pelaporan P5**
+    *   [ ] Tampilan rekapitulasi penilaian P5 per siswa.
+    *   [ ] Tampilan rekapitulasi progres projek.
+    *   [ ] Ekspor data P5 untuk e-Rapor (jika formatnya sudah mendukung).
 
 ### Fitur Berdasarkan Peran Pengguna
 
@@ -138,6 +173,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [ ] Menginput catatan perilaku/perkembangan siswa.
     *   [ ] Validasi Kelengkapan Nilai.
     *   [P] Ekspor Data ke e-Rapor (Tahap Awal: nilai sumatif).
+    *   [ ] Mengelola Projek P5 (jika ditunjuk sebagai Koordinator P5).
 *   **Siswa**:
     *   [X] Melihat Jadwal Pelajaran Kelas.
     *   [X] Melakukan Pemilihan Mata Pelajaran Pilihan (Fase F).
