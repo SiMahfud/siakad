@@ -10,11 +10,19 @@ class StudentController extends BaseController
 {
     protected $studentModel;
     protected $userModel; // For potential lookups if needed, though validation handles existence
+    protected $p5ProjectStudentModel;
+    protected $p5AssessmentModel;
+    protected $p5ProjectModel;
+    protected $p5SubElementModel;
 
     public function __construct()
     {
         $this->studentModel = new StudentModel();
         $this->userModel = new UserModel(); // Initialize UserModel
+        $this->p5ProjectStudentModel = new \App\Models\P5ProjectStudentModel();
+        $this->p5AssessmentModel = new \App\Models\P5AssessmentModel();
+        $this->p5ProjectModel = new \App\Models\P5ProjectModel();
+        $this->p5SubElementModel = new \App\Models\P5SubElementModel();
         helper(['form', 'url', 'auth']); // Load form, URL, and auth helpers
     }
 
@@ -151,5 +159,68 @@ class StudentController extends BaseController
         } else {
             return redirect()->to('/admin/students')->with('error', 'Failed to delete student.');
         }
+    }
+
+    public function p5Report($student_id)
+    {
+        if (!hasRole(['Administrator Sistem', 'Staf Tata Usaha', 'Kepala Sekolah'])) {
+            return redirect()->to('/unauthorized-access');
+        }
+
+        $student = $this->studentModel->find($student_id);
+        if (!$student) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Student not found.');
+        }
+
+        // Get all P5 projects this student is part of
+        $studentProjects = $this->p5ProjectStudentModel
+            ->select('p5_project_students.id as p5_project_student_id, p5_project_students.p5_project_id, p5_projects.name as project_name, p5_projects.description as project_description, p5_projects.start_date, p5_projects.end_date')
+            ->join('p5_projects', 'p5_projects.id = p5_project_students.p5_project_id')
+            ->where('p5_project_students.student_id', $student_id)
+            ->orderBy('p5_projects.start_date DESC, p5_projects.name ASC')
+            ->findAll();
+
+        $reportData = [];
+
+        foreach ($studentProjects as $sp) {
+            $projectId = $sp['p5_project_id'];
+            $p5ProjectStudentId = $sp['p5_project_student_id'];
+
+            // Get target sub-elements for this project
+            $targetSubElements = $this->p5SubElementModel
+                ->select('p5_sub_elements.id, p5_sub_elements.name, p5_elements.name as element_name, p5_dimensions.name as dimension_name')
+                ->join('p5_project_target_sub_elements pstse', 'pstse.p5_sub_element_id = p5_sub_elements.id')
+                ->join('p5_elements', 'p5_elements.id = p5_sub_elements.p5_element_id')
+                ->join('p5_dimensions', 'p5_dimensions.id = p5_elements.p5_dimension_id')
+                ->where('pstse.p5_project_id', $projectId)
+                ->orderBy('p5_dimensions.id, p5_elements.id, p5_sub_elements.id')
+                ->findAll();
+
+            $assessments = [];
+            if (!empty($targetSubElements)) {
+                foreach ($targetSubElements as $subElement) {
+                    $assessment = $this->p5AssessmentModel
+                        ->select('assessment_value, notes, assessed_by, assessment_date') // Add teachers.full_name later if needed
+                        ->where('p5_project_student_id', $p5ProjectStudentId)
+                        ->where('p5_sub_element_id', $subElement['id'])
+                        ->first();
+                    $assessments[$subElement['id']] = $assessment;
+                }
+            }
+
+            $reportData[] = [
+                'project_info' => $sp,
+                'target_sub_elements' => $targetSubElements,
+                'assessments' => $assessments,
+            ];
+        }
+
+        $data = [
+            'title' => 'Laporan Projek P5 untuk: ' . esc($student['full_name']),
+            'student' => $student,
+            'reportData' => $reportData,
+        ];
+
+        return view('admin/students/p5_report', $data);
     }
 }

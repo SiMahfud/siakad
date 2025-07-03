@@ -132,6 +132,25 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'as' => 'admin_p5project_report',
         'filter' => $p5ManagementFilter // Or a more specific view permission
     ]);
+    // P5 Project Facilitator Management routes
+    $routes->get('p5projects/(:num)/manage-facilitators', 'P5ProjectController::manageFacilitators/$1', [
+        'as' => 'admin_p5project_manage_facilitators',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->post('p5projects/(:num)/add-facilitator', 'P5ProjectController::addFacilitatorToProject/$1', [
+        'as' => 'admin_p5project_add_facilitator',
+        'filter' => $p5ManagementFilter
+    ]);
+    $routes->get('p5projects/(:num)/remove-facilitator/(:num)', 'P5ProjectController::removeFacilitatorFromProject/$1/$2', [
+        'as' => 'admin_p5project_remove_facilitator',
+        'filter' => $p5ManagementFilter
+    ]);
+
+    // Student P5 Report route (within admin group, handled by StudentController)
+    $routes->get('students/(:num)/p5-report', 'StudentController::p5Report/$1', [
+        'as' => 'admin_student_p5_report',
+        'filter' => 'auth:Administrator Sistem,Staf Tata Usaha,Kepala Sekolah' // Or specific P5 view permission
+    ]);
 });
 
 // Guru routes

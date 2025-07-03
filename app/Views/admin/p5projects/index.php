@@ -58,9 +58,10 @@
                                             N/A
                                         <?php endif; ?>
                                     </td>
-                                    <td>
+                                    <td style="min-width: 200px;">
                                         <a href="<?= site_url('admin/p5projects/edit/' . $project['id']) ?>" class="btn btn-sm btn-warning mb-1" title="Edit Project Details"><i class="fas fa-edit"></i></a>
                                         <a href="<?= route_to('admin_p5project_manage_students', $project['id']) ?>" class="btn btn-sm btn-info mb-1" title="Manage Students"><i class="fas fa-users"></i></a>
+                                        <a href="<?= route_to('admin_p5project_manage_facilitators', $project['id']) ?>" class="btn btn-sm btn-secondary mb-1" title="Manage Facilitators"><i class="fas fa-chalkboard-teacher"></i></a>
                                         <a href="<?= route_to('admin_p5project_report', $project['id']) ?>" class="btn btn-sm btn-success mb-1" title="View Report"><i class="fas fa-chart-bar"></i></a>
                                         <button type="button" class="btn btn-sm btn-danger mb-1" title="Delete Project" onclick="confirmDelete('<?= site_url('admin/p5projects/delete/' . $project['id']) ?>')"><i class="fas fa-trash"></i></button>
                                     </td>

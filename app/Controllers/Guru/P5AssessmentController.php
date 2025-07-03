@@ -8,6 +8,7 @@ use App\Models\P5ProjectStudentModel;
 use App\Models\P5AssessmentModel;
 use App\Models\TeacherModel;
 use App\Models\P5SubElementModel;
+use App\Models\P5ProjectFacilitatorModel; // Added
 
 class P5AssessmentController extends BaseController
 {
@@ -16,6 +17,7 @@ class P5AssessmentController extends BaseController
     protected $p5AssessmentModel;
     protected $teacherModel;
     protected $p5SubElementModel;
+    protected $p5ProjectFacilitatorModel; // Added
     protected $teacherId;
 
     public function __construct()
@@ -25,30 +27,60 @@ class P5AssessmentController extends BaseController
         $this->p5AssessmentModel = new P5AssessmentModel();
         $this->teacherModel = new TeacherModel();
         $this->p5SubElementModel = new P5SubElementModel();
+        $this->p5ProjectFacilitatorModel = new P5ProjectFacilitatorModel(); // Added
+        helper(['auth']); // Ensure auth helper is loaded for has_role or user_id
 
         // Get logged in teacher id
-        $user_id = session()->get('user_id');
-        $teacher = $this->teacherModel->where('user_id', $user_id)->first();
-        if ($teacher) {
-            $this->teacherId = $teacher['id'];
+        $user_id = user_id(); // Use auth helper
+        if ($user_id) {
+            $teacher = $this->teacherModel->where('user_id', $user_id)->first();
+            if ($teacher) {
+                $this->teacherId = $teacher['id'];
+            } else {
+                $this->teacherId = null;
+            }
         } else {
-            // Handle if teacher not found, perhaps redirect or show error
-            // For now, let's assume teacher will always be found if logged in as guru
-            $this->teacherId = null;
+             $this->teacherId = null; // Should not happen if AuthFilter is working
         }
+    }
+
+    private function _checkFacilitatorAccess($projectId)
+    {
+        if (!$this->teacherId) {
+            return false; // No teacher ID, deny access
+        }
+        // Allow Administrator Sistem to bypass facilitator check
+        if (has_role('Administrator Sistem')) {
+            return true;
+        }
+        return $this->p5ProjectFacilitatorModel->isFacilitator($this->teacherId, $projectId);
     }
 
     public function selectProject()
     {
-        // TODO: Get projects where the logged-in teacher is a facilitator
-        // For now, get all projects. This needs to be refined based on how facilitators are assigned.
-        // Assuming a direct assignment or a role that allows assessing all projects for simplicity now.
-        $data['projects'] = $this->p5ProjectModel->findAll();
+        if (!$this->teacherId && !has_role('Administrator Sistem')) {
+             return redirect()->to('/unauthorized-access')->with('error', 'Data guru tidak ditemukan atau Anda tidak memiliki hak akses.');
+        }
+
+        $projects = [];
+        if (has_role('Administrator Sistem')) {
+            // Admin sees all projects
+            $projects = $this->p5ProjectModel->orderBy('name', 'ASC')->findAll();
+        } elseif($this->teacherId) {
+            // Teacher sees only projects they facilitate
+            $projects = $this->p5ProjectFacilitatorModel->getProjectsByFacilitator($this->teacherId);
+        }
+
+        $data['projects'] = $projects;
         return view('guru/p5assessments/select_project', $data);
     }
 
     public function showAssessmentForm($projectId)
     {
+        if (!$this->_checkFacilitatorAccess($projectId)) {
+            return redirect()->to('guru/p5assessments')->with('error', 'Anda tidak memiliki hak akses untuk menilai projek ini.');
+        }
+
         $project = $this->p5ProjectModel->find($projectId);
         if (!$project) {
             return redirect()->back()->with('error', 'Projek P5 tidak ditemukan.');
@@ -95,7 +127,15 @@ class P5AssessmentController extends BaseController
 
     public function saveAssessments($projectId)
     {
+        if (!$this->_checkFacilitatorAccess($projectId)) {
+            return redirect()->to('guru/p5assessments')->with('error', 'Anda tidak memiliki hak akses untuk menyimpan penilaian projek ini.');
+        }
+
         if (!$this->teacherId) {
+            // This check is somewhat redundant if _checkFacilitatorAccess is called,
+            // but good as a fallback, especially if admin can save.
+            // However, admin saving should ideally impersonate or have a clear "assessed_by_admin" mechanism.
+            // For now, assessed_by is always $this->teacherId.
             return redirect()->back()->with('error', 'Tidak dapat menyimpan penilaian. Data guru tidak ditemukan.');
         }
 

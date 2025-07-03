@@ -50,10 +50,13 @@
                                     <td><?= esc($student['user_id']) ?></td>
                                     <td><?= esc($student['parent_user_id']) ?></td>
                                     <td>
-                                        <a href="<?= site_url('admin/students/edit/' . $student['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
+                                        <a href="<?= site_url('admin/students/edit/' . $student['id']) ?>" class="btn btn-warning btn-sm my-1" title="Edit">
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>
-                                        <a href="<?= site_url('admin/students/delete/' . $student['id']) ?>" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this student? This action cannot be undone.');">
+                                        <a href="<?= route_to('admin_student_p5_report', $student['id']) ?>" class="btn btn-info btn-sm my-1" title="Lihat Laporan P5">
+                                            <i class="bi bi-bar-chart-steps"></i> P5
+                                        </a>
+                                        <a href="<?= site_url('admin/students/delete/' . $student['id']) ?>" class="btn btn-danger btn-sm my-1" title="Delete" onclick="return confirm('Are you sure you want to delete this student? This action cannot be undone.');">
                                             <i class="bi bi-trash-fill"></i>
                                         </a>
                                     </td>

@@ -23,6 +23,8 @@ class P5ProjectController extends BaseController
     protected $p5ElementModel;
     protected $studentModel;
     protected $p5ProjectStudentModel;
+    protected $p5ProjectFacilitatorModel; // Added
+    protected $teacherModel; // Added
     protected $helpers = ['form', 'url', 'auth', 'text'];
 
     public function __construct()
@@ -35,6 +37,9 @@ class P5ProjectController extends BaseController
         $this->p5ElementModel = new P5ElementModel();
         $this->studentModel = new StudentModel();
         $this->p5ProjectStudentModel = new P5ProjectStudentModel();
+        $this->p5ProjectFacilitatorModel = new \App\Models\P5ProjectFacilitatorModel(); // Added
+        $this->teacherModel = new \App\Models\TeacherModel(); // Added
+
         // Ensure P5AssessmentModel is loaded if not already via autoloader or other means
         if (!isset($this->p5AssessmentModel)) {
             $this->p5AssessmentModel = new \App\Models\P5AssessmentModel();
@@ -454,5 +459,115 @@ class P5ProjectController extends BaseController
         ];
 
         return view('admin/p5projects/report', $data);
+    }
+
+    public function manageFacilitators($project_id)
+    {
+        // Assuming 'manage_p5_projects' or a more specific 'manage_p5_facilitators' permission
+        if (!has_permission('manage_p5_projects')) {
+            return redirect()->to('/unauthorized');
+        }
+
+        $project = $this->p5ProjectModel->find($project_id);
+        if (!$project) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('P5 Project not found.');
+        }
+
+        $assignedFacilitators = $this->p5ProjectFacilitatorModel->getFacilitatorsForProject($project_id);
+        $assignedTeacherIds = array_column($assignedFacilitators, 'teacher_id');
+
+        $availableTeachers = $this->teacherModel
+            ->whereNotIn('id', $assignedTeacherIds ?: [0]) // whereNotIn requires non-empty array
+            ->orderBy('full_name', 'ASC')
+            ->findAll();
+
+        $data = [
+            'title' => 'Manage Facilitators for Project: ' . esc($project['name']),
+            'project' => $project,
+            'assigned_facilitators' => $assignedFacilitators,
+            'available_teachers' => $availableTeachers,
+            'validation' => \Config\Services::validation()
+        ];
+
+        return view('admin/p5projects/manage_facilitators', $data);
+    }
+
+    public function addFacilitatorToProject($project_id)
+    {
+        if (!has_permission('manage_p5_projects')) {
+            return redirect()->to('/unauthorized');
+        }
+
+        $project = $this->p5ProjectModel->find($project_id);
+        if (!$project) {
+            return redirect()->back()->with('error', 'P5 Project not found.');
+        }
+
+        $teacherIdsToAdd = $this->request->getPost('teachers_to_add'); // Expects an array of teacher IDs
+
+        if (empty($teacherIdsToAdd)) {
+            return redirect()->back()->with('error', 'No teachers selected to add as facilitators.');
+        }
+
+        $dataToInsert = [];
+        $errors = [];
+        foreach ($teacherIdsToAdd as $teacherId) {
+            $facilitatorData = [
+                'p5_project_id' => $project_id,
+                'teacher_id' => $teacherId,
+            ];
+            if ($this->p5ProjectFacilitatorModel->validate($facilitatorData)) {
+                 // Check if already exists (though unique constraint should handle this at DB level)
+                if (!$this->p5ProjectFacilitatorModel->isFacilitator($teacherId, $project_id)) {
+                    $dataToInsert[] = $facilitatorData;
+                }
+            } else {
+                // Collect validation errors if any (though basic FK checks are main ones here)
+                $errors[] = "Invalid data for teacher ID: {$teacherId}.";
+            }
+        }
+
+        if (!empty($errors)) {
+             return redirect()->to('admin/p5projects/manage-facilitators/' . $project_id)->with('error', implode('<br>', $errors));
+        }
+
+        if (!empty($dataToInsert)) {
+            if ($this->p5ProjectFacilitatorModel->insertBatch($dataToInsert)) {
+                return redirect()->to('admin/p5projects/manage-facilitators/' . $project_id)->with('message', 'Facilitators added to project successfully.');
+            } else {
+                return redirect()->to('admin/p5projects/manage-facilitators/' . $project_id)->with('error', 'Failed to add facilitators to project.');
+            }
+        } else {
+            return redirect()->to('admin/p5projects/manage-facilitators/' . $project_id)->with('message', 'Selected teachers were already facilitators or no new valid teachers to add.');
+        }
+    }
+
+    public function removeFacilitatorFromProject($project_id, $teacher_id)
+    {
+        if (!has_permission('manage_p5_projects')) {
+            return redirect()->to('/unauthorized');
+        }
+
+        $project = $this->p5ProjectModel->find($project_id);
+        if (!$project) {
+            return redirect()->to('admin/p5projects')->with('error', 'P5 Project not found.');
+        }
+
+        $facilitatorEntry = $this->p5ProjectFacilitatorModel
+                                ->where('p5_project_id', $project_id)
+                                ->where('teacher_id', $teacher_id)
+                                ->first();
+
+        if (!$facilitatorEntry) {
+            return redirect()->to('admin/p5projects/manage-facilitators/' . $project_id)->with('error', 'Facilitator entry not found for this project.');
+        }
+
+        // Consider implications: if this facilitator has made assessments, what happens?
+        // For now, direct delete of the facilitator assignment. Assessments remain attributed to them.
+        if ($this->p5ProjectFacilitatorModel->delete($facilitatorEntry['id'])) {
+            return redirect()->to('admin/p5projects/manage-facilitators/' . $project_id)->with('message', 'Facilitator removed from project successfully.');
+        } else {
+            return redirect()->to('admin/p5projects/manage-facilitators/' . $project_id)->with('error', 'Failed to remove facilitator from project.');
+        }
     }
 }

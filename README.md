@@ -60,12 +60,13 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] CRUD untuk Master Data P5 (Tema, Dimensi, Elemen, Sub-elemen).
     *   [X] CRUD untuk Projek P5 (termasuk pemilihan tema, target sub-elemen).
     *   [X] Alokasi Siswa ke Projek P5.
-    *   [ ] Penentuan fasilitator/guru pendamping projek.
-*   **[P] Fitur Penilaian P5 (Fasilitator/Guru) (Dasar)**
-    *   [X] Antarmuka input penilaian kualitatif (BB, MB, BSH, SB) & catatan deskriptif per siswa per sub-elemen (Dasar).
-        *   *Catatan: Hak akses input penilaian saat ini terbuka untuk semua guru, perlu penyempurnaan setelah fitur penetapan fasilitator projek ada.*
-*   **[P] Fitur Pelaporan P5 (Dasar)**
+    *   [X] Penentuan fasilitator/guru pendamping projek P5 oleh Admin.
+*   **[X] Fitur Penilaian P5 (Fasilitator/Guru) (Dasar - Hak Akses Disempurnakan)**
+    *   [X] Antarmuka input penilaian kualitatif (BB, MB, BSH, SB) & catatan deskriptif per siswa per sub-elemen.
+    *   [X] Hak akses input penilaian P5 kini dibatasi hanya untuk fasilitator yang ditugaskan pada projek tersebut (Administrator Sistem tetap memiliki akses penuh).
+*   **[X] Fitur Pelaporan P5 (Dasar & Komprehensif Sebagian)**
     *   [X] Rekapitulasi penilaian P5 per projek (per siswa, per sub-elemen) untuk Admin/Koordinator.
+    *   [X] Rekapitulasi penilaian P5 per siswa (lintas projek) untuk Admin/Koordinator.
     *   [ ] Ekspor data P5 untuk e-Rapor (jika didukung).
 
 ### Modul Pendukung
