@@ -208,12 +208,7 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
         *   Orang tua hanya dapat melihat data (nilai) anak-anaknya.
         *   Pengecekan kepemilikan data untuk operasi sensitif seperti edit/hapus asesmen telah diimplementasikan (hanya pembuat atau admin).
     *   Fitur untuk guru melihat daftar kelas yang diampu dan siswa di dalamnya telah tersedia (`Guru/ClassViewController`).
-
-## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
-
-1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
-    *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
-2.  **[X] Modul Projek P5 (Struktur Data & Model Dasar)**:
+*   **[X] Modul Projek P5 (Pengelolaan Data & Struktur Dasar)**:
     *   [X] **Skema Database**: 8 tabel baru telah dirancang dan dimigrasikan:
         *   `p5_themes`: Tema-tema P5.
         *   `p5_projects`: Detail projek P5, terhubung ke `p5_themes`.
@@ -250,8 +245,6 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
         *   **Navigation**: Link navigasi "P5 Management" (Themes, Dimensions, Elements, Sub-elements, Projects) dan link "Manage Students" pada daftar projek P5.
         *   **Permissions Used**: `manage_p5_themes`, `manage_p5_dimensions`, `manage_p5_elements`, `manage_p5_sub_elements`, `manage_p5_projects`, `manage_p5_project_students`.
     *   [X] **Alokasi Siswa ke Projek P5**: Telah diimplementasikan sebagai bagian dari fitur pengelolaan P5 di atas.
-    *   [ ] **Pengembangan Fitur (Selanjutnya)**:
-        *   Fitur input penilaian P5 oleh Fasilitator/Guru.
 *   **[P] Modul Ekspor ke e-Rapor (Tahap Awal Selesai, Perlu Penyempurnaan)**:
     *   Controller `WaliKelas/EraporController` dibuat untuk form dan proses ekspor.
     *   Model `AssessmentModel::getExportDataForErapor()` diimplementasikan untuk mengambil rata-rata nilai sumatif.
@@ -259,7 +252,17 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
     *   View `wali_kelas/erapor/export_form.php` dibuat.
     *   Library `PhpSpreadsheet` diinstal dan digunakan untuk generate file `.xlsx`.
     *   Rute dan navigasi ditambahkan untuk Wali Kelas.
-    *   Format kolom Excel perlu diverifikasi lebih lanjut terhadap template e-Rapor aktual.
+
+## 6. Area Pengembangan Selanjutnya (Prioritas dari Dokumen Desain)
+
+1.  **Modul Penilaian (Bank Nilai) (Lanjutan)**:
+    *   (Item terkait optimasi form input dan penyempurnaan DataTables telah dianggap tuntas untuk lingkup saat ini. Pengembangan lebih lanjut pada area ini akan bersifat opsional atau berdasarkan kebutuhan baru).
+2.  **Modul Projek P5 (Fitur Lanjutan)**:
+    *   [ ] Fitur input penilaian P5 oleh Fasilitator/Guru.
+    *   [ ] Fitur Pelaporan P5 (rekapitulasi penilaian per siswa, progres projek, dll.).
+3.  **Penyempurnaan Modul Ekspor ke e-Rapor**:
+    *   Penyempurnaan logika pemfilteran data nilai sumatif per semester.
+    *   Verifikasi format kolom Excel terhadap template e-Rapor aktual.
 4.  **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
     *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul, terutama untuk fitur-fitur baru yang akan dikembangkan.
 
