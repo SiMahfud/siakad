@@ -202,8 +202,14 @@ Berikut adalah ringkasan relasi kunci (foreign key) antar tabel utama dalam data
 2.  **Modul Projek P5**:
     *   Desain detail tabel jika diperlukan.
     *   Implementasi fitur terkait P5.
-3.  **Modul Ekspor ke e-Rapor**:
-    *   Ini adalah fitur kunci dan kompleks yang memerlukan koordinasi terkait format template Excel.
+*   **[P] Modul Ekspor ke e-Rapor (Tahap Awal Selesai, Perlu Penyempurnaan)**:
+    *   Controller `WaliKelas/EraporController` dibuat untuk form dan proses ekspor.
+    *   Model `AssessmentModel::getExportDataForErapor()` diimplementasikan untuk mengambil rata-rata nilai sumatif.
+        *   **CATATAN PENTING:** Logika pemfilteran nilai sumatif berdasarkan rentang tanggal semester yang akurat **perlu penyempurnaan** untuk memastikan data yang diekspor hanya dari semester yang dipilih. Saat ini merata-ratakan semua sumatif yang cocok (siswa, kelas, mapel) tanpa filter tanggal yang ketat.
+    *   View `wali_kelas/erapor/export_form.php` dibuat.
+    *   Library `PhpSpreadsheet` diinstal dan digunakan untuk generate file `.xlsx`.
+    *   Rute dan navigasi ditambahkan untuk Wali Kelas.
+    *   Format kolom Excel perlu diverifikasi lebih lanjut terhadap template e-Rapor aktual.
 4.  **Penyempurnaan Hak Akses (Minor/Lanjutan)**:
     *   Review dan audit berkelanjutan untuk memastikan konsistensi dan keamanan hak akses di seluruh modul, terutama untuk fitur-fitur baru yang akan dikembangkan.
 

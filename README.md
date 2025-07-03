@@ -90,11 +90,13 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [ ] Struktur Tabel Database (perlu dirancang lebih detail berdasarkan dokumen)
     *   [ ] Pengaturan projek oleh koordinator
     *   [ ] Pencatatan penilaian kualitatif (BB, MB, BSH, SB) oleh fasilitator
-*   **[ ] Modul Ekspor ke e-Rapor (Fitur Kunci)**
-    *   [ ] Antarmuka Wali Kelas untuk memilih parameter ekspor
-    *   [ ] Proses penarikan data nilai sumatif dan P5
-    *   [ ] Penyusunan data ke format Excel template e-Rapor
-    *   [ ] Tombol unduh file Excel
+*   **[P] Modul Ekspor ke e-Rapor (Fitur Kunci - Tahap Awal)**
+    *   [X] Antarmuka Wali Kelas untuk memilih parameter ekspor (Kelas, Tahun Ajaran, Semester).
+    *   [P] Proses penarikan data nilai sumatif (rata-rata sumatif per mapel).
+        *   *Catatan: Akurasi filter per semester pada nilai sumatif perlu penyempurnaan.*
+    *   [X] Penyusunan data ke format Excel (.xlsx) menggunakan PhpSpreadsheet.
+    *   [X] Tombol unduh file Excel.
+    *   [ ] Ekspor data P5 (Menyusul setelah Modul P5).
 
 ### Fitur Berdasarkan Peran Pengguna
 
@@ -135,7 +137,7 @@ Berikut adalah status implementasi fitur berdasarkan dokumen desain:
     *   [X] Melihat Rekap Pemilihan Mapel (untuk memantau pilihan siswa secara umum, jika relevan).
     *   [ ] Menginput catatan perilaku/perkembangan siswa.
     *   [ ] Validasi Kelengkapan Nilai.
-    *   [ ] Ekspor Data ke e-Rapor.
+    *   [P] Ekspor Data ke e-Rapor (Tahap Awal: nilai sumatif).
 *   **Siswa**:
     *   [X] Melihat Jadwal Pelajaran Kelas.
     *   [X] Melakukan Pemilihan Mata Pelajaran Pilihan (Fase F).
