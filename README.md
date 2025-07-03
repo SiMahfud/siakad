@@ -26,125 +26,57 @@ Sistem ini tidak dirancang untuk menghasilkan rapor final secara langsung. Sebal
 
 Berikut adalah status implementasi fitur berdasarkan dokumen desain:
 
-### Modul Utama
+### Modul Inti & Administrasi
 
 *   **[X] Modul Autentikasi & Manajemen Pengguna (Dasar)**
-    *   [X] Struktur Tabel Database (`roles`, `users`)
-    *   [X] Model (`UserModel`, `RoleModel`) dengan validasi dan hashing password
-    *   [X] Seeder untuk `roles`
-    *   [X] Login & Logout (Controller `AuthController`, view `auth/login` dengan Bootstrap 5)
-    *   [X] Manajemen Akun (CRUD oleh Admin via `Admin/UserController` dan views `admin/users/` dengan Bootstrap 5)
-    *   [X] Hak Akses Peran (Dasar, via Filter `AuthFilter` untuk path `/admin` dan pengecekan peran di Controller)
-    *   [X] Halaman `Unauthorized Access` (403)
+    *   [X] Struktur Tabel Database (`roles`, `users`) & Model (`UserModel`, `RoleModel`)
+    *   [X] Login, Logout, Manajemen Akun (CRUD Admin), Hak Akses Dasar & Halaman 403
 *   **[X] Modul Manajemen Data Induk (MVP)**
-    *   **Data Siswa**
-        *   [X] Struktur Tabel Database (`students`)
-        *   [X] Model (`StudentModel`) dengan validasi dasar
-        *   [X] Controller (`Admin/StudentController`) dengan fungsi CRUD
-        *   [X] Views (daftar, tambah, edit siswa - dengan Bootstrap 5)
-    *   **Data Guru**
-        *   [X] Struktur Tabel Database (`teachers`)
-        *   [X] Model (`TeacherModel`) dengan validasi dasar
-        *   [X] Controller (`Admin/TeacherController`) dengan fungsi CRUD
-        *   [X] Views (daftar, tambah, edit guru - dengan Bootstrap 5)
-    *   **Data Mata Pelajaran**
-        *   [X] Struktur Tabel Database (`subjects`)
-        *   [X] Model (`SubjectModel`) dengan validasi dasar
-        *   [X] Controller (`Admin/SubjectController`) dengan fungsi CRUD
-        *   [X] Views (daftar, tambah, edit mata pelajaran - dengan Bootstrap 5)
-    *   **Data Kelas (Rombongan Belajar)**
-        *   [X] Struktur Tabel Database (`classes`, `class_student`)
-        *   [X] Model (`ClassModel`) dengan validasi dasar & relasi dasar ke guru
-        *   [X] Controller (`Admin/ClassController`) dengan fungsi CRUD (termasuk pemilihan Wali Kelas)
-        *   [X] Views (daftar, tambah, edit kelas - dengan Bootstrap 5)
-        *   [X] Manajemen siswa per kelas (tabel `class_student`)
-    *   **[X] Manajemen Penugasan Guru-Kelas-Mapel (Admin)**
-        *   [X] Struktur Tabel Database (`teacher_class_subject_assignments`)
-        *   [X] Model (`TeacherClassSubjectAssignmentModel`)
-        *   [X] Controller (`Admin/TeacherClassSubjectAssignmentController`) dengan fungsi CRUD dasar (index, new, create, delete).
-        *   [X] Views (daftar, tambah penugasan - dengan Bootstrap 5).
-*   **[X] Modul Akademik Harian** (Semua fitur dasar MVP selesai, Rekap ditambahkan)
+    *   **Data Siswa**: [X] CRUD Lengkap (DB, Model, Controller, View)
+    *   **Data Guru**: [X] CRUD Lengkap (DB, Model, Controller, View)
+    *   **Data Mata Pelajaran**: [X] CRUD Lengkap (DB, Model, Controller, View)
+    *   **Data Kelas (Rombongan Belajar)**: [X] CRUD (DB, Model, Controller, View), termasuk pemilihan Wali Kelas & manajemen siswa per kelas.
+    *   **Manajemen Penugasan Guru-Kelas-Mapel (Admin)**: [X] CRUD Dasar (DB, Model, Controller, View)
+
+### Modul Akademik & Penilaian
+
+*   **[X] Modul Akademik Harian (MVP)**
     *   [X] Manajemen Jadwal Pelajaran (Admin: CRUD; Guru & Siswa: View)
-    *   [X] Input Presensi Harian oleh Guru (Guru: Input)
-    *   [X] Rekapitulasi Presensi (Admin/Wali Kelas/Kepala Sekolah: View, Filter, Export)
-    *   [X] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F) (Admin: Setup; Siswa: Pilih)
-    *   [X] Rekapitulasi Pilihan Mata Pelajaran (Admin/Wali Kelas/Kepala Sekolah: View, Filter, Export)
-*   **[X] Modul Penilaian (Bank Nilai) (Tahap Awal)**
-    *   [X] Struktur Tabel Database (`assessments`)
-    *   [X] Model (`AssessmentModel`) dengan validasi dasar (termasuk rentang skor, tanggal valid).
-    *   [X] Controller (`Guru/AssessmentController`) untuk pemilihan konteks (kelas/mapel) & form input nilai.
-        *   [X] Metode `index` untuk pemilihan Kelas & Mapel.
-        *   [X] Metode `showInputForm` untuk menampilkan form input nilai dengan daftar siswa.
-        *   [X] Metode `saveAssessments` untuk memproses & menyimpan batch data penilaian.
-    *   [X] Views (`guru/assessments/select_context.php`, `guru/assessments/input_form.php`):
-        *   [X] Form input nilai dengan JavaScript untuk menambah/menghapus baris entri nilai per siswa secara dinamis.
-    *   [X] Rute untuk fitur penilaian guru (`/guru/assessments/...`), diproteksi oleh peran Guru.
-    *   [X] Logika penyimpanan batch nilai (formatif/sumatif) ke database.
-    *   [X] Validasi input komprehensif (sisi controller & model) untuk tipe asesmen, judul, tanggal, skor (khusus sumatif), dan ketergantungan antar field.
-    *   [X] Tampilan error validasi yang jelas di form input, menunjukkan nama siswa, entri keberapa, dan field yang bermasalah.
-    *   [X] Telah dilakukan testing manual untuk berbagai skenario input (valid, invalid, berbagai tipe).
-    *   [X] Tampilan rekap nilai per siswa dan per mata pelajaran (Guru: pemilihan konteks, tampilan tabel, aksi Edit/Hapus; Siswa: tampilan nilai per mapel; Ortu: pemilihan anak & tampilan nilai anak).
-    *   [X] Filter kelas/mapel yang diajar guru pada halaman pemilihan konteks (Filter kelas berdasarkan wali kelas; Filter mapel berdasarkan penugasan guru di kelas tersebut).
-    *   [X] Fitur edit/hapus data penilaian yang sudah dimasukkan (Controller, View dasar, Rute, Hak Akses dasar, terintegrasi di halaman rekap).
-*   **[X] Modul Projek P5 (Struktur Data, Model & Pengelolaan Dasar)**
-    *   [X] Struktur Tabel Database (8 tabel: `p5_themes`, `p5_projects`, `p5_dimensions`, `p5_elements`, `p5_sub_elements`, `p5_project_target_sub_elements`, `p5_project_students`, `p5_assessments`)
-    *   [X] Model class untuk semua tabel P5 dengan properti dasar, validasi, dan helper.
-    *   [X] Pengelolaan Data Master P5 oleh Admin/Koordinator:
-        *   [X] CRUD Tema P5.
-        *   [X] CRUD Dimensi P5.
-        *   [X] CRUD Elemen P5 (termasuk pemilihan Dimensi Induk).
-        *   [X] CRUD Sub-elemen P5 (termasuk pemilihan Elemen Induk).
-    *   [X] Pengelolaan Projek P5 oleh Admin/Koordinator:
-        *   [X] CRUD Projek P5 (pemilihan tema, nama, deskripsi, tanggal).
-        *   [X] Pengelolaan target sub-elemen untuk setiap projek.
-    *   [X] Alokasi siswa ke projek (Admin/Koordinator dapat menambah/mengeluarkan siswa dari projek P5).
-    *   [ ] Pencatatan penilaian kualitatif (BB, MB, BSH, SB) oleh fasilitator (Belum diimplementasikan).
-*   **[P] Modul Ekspor ke e-Rapor (Fitur Kunci - Tahap Awal)**
-    *   [X] Antarmuka Wali Kelas untuk memilih parameter ekspor (Kelas, Tahun Ajaran, Semester).
-    *   [P] Proses penarikan data nilai sumatif (rata-rata sumatif per mapel).
-        *   *Catatan: Akurasi filter per semester pada nilai sumatif perlu penyempurnaan.*
-    *   [X] Penyusunan data ke format Excel (.xlsx) menggunakan PhpSpreadsheet.
-    *   [X] Tombol unduh file Excel.
-    *   [X] Ekspor data P5 (Menyusul setelah Modul P5).
+    *   [X] Input Presensi Harian oleh Guru
+    *   [X] Rekapitulasi Presensi (View, Filter, Export untuk Admin/Wali Kelas/Kepala Sekolah)
+    *   [X] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F: Pilih; Admin: Setup)
+    *   [X] Rekapitulasi Pilihan Mata Pelajaran (View, Filter, Export untuk Admin/Wali Kelas/Kepala Sekolah)
+*   **[X] Modul Penilaian (Bank Nilai) (Fungsional Dasar)**
+    *   [X] Struktur Data & Model (`assessments`) dengan validasi skor & tanggal.
+    *   [X] Input Nilai oleh Guru (pemilihan konteks kelas/mapel, form input batch dinamis per siswa).
+    *   [X] Penyimpanan & Validasi Batch Nilai (formatif/sumatif), termasuk error handling.
+    *   [X] Rekapitulasi & Pengelolaan Nilai (Lihat, Edit, Hapus oleh Guru; Lihat oleh Siswa & Ortu).
+    *   [X] Filter cerdas untuk Guru (kelas diajar/wali, mapel diajar di kelas).
 
 ### Modul Projek Penguatan Profil Pelajar Pancasila (P5)
 
-*   **[X] Desain Database & Model P5**
-    *   [X] Perancangan skema database untuk P5, mencakup 8 tabel baru:
-        *   `p5_themes`: Menyimpan tema-tema P5 yang tersedia.
-        *   `p5_projects`: Detail projek P5 yang dilaksanakan, terkait dengan tema.
-        *   `p5_dimensions`: Dimensi-dimensi Profil Pelajar Pancasila.
-        *   `p5_elements`: Elemen-elemen turunan dari setiap dimensi.
-        *   `p5_sub_elements`: Sub-elemen spesifik dari setiap elemen yang menjadi target capaian.
-        *   `p5_project_target_sub_elements`: Menghubungkan projek P5 dengan sub-elemen yang menjadi targetnya.
-        *   `p5_project_students`: Mencatat siswa yang terlibat dalam suatu projek P5.
-        *   `p5_assessments`: Menyimpan data penilaian kualitatif P5 per siswa per sub-elemen.
-    *   [X] Pembuatan dan eksekusi migrasi database untuk semua tabel P5.
-    *   [X] Pembuatan Model class untuk setiap tabel P5 (`P5ThemeModel`, `P5ProjectModel`, `P5DimensionModel`, `P5ElementModel`, `P5SubElementModel`, `P5ProjectTargetSubElementModel`, `P5ProjectStudentModel`, `P5AssessmentModel`).
-        *   [X] Konfigurasi properti dasar, `$allowedFields`, timestamps, dan aturan validasi awal.
-        *   [X] Penambahan aturan validasi kustom `valid_date_range_if_set` untuk `P5ProjectModel` (memastikan tanggal akhir tidak lebih awal dari tanggal mulai jika keduanya diisi).
-        *   [X] Penambahan metode helper dasar pada `P5ProjectStudentModel` (contoh: `getProject()`, `getStudent()`).
-*   **[X] Fitur Pengelolaan P5 (Koordinator/Admin) - Master Data & Projek**
-    *   [X] CRUD untuk Tema P5 (`Admin/P5ThemeController`).
-    *   [X] CRUD untuk Dimensi P5 (`Admin/P5DimensionController`).
-    *   [X] CRUD untuk Elemen P5 (`Admin/P5ElementController`), termasuk pemilihan Dimensi Induk.
-    *   [X] CRUD untuk Sub-elemen P5 (`Admin/P5SubElementController`), termasuk pemilihan Elemen Induk.
-    *   [X] CRUD untuk Projek P5 (`Admin/P5ProjectController`):
-        *   [X] Pemilihan Tema P5.
-        *   [X] Penentuan nama, deskripsi, rentang tanggal projek.
-        *   [X] Pemilihan target sub-elemen yang akan dicapai dalam projek (mengelola tabel `p5_project_target_sub_elements`).
-        *   [ ] Penentuan fasilitator/guru pendamping projek (Belum diimplementasikan).
-        *   [X] Alokasi siswa ke dalam projek (`Admin/P5ProjectController::manageStudents()`, `addStudentToProject()`, `removeStudentFromProject()`, mengelola tabel `p5_project_students`).
+*   **[X] Pengelolaan Data & Struktur P5 (Admin/Koordinator)**
+    *   [X] Desain Database & Model (8 tabel: `p5_themes`, `p5_projects`, `p5_dimensions`, `p5_elements`, `p5_sub_elements`, `p5_project_target_sub_elements`, `p5_project_students`, `p5_assessments`).
+    *   [X] CRUD untuk Master Data P5 (Tema, Dimensi, Elemen, Sub-elemen).
+    *   [X] CRUD untuk Projek P5 (termasuk pemilihan tema, target sub-elemen).
+    *   [X] Alokasi Siswa ke Projek P5.
+    *   [ ] Penentuan fasilitator/guru pendamping projek.
 *   **[ ] Fitur Penilaian P5 (Fasilitator/Guru)**
-    *   [ ] Antarmuka untuk memilih projek dan siswa.
-    *   [ ] Input penilaian kualitatif (BB, MB, BSH, SB) dan catatan deskriptif untuk setiap sub-elemen target per siswa.
+    *   [ ] Antarmuka input penilaian kualitatif (BB, MB, BSH, SB) & catatan deskriptif per siswa per sub-elemen.
 *   **[ ] Fitur Pelaporan P5**
-    *   [ ] Tampilan rekapitulasi penilaian P5 per siswa.
-    *   [ ] Tampilan rekapitulasi progres projek.
-    *   [ ] Ekspor data P5 untuk e-Rapor (jika formatnya sudah mendukung).
+    *   [ ] Rekapitulasi penilaian P5 (per siswa, per projek).
+    *   [ ] Ekspor data P5 untuk e-Rapor (jika didukung).
+
+### Modul Pendukung
+
+*   **[P] Modul Ekspor ke e-Rapor (Fitur Kunci - Tahap Awal)**
+    *   [X] Antarmuka Wali Kelas untuk parameter ekspor (Kelas, Tahun Ajaran, Semester).
+    *   [P] Proses penarikan data nilai sumatif (rata-rata per mapel).
+        *   *Catatan: Akurasi filter semester pada nilai sumatif perlu penyempurnaan.*
+    *   [X] Penyusunan & Unduh file Excel (.xlsx).
+    *   [ ] Ekspor data P5 (menyusul setelah fitur penilaian & pelaporan P5 lengkap).
 
 ### Fitur Berdasarkan Peran Pengguna
-
 *   **Administrator Sistem**:
     *   [X] Mengelola akun dan hak akses semua pengguna (CRUD Users).
     *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
