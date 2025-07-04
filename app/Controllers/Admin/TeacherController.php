@@ -55,7 +55,11 @@ class TeacherController extends BaseController
         ];
 
         if (!$this->validate($validationRules)) {
-            return redirect()->back()->withInput()->with('validation', $this->validator);
+            $data = [
+                'title'      => 'Add New Teacher',
+                'validation' => $this->validator,
+            ];
+            return view('admin/teachers/new', $data);
         }
 
         if ($this->teacherModel->insert($teacherData)) {
@@ -112,7 +116,12 @@ class TeacherController extends BaseController
         ];
 
         if (!$this->validate($validationRules)) {
-            return redirect()->back()->withInput()->with('validation', $this->validator);
+            $data = [
+                'title'      => 'Edit Teacher',
+                'teacher'    => $teacher, // Pass existing teacher data back
+                'validation' => $this->validator,
+            ];
+            return view('admin/teachers/edit', $data);
         }
 
         if ($this->teacherModel->update($id, $teacherData)) {

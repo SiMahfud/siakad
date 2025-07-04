@@ -566,7 +566,7 @@ Berikut adalah status cakupan testing untuk modul dan fungsionalitas utama per t
 *   `Admin/SubjectController`: **[Selesai]** (Test akses dasar dan CRUD lengkap diimplementasikan)
 *   `Admin/SubjectOfferingController`: **[Belum Dimulai]**
 *   `Admin/TeacherClassSubjectAssignmentController`: **[Belum Dimulai]**
-*   `Admin/TeacherController`: **[Dihapus - Test Lama Bermasalah]**
+*   `Admin/TeacherController`: **[Selesai]** (Test akses dasar dan CRUD lengkap diimplementasikan)
 
 **Controller - Guru:**
 *   `Guru/AssessmentController`: **[Belum Dimulai]**

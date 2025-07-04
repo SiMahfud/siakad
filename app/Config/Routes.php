@@ -32,6 +32,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     $routes->resource('students', ['controller' => 'StudentController', 'filter' => $dataIndukFilter]);
     $routes->post('students/update/(:num)', 'StudentController::update/$1', ['filter' => $dataIndukEditFilter]); // Added for form submission
     $routes->resource('teachers', ['controller' => 'TeacherController', 'filter' => $dataIndukFilter]);
+    $routes->post('teachers/update/(:num)', 'TeacherController::update/$1', ['filter' => $dataIndukEditFilter]); // Added for form submission
     $routes->resource('subjects', ['controller' => 'SubjectController', 'filter' => $dataIndukFilter]);
     $routes->post('subjects/update/(:num)', 'SubjectController::update/$1', ['filter' => $dataIndukEditFilter]); // Added for form submission
 
