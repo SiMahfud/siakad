@@ -29,9 +29,9 @@ class TeacherClassSubjectAssignmentModel extends Model
     // Aturan validasi dasar. Validasi yang lebih kompleks (seperti unique composite)
     // bisa ditangani di controller atau mengandalkan constraint database.
     protected $validationRules      = [
-        'teacher_id' => 'required|integer|is_not_unique[teachers.id,id,{teacher_id}]',
-        'class_id'   => 'required|integer|is_not_unique[classes.id,id,{class_id}]',
-        'subject_id' => 'required|integer|is_not_unique[subjects.id,id,{subject_id}]',
+        'teacher_id' => 'required|integer|is_not_unique[teachers.id]',
+        'class_id'   => 'required|integer|is_not_unique[classes.id]',
+        'subject_id' => 'required|integer|is_not_unique[subjects.id]',
         // Unique check for combination of teacher_id, class_id, subject_id
         // This is better handled by a custom rule or in the controller before attempting to save,
         // or by catching database exceptions for duplicate entries if the DB constraint is reliable.

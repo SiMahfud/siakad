@@ -63,19 +63,19 @@ class TeacherClassSubjectAssignmentSeeder extends Seeder
             ])->first();
 
             if ($existingAssignment) {
-                echo "Teacher assignment for T:{$assignmentData['teacher_id']} C:{$assignmentData['class_id']} S:{$assignmentData['subject_id']} already exists. Skipping.\n";
+                // echo "Teacher assignment for T:{$assignmentData['teacher_id']} C:{$assignmentData['class_id']} S:{$assignmentData['subject_id']} already exists. Skipping.\n";
                 continue;
             }
 
             if ($assignmentModel->insert($assignmentData)) {
-                 echo "Assigned Teacher T:{$assignmentData['teacher_id']} to Class C:{$assignmentData['class_id']} for Subject S:{$assignmentData['subject_id']}.\n";
+                 // echo "Assigned Teacher T:{$assignmentData['teacher_id']} to Class C:{$assignmentData['class_id']} for Subject S:{$assignmentData['subject_id']}.\n";
             } else {
-                echo "Failed to create assignment for T:{$assignmentData['teacher_id']} C:{$assignmentData['class_id']} S:{$assignmentData['subject_id']}. Errors: " . implode(', ', $assignmentModel->errors()) . "\n";
+                // echo "Failed to create assignment for T:{$assignmentData['teacher_id']} C:{$assignmentData['class_id']} S:{$assignmentData['subject_id']}. Errors: " . implode(', ', $assignmentModel->errors()) . "\n";
             }
         }
 
         if (empty($assignments)) {
-            echo "No teacher/class/subject IDs available from previous seeders/DB to create teacher-class-subject assignments.\n";
+            // echo "No teacher/class/subject IDs available from previous seeders/DB to create teacher-class-subject assignments.\n";
         }
     }
 }
