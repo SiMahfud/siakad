@@ -16,7 +16,8 @@ class TestSeeder extends Seeder
         $this->call('SubjectSeeder');
         $this->call('ClassSeeder');
         $this->call('ClassStudentSeeder');
-        $this->call('ScheduleSeeder'); // Added ScheduleSeeder
+        $this->call('TeacherClassSubjectAssignmentSeeder'); // Added
+        $this->call('ScheduleSeeder');
         // Add any other seeders that are prerequisites for tests
     }
 }
