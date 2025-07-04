@@ -34,7 +34,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     $routes->resource('subjects', ['controller' => 'SubjectController', 'filter' => $dataIndukFilter]);
 
     // Class Management (CRUD)
-    $routes->resource('classes', ['controller' => 'ClassController', 'filter' => $dataIndukFilter]);
+    $routes->resource('classes', ['controller' => 'ClassController', 'filter' => $dataIndukFilter]); // Original
+    $routes->post('classes/update/(:num)', 'ClassController::update/$1', ['filter' => $dataIndukEditFilter]); // Added for form submission
 
     // Class Student Management specific routes
     // Ensure these routes are protected by a filter that allows 'Administrator Sistem' and 'Staf Tata Usaha'

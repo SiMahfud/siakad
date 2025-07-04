@@ -13,44 +13,47 @@ class UserRoleSeeder extends Seeder
         $roleModel = new RoleModel();
         $userModel = new UserModel();
 
-        // Define roles to ensure they exist
-        $roles = [
-            ['role_name' => 'Administrator Sistem'],
-            ['role_name' => 'Guru'],
-            ['role_name' => 'Siswa'],
-            ['role_name' => 'Orang Tua'], // Added Orang Tua role
+        // Define roles to ensure they exist, in the order matching auth_helper.php's roleMap IDs
+        $rolesToEnsure = [
+            ['role_name' => 'Administrator Sistem'], // Expected ID 1
+            ['role_name' => 'Staf Tata Usaha'],    // Expected ID 2
+            ['role_name' => 'Kepala Sekolah'],     // Expected ID 3
+            ['role_name' => 'Guru'],                 // Expected ID 4
+            ['role_name' => 'Siswa'],                // Expected ID 5
+            ['role_name' => 'Orang Tua'],            // Expected ID 6
         ];
 
-        foreach ($roles as $roleData) {
+        foreach ($rolesToEnsure as $roleData) {
             $existingRole = $roleModel->where('role_name', $roleData['role_name'])->first();
             if (!$existingRole) {
                 $roleModel->insert($roleData);
-                // echo "Role '{$roleData['role_name']}' created.\n";
-            } else {
-                // echo "Role '{$roleData['role_name']}' already exists.\n";
             }
         }
 
-        // Get role IDs
+        // Get role IDs (these will now be consistent with auth_helper's map if table was empty)
         $adminRole = $roleModel->where('role_name', 'Administrator Sistem')->first();
+        // $stafTURole = $roleModel->where('role_name', 'Staf Tata Usaha')->first();
+        // $kepalaSekolahRole = $roleModel->where('role_name', 'Kepala Sekolah')->first();
         $guruRole  = $roleModel->where('role_name', 'Guru')->first();
+        $siswaRole = $roleModel->where('role_name', 'Siswa')->first(); // For testsiswa
+        $ortuRole  = $roleModel->where('role_name', 'Orang Tua')->first(); // For testortu
 
         // Define users
         $users = [
             [
                 'username'  => 'testadmin',
-                'password'  => 'password123', // Will be hashed by UserModel
+                'password'  => 'password123',
                 'password_confirm' => 'password123',
                 'full_name' => 'Test Admin User',
-                'role_id'   => $adminRole ? $adminRole['id'] : null,
+                'role_id'   => $adminRole ? $adminRole['id'] : null, // Should be 1
                 'is_active' => 1,
             ],
             [
                 'username'  => 'testguru',
-                'password'  => 'password123', // Will be hashed by UserModel
+                'password'  => 'password123',
                 'password_confirm' => 'password123',
                 'full_name' => 'Test Guru User',
-                'role_id'   => $guruRole ? $guruRole['id'] : null,
+                'role_id'   => $guruRole ? $guruRole['id'] : null, // Should be 4
                 'is_active' => 1,
             ],
         ];
