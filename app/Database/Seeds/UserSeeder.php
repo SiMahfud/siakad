@@ -62,29 +62,28 @@ class UserSeeder extends Seeder
         foreach ($usersData as $userData) {
             // Check if user already exists
             if ($userModel->where('username', $userData['username'])->first()) {
-                echo "User {$userData['username']} already exists. Skipping.\n";
+                // echo "User {$userData['username']} already exists. Skipping.\n";
                 continue;
             }
 
             // Get role_id
             $role = $roleModel->where('role_name', $userData['role_name'])->first();
             if (!$role) {
-                echo "Role {$userData['role_name']} not found. Skipping user {$userData['username']}.\n";
+                // echo "Role {$userData['role_name']} not found. Skipping user {$userData['username']}.\n";
                 continue;
             }
 
             $userToInsert = [
-                'username'  => $userData['username'],
-                'password'  => $userData['password'], // UserModel's beforeInsert callback should hash this
-                'full_name' => $userData['full_name'],
-                'role_id'   => $role['id'],
-                'is_active' => 1, // Default to active
+                'username'         => $userData['username'],
+                'password'         => $userData['password'],
+                'password_confirm' => $userData['password'], // Added password confirmation
+                'full_name'        => $userData['full_name'],
+                'role_id'          => $role['id'],
+                'is_active'        => 1, // Default to active
             ];
 
-            if ($userModel->insert($userToInsert)) {
-                echo "User {$userData['username']} created successfully with role {$userData['role_name']}.\n";
-            } else {
-                echo "Failed to create user {$userData['username']}. Errors: " . implode(', ', $userModel->errors()) . "\n";
+            if (!$userModel->insert($userToInsert)) {
+                // echo "Failed to create user {$userData['username']}. Errors: " . implode(', ', $userModel->errors()) . "\n";
             }
         }
     }

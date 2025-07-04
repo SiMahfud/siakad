@@ -27,6 +27,12 @@ class CreateStudentsTable extends Migration
                 'null'       => true, // Per design, can be unique if not null
                 'unique'     => true,
             ],
+            'nis' => [ // Added NIS column
+                'type'       => 'VARCHAR',
+                'constraint' => '20',
+                'null'       => true, // Can be unique if not null
+                'unique'     => true,
+            ],
             'full_name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',

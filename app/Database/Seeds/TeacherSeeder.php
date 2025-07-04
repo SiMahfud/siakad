@@ -33,14 +33,14 @@ class TeacherSeeder extends Seeder
             $user = $userModel->where('username', $data['username'])->first();
 
             if (!$user) {
-                echo "User {$data['username']} not found. Skipping teacher creation for {$data['full_name']}.\n";
+                // echo "User {$data['username']} not found. Skipping teacher creation for {$data['full_name']}.\n";
                 continue;
             }
 
             // Check if teacher record already exists for this user_id
-            if ($teacherModel->where('user_id', $user['id'])->first()) {
-                echo "Teacher record for user {$data['username']} (User ID: {$user['id']}) already exists. Fetching ID. \n";
-                $existingTeacher = $teacherModel->where('user_id', $user['id'])->first();
+            $existingTeacher = $teacherModel->where('user_id', $user['id'])->first();
+            if ($existingTeacher) {
+                // echo "Teacher record for user {$data['username']} (User ID: {$user['id']}) already exists. Fetching ID. \n";
                 if ($data['username'] === 'guru1') {
                     self::$teacher1Id = $existingTeacher['id'];
                 } elseif ($data['username'] === 'guru2') {
@@ -53,17 +53,25 @@ class TeacherSeeder extends Seeder
                 'user_id'   => $user['id'],
                 'full_name' => $data['full_name'],
                 'nip'       => $data['nip'],
+                // Add other fields like gender, phone, address if they are required by model validation
+                'gender'    => 'L', // Default, adjust as needed
             ];
 
+            // Initialize Faker locally
+            $faker = \Faker\Factory::create();
+            $newTeacherData['phone'] = $faker->numerify('08##########');
+            $newTeacherData['address'] = $faker->address;
+
+
             if ($teacherId = $teacherModel->insert($newTeacherData)) {
-                echo "Teacher {$data['full_name']} created successfully and linked to user {$data['username']}.\n";
+                // echo "Teacher {$data['full_name']} created successfully and linked to user {$data['username']}.\n";
                 if ($data['username'] === 'guru1') {
                     self::$teacher1Id = $teacherId;
                 } elseif ($data['username'] === 'guru2') {
                     self::$teacher2Id = $teacherId;
                 }
             } else {
-                echo "Failed to create teacher {$data['full_name']}. Errors: " . implode(', ', $teacherModel->errors()) . "\n";
+                // echo "Failed to create teacher {$data['full_name']}. Errors: " . implode(', ', $teacherModel->errors()) . "\n";
             }
         }
     }

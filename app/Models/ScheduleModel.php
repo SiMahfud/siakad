@@ -37,8 +37,8 @@ class ScheduleModel extends Model
         'subject_id'    => 'required|integer|is_not_unique[subjects.id]',
         'teacher_id'    => 'required|integer|is_not_unique[teachers.id]',
         'day_of_week'   => 'required|integer|in_list[1,2,3,4,5,6,7]', // 1:Mon, 7:Sun
-        'start_time'    => 'required|valid_time',
-        'end_time'      => 'required|valid_time|matches_time_greater_than[start_time]',
+        'start_time'    => 'required|regex_match[/^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/]',
+        'end_time'      => 'required|regex_match[/^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/]', // Removed matches_time_greater_than for now
         'academic_year' => 'required|max_length[10]', // e.g., 2023/2024
         'semester'      => 'required|integer|in_list[1,2]',     // 1:Ganjil, 2:Genap
         'notes'         => 'permit_empty|string'
