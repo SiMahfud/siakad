@@ -2,155 +2,213 @@
 
 namespace Tests\Models;
 
-use App\Models\StudentModel;
-use App\Models\UserModel;
-use App\Models\RoleModel;
-use Tests\Support\BaseTestCase; // Use the new base test case
+use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
+use App\Models\StudentModel;
+use App\Models\UserModel; // To get valid user_ids for FKs
+// RoleModel might not be directly needed if UserRoleSeeder handles role creation sufficiently.
 
-class StudentModelTest extends BaseTestCase // Extend BaseTestCase
+class StudentModelTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $namespace   = 'App'; // Specify the namespace for migrations
-    protected $refresh     = true;  // Refresh database for each test class
-    // protected $migrate     = true; // Redundant
-    // protected $migrateOnce = false; // Redundant
-    // Seeders are now handled by BaseTestCase
-    // protected $seeders = ['App\Database\Seeds\RoleSeeder', 'App\Database\Seeds\UserSeederForTests'];
+    protected $migrate = true;
+    protected $refresh = true;
+    protected $namespace = 'App';
+    // UserRoleSeeder now creates 'testsiswa' and 'testortu' users and necessary roles.
+    protected $seed = 'UserRoleSeeder';
+    protected $basePath = APPPATH . 'Database';
 
     protected $studentModel;
-    protected $userModel; // To create dummy users for FK checks
-    protected $validUserId; // For user_id and parent_user_id
+    protected $userModel;
+    protected $testSiswaUserId;  // For student's own account
+    protected $testOrtuUserId;   // For parent's account link
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->studentModel = new StudentModel();
-        $this->userModel = new UserModel(); // Needed to create users for FK
+        $this->userModel = new UserModel();
 
-        // Create a dummy user to satisfy FK constraints if UserSeederForTests is not used or is basic
-        // This ensures 'users.id' exists for 'user_id' and 'parent_user_id' validation.
-        $roleModel = new RoleModel();
-        $role = $roleModel->where('role_name', 'Siswa')->first() ?? $roleModel->first(); // Get any role
-        if (!$role) { // Still no role, create one
-             $roleModel->insert(['role_name' => 'TestRoleForStudentFK']);
-             $role = ['id' => $roleModel->getInsertID()];
-        }
+        $siswaUser = $this->userModel->where('username', 'testsiswa')->first();
+        $this->testSiswaUserId = $siswaUser ? (int)$siswaUser['id'] : null;
+        $this->assertNotNull($this->testSiswaUserId, "'testsiswa' user must be created by UserRoleSeeder and available for tests.");
 
-        $tempUser = $this->userModel->insert([
-            'username' => 'fk_user_' . uniqid(),
-            'password' => 'password123',
-            'role_id'  => $role['id'],
-            'is_active' => 1
-        ]);
-        $this->validUserId = $tempUser;
-
-        // If UserSeederForTests is more elaborate, this manual creation might be simplified.
-        // For now, this ensures at least one user record exists.
-        // The ensureUserSeederExists() call is now in BaseTestCase and called via parent::setUp()
-        // or explicitly if BaseTestCase::setUp() doesn't handle it.
-        // For now, let's assume we might need to call it if BaseTestCase doesn't automatically.
-        // parent::ensureUserSeederExists(); // This was from BaseTestCase.
+        $ortuUser = $this->userModel->where('username', 'testortu')->first();
+        $this->testOrtuUserId = $ortuUser ? (int)$ortuUser['id'] : null;
+        $this->assertNotNull($this->testOrtuUserId, "'testortu' user must be created by UserRoleSeeder and available for tests.");
     }
 
-    // ensureUserSeederExists() is now in BaseTestCase
-
-    private function getValidStudentData(array $override = []): array
+    protected function tearDown(): void
     {
-        // $this->ensureUserSeederExists(); // This should have been handled by setUp calling parent::setUp which now might call it.
-                                        // Or the $seeders property ensures this.
-        // Fetch users created by seeder to ensure FK constraints pass
-        $studentUser = $this->userModel->where('username', 'teststudentuser_fk')->first();
-        $parentUser = $this->userModel->where('username', 'testparentuser')->first();
-
-        return array_merge([
-            'full_name'      => 'Test Student Name ' . uniqid(),
-            'nisn'           => uniqid('nisn_'), // Must be unique
-            'user_id'        => $studentUser ? $studentUser['id'] : $this->validUserId, // FK to users table
-            'parent_user_id' => $parentUser ? $parentUser['id'] : $this->validUserId, // FK to users table
-        ], $override);
+        parent::tearDown();
+        unset($this->studentModel);
+        unset($this->userModel);
     }
 
-    public function testCreateStudentSuccessfully()
+    public function testCreateStudentWithValidData()
     {
-        $data = $this->getValidStudentData();
+        $data = [
+            'full_name'      => 'Siswa Uji Valid Lengkap',
+            'nisn'           => '0012345001', // Unique NISN
+            'user_id'        => $this->testSiswaUserId,
+            'parent_user_id' => $this->testOrtuUserId,
+        ];
         $studentId = $this->studentModel->insert($data);
 
-        $this->assertIsNumeric($studentId);
-        $this->seeInDatabase('students', ['nisn' => $data['nisn'], 'full_name' => $data['full_name']]);
+        $this->assertIsNumeric($studentId, "Insert should return new student ID. Errors: ".implode(', ', $this->studentModel->errors()));
+        $this->seeInDatabase('students', ['id' => $studentId, 'nisn' => $data['nisn'], 'user_id' => $data['user_id'], 'parent_user_id' => $data['parent_user_id']]);
     }
 
-    public function testFullNameIsRequired()
+    public function testCreateStudentWithMinimalData()
     {
-        $data = $this->getValidStudentData(['full_name' => '']);
-        $this->assertFalse($this->studentModel->insert($data));
-        $this->assertArrayHasKey('full_name', $this->studentModel->errors());
+        $data = [
+            'full_name' => 'Siswa Uji Minimal Sekali',
+            // nisn, user_id, parent_user_id are permit_empty
+        ];
+        $studentId = $this->studentModel->insert($data);
+        $this->assertIsNumeric($studentId, "Insert with minimal data should return ID. Errors: ".implode(', ', $this->studentModel->errors()));
+
+        $insertedStudent = $this->studentModel->find($studentId);
+        $this->assertNotNull($insertedStudent);
+        $this->assertEquals($data['full_name'], $insertedStudent['full_name']);
+        $this->assertNull($insertedStudent['nisn']);
+        $this->assertNull($insertedStudent['user_id']);
+        $this->assertNull($insertedStudent['parent_user_id']);
     }
 
-    public function testNisnIsUnique()
+    public function testCreateStudentFailsIfFullNameMissing()
     {
-        $commonNisn = 'nisn_unique_test';
-        $data1 = $this->getValidStudentData(['nisn' => $commonNisn]);
-        $this->studentModel->insert($data1);
+        $data = [
+            'nisn' => '0012345002',
+            'user_id' => $this->testSiswaUserId
+            // full_name is missing
+        ];
+        $result = $this->studentModel->insert($data);
+        $errors = $this->studentModel->errors();
 
-        $data2 = $this->getValidStudentData(['nisn' => $commonNisn]);
-        $this->assertFalse($this->studentModel->insert($data2));
-        $this->assertArrayHasKey('nisn', $this->studentModel->errors());
-        $this->assertStringContainsStringIgnoringCase('This NISN is already registered.', $this->studentModel->errors()['nisn']);
+        $this->assertFalse($result, "Insert should fail if full_name is missing.");
+        $this->assertArrayHasKey('full_name', $errors);
+        $this->assertMatchesRegularExpression('/required/i', $errors['full_name']);
     }
 
-    public function testUserIdMustExistInUsersTableIfExists()
+    public function testCreateStudentFailsIfNisnTaken()
     {
-        // Test with a non-existent user_id
-        $data = $this->getValidStudentData(['user_id' => 999998]); // Non-existent user_id
-        $this->assertFalse($this->studentModel->insert($data));
-        $this->assertArrayHasKey('user_id', $this->studentModel->errors());
-        $this->assertStringContainsStringIgnoringCase('The selected User ID for student login does not exist.', $this->studentModel->errors()['user_id']);
+        $uniqueNisn = 'NISN-UNIK-XYZ01';
+        $this->studentModel->insert([
+            'full_name' => 'Siswa Awal Dengan NISN',
+            'nisn'      => $uniqueNisn,
+        ]);
 
-        // Test with null user_id (should be allowed by 'permit_empty')
-        $dataValidWithNullUser = $this->getValidStudentData(['user_id' => null]);
-        $studentId = $this->studentModel->insert($dataValidWithNullUser);
-        $this->assertIsNumeric($studentId, "Student creation should succeed with null user_id. Errors: " . print_r($this->studentModel->errors(), true));
-        $this->seeInDatabase('students', ['id' => $studentId, 'user_id' => null]);
+        $duplicateData = [
+            'full_name' => 'Siswa Dobel NISN Test',
+            'nisn'      => $uniqueNisn, // Duplicate NISN
+        ];
+        $result = $this->studentModel->insert($duplicateData);
+        $errors = $this->studentModel->errors();
+
+        $this->assertFalse($result, "Insert should fail if NISN is already taken.");
+        $this->assertArrayHasKey('nisn', $errors);
+        $this->assertEquals('This NISN is already registered.', $errors['nisn']);
     }
 
-    public function testParentUserIdMustExistInUsersTableIfExists()
+    public function testCreateStudentFailsIfInvalidUserId()
     {
-        // Test with a non-existent parent_user_id
-        $data = $this->getValidStudentData(['parent_user_id' => 999999]); // Non-existent parent_user_id
-        $this->assertFalse($this->studentModel->insert($data));
-        $this->assertArrayHasKey('parent_user_id', $this->studentModel->errors());
-        $this->assertStringContainsStringIgnoringCase('The selected User ID for parent login does not exist.', $this->studentModel->errors()['parent_user_id']);
+        $invalidUserId = 99999; // Non-existent user ID
+        $this->assertNull($this->userModel->find($invalidUserId), "User ID {$invalidUserId} should not exist.");
 
-        // Test with null parent_user_id (should be allowed by 'permit_empty')
-        $dataValidWithNullParent = $this->getValidStudentData(['parent_user_id' => null]);
-        $studentId = $this->studentModel->insert($dataValidWithNullParent);
-        $this->assertIsNumeric($studentId, "Student creation should succeed with null parent_user_id. Errors: " . print_r($this->studentModel->errors(), true));
-        $this->seeInDatabase('students', ['id' => $studentId, 'parent_user_id' => null]);
+        $data = [
+            'full_name' => 'Siswa Dengan User ID Salah',
+            'nisn'      => '0012345003', // Unique NISN
+            'user_id'   => $invalidUserId,
+        ];
+        $result = $this->studentModel->insert($data);
+        $errors = $this->studentModel->errors();
+
+        $this->assertFalse($result, "Insert should fail with invalid user_id.");
+        $this->assertArrayHasKey('user_id', $errors);
+        $this->assertEquals('The selected User ID for student login does not exist.', $errors['user_id']);
     }
 
+    public function testCreateStudentFailsIfInvalidParentUserId()
+    {
+        $invalidParentUserId = 99998; // Another non-existent user ID
+        $this->assertNull($this->userModel->find($invalidParentUserId), "Parent User ID {$invalidParentUserId} should not exist.");
+
+        $data = [
+            'full_name'      => 'Siswa Dengan Parent ID Salah',
+            'nisn'           => '0012345004', // Unique NISN
+            'parent_user_id' => $invalidParentUserId,
+        ];
+        $result = $this->studentModel->insert($data);
+        $errors = $this->studentModel->errors();
+
+        $this->assertFalse($result, "Insert should fail with invalid parent_user_id.");
+        $this->assertArrayHasKey('parent_user_id', $errors);
+        $this->assertEquals('The selected User ID for parent login does not exist.', $errors['parent_user_id']);
+    }
 
     public function testUpdateStudent()
     {
-        $data = $this->getValidStudentData();
-        $studentId = $this->studentModel->insert($data);
+        $initialData = [
+            'full_name' => 'Nama Siswa Awal Diupdate',
+            'nisn'      => 'NISN-AWAL-UPDATE05', // Unique NISN
+        ];
+        $studentId = $this->studentModel->insert($initialData);
+        $this->assertIsNumeric($studentId, "Initial student insert for update test failed.");
 
         $updatedData = [
-            'full_name' => 'Updated Student Name',
-            'nisn' => 'nisn_updated_' . uniqid(),
+            'full_name' => 'Nama Siswa Setelah Update',
+            'nisn'      => 'NISN-BARU-UPDATE06', // New unique NISN
+            'user_id'   => $this->testSiswaUserId,
         ];
-        $this->studentModel->update($studentId, $updatedData);
-        $this->seeInDatabase('students', ['id' => $studentId, 'full_name' => 'Updated Student Name']);
+        $result = $this->studentModel->update($studentId, $updatedData);
+
+        $this->assertTrue($result, "Update should be successful. Errors: ".implode(', ', $this->studentModel->errors()));
+        $this->seeInDatabase('students', array_merge(['id' => $studentId], $updatedData));
     }
 
     public function testDeleteStudent()
     {
-        $data = $this->getValidStudentData();
+        $data = [
+            'full_name' => 'Siswa Akan Dihapus Sekali',
+            'nisn'      => 'NISN-HAPUS-XYZ07', // Unique NISN
+        ];
         $studentId = $this->studentModel->insert($data);
-        $this->seeInDatabase('students', ['id' => $studentId]);
+        $this->assertIsNumeric($studentId, "Student for deletion should be inserted.");
 
-        $this->studentModel->delete($studentId);
+        $result = $this->studentModel->delete($studentId);
+        $this->assertTrue($result, "Delete should be successful.");
         $this->dontSeeInDatabase('students', ['id' => $studentId]);
+    }
+
+    public function testFindByParentUserId()
+    {
+        $this->studentModel->insert([
+            'full_name'      => 'Anak Ortu Satu A',
+            'nisn'           => 'ANAKORTU001A',
+            'parent_user_id' => $this->testOrtuUserId,
+        ]);
+        $this->studentModel->insert([
+            'full_name'      => 'Anak Ortu Satu B',
+            'nisn'           => 'ANAKORTU001B',
+            'parent_user_id' => $this->testOrtuUserId,
+        ]);
+
+        $adminUser = $this->userModel->where('username', 'testadmin')->first(); // Use another existing user
+        $this->assertNotNull($adminUser, "'testadmin' user should exist for findByParentUserId test.");
+        $this->studentModel->insert([
+            'full_name'      => 'Anak Ortu Lainnya',
+            'nisn'           => 'ANAKORTULAIN001',
+            'parent_user_id' => $adminUser['id'],
+        ]);
+
+        $studentsOfTestOrtu = $this->studentModel->findByParentUserId($this->testOrtuUserId);
+        $this->assertCount(2, $studentsOfTestOrtu, "Should find 2 students for testOrtuUserId.");
+
+        $studentNames = array_column($studentsOfTestOrtu, 'full_name');
+        $this->assertContains('Anak Ortu Satu A', $studentNames);
+        $this->assertContains('Anak Ortu Satu B', $studentNames);
+        $this->assertNotContains('Anak Ortu Lainnya', $studentNames);
     }
 }

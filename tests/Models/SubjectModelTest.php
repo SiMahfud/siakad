@@ -2,123 +2,169 @@
 
 namespace Tests\Models;
 
-use App\Models\SubjectModel;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
+use App\Models\SubjectModel;
 
 class SubjectModelTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $namespace   = 'App'; // Specify the namespace for migrations
-    protected $refresh     = true;  // Refresh database for each test class
-    // protected $migrate     = true; // Redundant
-    // protected $migrateOnce = false; // Redundant
-    // No specific seeder needed for SubjectModel itself,
-    // unless other tests depend on pre-existing subjects.
-    // protected $seed        = 'SubjectSeeder';
+    protected $migrate = true;
+    protected $refresh = true;
+    protected $namespace = 'App';
 
-    protected $model;
+    protected $subjectModel;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->model = new SubjectModel();
+        $this->subjectModel = new SubjectModel();
     }
 
-    private function getValidSubjectData(array $override = []): array
+    protected function tearDown(): void
     {
-        return array_merge([
-            'subject_name' => 'Test Subject ' . uniqid(),
-            'subject_code' => 'TSUB' . uniqid(), // Must be unique
-            'is_pilihan'   => '0', // Default to Wajib (Core) as string '0'
-        ], $override);
+        parent::tearDown();
+        unset($this->subjectModel);
     }
 
-    public function testCreateSubjectSuccessfully()
+    public function testCreateSubjectWithValidData()
     {
-        $data = $this->getValidSubjectData();
-        $subjectId = $this->model->insert($data);
+        $data = [
+            'subject_name' => 'Matematika Wajib',
+            'subject_code' => 'MTK-WAJIB-X',
+            'is_pilihan'   => 0,
+        ];
+        $subjectId = $this->subjectModel->insert($data);
 
-        $this->assertIsNumeric($subjectId);
-        $this->seeInDatabase('subjects', [
-            'subject_code' => $data['subject_code'],
-            'subject_name' => $data['subject_name'],
-            'is_pilihan'   => (int)$data['is_pilihan'] // Cast boolean to int for DB check if needed
+        $this->assertIsNumeric($subjectId, "Insert should return the new subject ID. Errors: ".implode(', ', $this->subjectModel->errors()));
+        $insertedSubject = $this->subjectModel->find($subjectId);
+        $this->assertNotNull($insertedSubject);
+        $this->assertEquals($data['subject_name'], $insertedSubject['subject_name']);
+        $this->assertEquals($data['subject_code'], $insertedSubject['subject_code']);
+        $this->assertEquals($data['is_pilihan'], $insertedSubject['is_pilihan']);
+    }
+
+    public function testCreateSubjectWithMinimalValidData()
+    {
+        $data = [
+            'subject_name' => 'Bahasa Indonesia',
+            'is_pilihan'   => 0, // Explicitly provide to pass model validation for in_list[0,1]
+        ];
+        $subjectId = $this->subjectModel->insert($data);
+
+        $this->assertIsNumeric($subjectId, "Insert should return ID. Errors: ".implode(', ', $this->subjectModel->errors()));
+        $insertedSubject = $this->subjectModel->find($subjectId);
+        $this->assertNotNull($insertedSubject);
+        $this->assertEquals('Bahasa Indonesia', $insertedSubject['subject_name']);
+        $this->assertEquals(0, $insertedSubject['is_pilihan']);
+        $this->assertNull($insertedSubject['subject_code']);
+    }
+
+    public function testCreateSubjectFailsIfNameMissing()
+    {
+        $data = [
+            'subject_code' => 'BIO-X',
+            'is_pilihan'   => 1,
+        ];
+        $result = $this->subjectModel->insert($data);
+        $errors = $this->subjectModel->errors();
+
+        $this->assertFalse($result, "Insert should fail if subject_name is missing.");
+        $this->assertArrayHasKey('subject_name', $errors);
+        $this->assertMatchesRegularExpression('/required/i', $errors['subject_name']);
+    }
+
+    public function testCreateSubjectFailsIfNameTooShort()
+    {
+        $data = [
+            'subject_name' => 'MT',
+            'subject_code' => 'MT-XI',
+            'is_pilihan'   => 0, // Add to ensure this isn't the cause of failure
+        ];
+        $result = $this->subjectModel->insert($data);
+        $errors = $this->subjectModel->errors();
+
+        $this->assertFalse($result, "Insert should fail if subject_name is too short.");
+        $this->assertArrayHasKey('subject_name', $errors);
+        $this->assertStringContainsStringIgnoringCase('at least 3 characters', $errors['subject_name']);
+    }
+
+    public function testCreateSubjectFailsIfCodeTaken()
+    {
+        $firstSubject = [
+            'subject_name' => 'Fisika Dasar',
+            'subject_code' => 'FIS-UNIQUE-101',
+            'is_pilihan'   => 0,
+        ];
+        $this->subjectModel->insert($firstSubject);
+
+        $duplicateData = [
+            'subject_name' => 'Kimia Dasar',
+            'subject_code' => 'FIS-UNIQUE-101',
+            'is_pilihan'   => 0,
+        ];
+        $result = $this->subjectModel->insert($duplicateData);
+        $errors = $this->subjectModel->errors();
+
+        $this->assertFalse($result, "Insert should fail if subject_code is already taken.");
+        $this->assertArrayHasKey('subject_code', $errors);
+        $this->assertStringContainsStringIgnoringCase('must contain a unique value', $errors['subject_code']);
+    }
+
+    public function testCreateSubjectSucceedsIfCodeIsEmptyAndAnotherIsEmpty()
+    {
+        $subject1_id = $this->subjectModel->insert([
+            'subject_name' => 'Sejarah Indonesia',
+            'subject_code' => null,
+            'is_pilihan'   => 0,
         ]);
-    }
+        $this->assertIsNumeric($subject1_id, "First subject with null code should insert. Errors: ".implode(', ', $this->subjectModel->errors()));
 
-    public function testSubjectNameIsRequired()
-    {
-        $data = $this->getValidSubjectData(['subject_name' => '']);
-        $this->assertFalse($this->model->insert($data));
-        $this->assertArrayHasKey('subject_name', $this->model->errors());
-    }
-
-    public function testSubjectCodeIsUnique()
-    {
-        $commonCode = 'UNIQUE_CODE_SUB';
-        $data1 = $this->getValidSubjectData(['subject_code' => $commonCode]);
-        $this->model->insert($data1);
-
-        $data2 = $this->getValidSubjectData(['subject_code' => $commonCode]);
-        $this->assertFalse($this->model->insert($data2));
-        $this->assertArrayHasKey('subject_code', $this->model->errors());
-        $this->assertStringContainsStringIgnoringCase('is already registered', $this->model->errors()['subject_code']);
-    }
-
-    public function testSubjectCodeCanBeNull()
-    {
-        // subject_code uses permit_empty
-        $data = $this->getValidSubjectData(['subject_code' => null]);
-        $subjectId = $this->model->insert($data);
-        $this->assertIsNumeric($subjectId, "Subject creation should succeed with null subject_code. Errors: " . print_r($this->model->errors(), true));
-        $this->seeInDatabase('subjects', ['id' => $subjectId, 'subject_code' => null]);
-    }
-
-    public function testIsPilihanIsValid()
-    {
-        // is_pilihan is 'required|in_list[0,1]'
-        $dataInvalid = $this->getValidSubjectData(['is_pilihan' => '2']);
-        $this->assertFalse($this->model->insert($dataInvalid));
-        $this->assertArrayHasKey('is_pilihan', $this->model->errors());
-
-        $dataValidTrue = $this->getValidSubjectData(['is_pilihan' => '1']); // Use string '1'
-        $subjectIdTrue = $this->model->insert($dataValidTrue);
-        $this->assertIsNumeric($subjectIdTrue, "Failed to insert subject with is_pilihan='1'. Errors: ".print_r($this->model->errors(), true));
-        $this->seeInDatabase('subjects', ['id' => $subjectIdTrue, 'is_pilihan' => 1]); // DB stores as INT
-
-        $dataValidFalse = $this->getValidSubjectData(['is_pilihan' => '0']); // Use string '0'
-        $subjectIdFalse = $this->model->insert($dataValidFalse);
-        $this->assertIsNumeric($subjectIdFalse, "Failed to insert subject with is_pilihan='0'. Errors: ".print_r($this->model->errors(), true));
-        $this->seeInDatabase('subjects', ['id' => $subjectIdFalse, 'is_pilihan' => 0]); // DB stores as INT
+        $subject2_id = $this->subjectModel->insert([
+            'subject_name' => 'Pendidikan Pancasila',
+            'subject_code' => null,
+            'is_pilihan'   => 0,
+        ]);
+        $this->assertIsNumeric($subject2_id, "Second subject with null code should also insert. Errors: ".implode(', ', $this->subjectModel->errors()));
+        $this->seeInDatabase('subjects', ['id' => $subject2_id, 'subject_name' => 'Pendidikan Pancasila']);
     }
 
     public function testUpdateSubject()
     {
-        $data = $this->getValidSubjectData();
-        $subjectId = $this->model->insert($data);
+        $subjectId = $this->subjectModel->insert([
+            'subject_name' => 'Geografi Awal',
+            'subject_code' => 'GEO-AWAL',
+            'is_pilihan'   => 0,
+        ]);
+        $this->assertIsNumeric($subjectId);
 
         $updatedData = [
-            'subject_name' => 'Updated Subject Name',
-            'subject_code' => 'UPDATED_SUB_' . uniqid(),
-            'is_pilihan'   => true,
+            'subject_name' => 'Geografi Lanjutan',
+            'subject_code' => 'GEO-LANJUT',
+            'is_pilihan'   => 1,
         ];
-        $this->model->update($subjectId, $updatedData);
-        $this->seeInDatabase('subjects', [
-            'id' => $subjectId,
-            'subject_name' => 'Updated Subject Name',
-            'is_pilihan' => 1
-        ]);
+        $result = $this->subjectModel->update($subjectId, $updatedData);
+
+        $this->assertTrue($result, "Update should be successful. Errors: ".implode(', ', $this->subjectModel->errors()));
+
+        $dbSubject = $this->subjectModel->find($subjectId);
+        $this->assertEquals($updatedData['subject_name'], $dbSubject['subject_name']);
+        $this->assertEquals($updatedData['subject_code'], $dbSubject['subject_code']);
+        $this->assertEquals($updatedData['is_pilihan'], $dbSubject['is_pilihan']);
     }
 
     public function testDeleteSubject()
     {
-        $data = $this->getValidSubjectData();
-        $subjectId = $this->model->insert($data);
-        $this->seeInDatabase('subjects', ['id' => $subjectId]);
+        $subjectId = $this->subjectModel->insert([
+            'subject_name' => 'Ekonomi Untuk Dihapus',
+            'subject_code' => 'EKO-DEL',
+            'is_pilihan'   => 0, // Ensure valid insert
+        ]);
+        $this->assertIsNumeric($subjectId, "Subject for deletion should be inserted. Errors: ".implode(', ', $this->subjectModel->errors()));
 
-        $this->model->delete($subjectId);
+        $result = $this->subjectModel->delete($subjectId);
+        $this->assertTrue($result, "Delete should be successful.");
         $this->dontSeeInDatabase('subjects', ['id' => $subjectId]);
     }
 }

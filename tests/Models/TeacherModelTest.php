@@ -2,133 +2,187 @@
 
 namespace Tests\Models;
 
-use App\Models\TeacherModel;
-use App\Models\UserModel;
-use App\Models\RoleModel;
-use Tests\Support\BaseTestCase; // Use the new base test case
+use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
+use App\Models\TeacherModel;
+use App\Models\UserModel; // To get a valid user_id for tests
+use App\Models\RoleModel; // To ensure roles are seeded for UserModel if UserRoleSeeder isn't run for all model tests
 
-class TeacherModelTest extends BaseTestCase // Extend BaseTestCase
+class TeacherModelTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $namespace   = 'App'; // Specify the namespace for migrations
-    protected $refresh     = true;  // Refresh database for each test class
-    // protected $migrate     = true; // Redundant
-    // protected $migrateOnce = false; // Redundant
-    // protected $seeders     = ['App\Database\Seeds\RoleSeeder', 'App\Database\Seeds\UserSeederForTests', 'App\Database\Seeds\TeacherSeederForTests']; // Now handled by BaseTestCase
+    protected $migrate = true;
+    protected $refresh = true;
+    protected $namespace = 'App';
+    // UserRoleSeeder creates 'testguru' user which can be linked to a teacher
+    // It also creates roles, which are prerequisites for users.
+    protected $seed = 'UserRoleSeeder';
+    protected $basePath = APPPATH . 'Database';
 
     protected $teacherModel;
     protected $userModel;
-    protected $validUserIdForTeacher;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->teacherModel = new TeacherModel();
-        $this->userModel = new UserModel(); // UserModel is still needed here for fetching specific users
-        // $this->ensureUserSeederExists(); // This will be called by parent::setUp() if BaseTestCase calls it, or call directly
-        // $this->ensureTeacherSeederExists(); // This will be called by parent::setUp() if BaseTestCase calls it, or call directly
-
-        // Get a user that can be a teacher (e.g., from UserSeederForTests or create one)
-        // Ensure seeders have run if this relies on specific seeded users
-        // parent::ensureUserSeederExists(); // These are removed from BaseTestCase. Seeders run via $seeders property.
-        // parent::ensureTeacherSeederExists();
-
-        $teacherUser = $this->userModel->where('username', 'testteacheruser_for_model')->first();
-        if (!$teacherUser) {
-            $roleModel = new RoleModel();
-            $role = $roleModel->where('role_name', 'Guru')->first() ?? $roleModel->first();
-             if (!$role) {
-                $roleModel->insert(['role_name' => 'TestRoleForTeacherFK']);
-                $role = ['id' => $roleModel->getInsertID()];
-            }
-            $teacherUserId = $this->userModel->insert([
-                'username' => 'testteacheruser_for_model' . uniqid(),
-                'password' => 'password123',
-                'role_id'  => $role['id'],
-                'is_active'=> 1,
-                'full_name'=> 'Teacher User For Model Test'
-            ]);
-            $this->validUserIdForTeacher = $teacherUserId;
-        } else {
-            $this->validUserIdForTeacher = $teacherUser['id'];
-        }
+        $this->userModel = new UserModel();
     }
 
-    // ensureUserSeederExists() and ensureTeacherSeederExists() are now in BaseTestCase
-
-    private function getValidTeacherData(array $override = []): array
+    protected function tearDown(): void
     {
-        return array_merge([
-            'full_name' => 'Test Teacher Name ' . uniqid(),
-            'nip'       => uniqid('nip_'), // Must be unique
-            'user_id'   => $this->validUserIdForTeacher, // FK to users table
-        ], $override);
+        parent::tearDown();
+        unset($this->teacherModel);
+        unset($this->userModel);
     }
 
-    public function testCreateTeacherSuccessfully()
+    private function getTestGuruUserId(): ?int
     {
-        $data = $this->getValidTeacherData();
+        $guruUser = $this->userModel->where('username', 'testguru')->first();
+        return $guruUser ? (int)$guruUser['id'] : null;
+    }
+
+    public function testCreateTeacherWithValidDataAndUser()
+    {
+        $guruUserId = $this->getTestGuruUserId();
+        $this->assertNotNull($guruUserId, "'testguru' user (ID: {$guruUserId}) should exist to link to a teacher.");
+
+        $data = [
+            'full_name' => 'Guru Test Satu',
+            'nip'       => '199001012020121001',
+            'user_id'   => $guruUserId,
+        ];
         $teacherId = $this->teacherModel->insert($data);
 
-        $this->assertIsNumeric($teacherId);
-        $this->seeInDatabase('teachers', ['nip' => $data['nip'], 'full_name' => $data['full_name']]);
+        $this->assertIsNumeric($teacherId, "Insert should return new teacher ID. Errors: ".implode(', ', $this->teacherModel->errors()));
+        $this->seeInDatabase('teachers', ['id' => $teacherId, 'full_name' => $data['full_name'], 'nip' => $data['nip'], 'user_id' => $data['user_id']]);
     }
 
-    public function testFullNameIsRequired()
+    public function testCreateTeacherWithValidDataNoUser()
     {
-        $data = $this->getValidTeacherData(['full_name' => '']);
-        $this->assertFalse($this->teacherModel->insert($data));
-        $this->assertArrayHasKey('full_name', $this->teacherModel->errors());
+        $data = [
+            'full_name' => 'Guru Test Dua (No Account)',
+            'nip'       => '199001012020121002',
+            // user_id is permit_empty, so it should default to NULL in DB
+        ];
+        $teacherId = $this->teacherModel->insert($data);
+
+        $this->assertIsNumeric($teacherId, "Insert should return new teacher ID. Errors: ".implode(', ', $this->teacherModel->errors()));
+        $insertedTeacher = $this->teacherModel->find($teacherId);
+        $this->assertNotNull($insertedTeacher);
+        $this->assertEquals($data['full_name'], $insertedTeacher['full_name']);
+        $this->assertEquals($data['nip'], $insertedTeacher['nip']);
+        $this->assertNull($insertedTeacher['user_id']);
     }
 
-    public function testNipIsUnique()
+    public function testCreateTeacherWithValidDataNoNip()
     {
-        $commonNip = 'nip_unique_teacher_test';
-        $data1 = $this->getValidTeacherData(['nip' => $commonNip]);
-        $this->teacherModel->insert($data1);
+        $guruUserId = $this->getTestGuruUserId();
+        $this->assertNotNull($guruUserId, "'testguru' user should exist for this test.");
 
-        $data2 = $this->getValidTeacherData(['nip' => $commonNip]);
-        $this->assertFalse($this->teacherModel->insert($data2));
-        $this->assertArrayHasKey('nip', $this->teacherModel->errors());
-        $this->assertStringContainsStringIgnoringCase('This NIP is already registered.', $this->teacherModel->errors()['nip']);
+        $data = [
+            'full_name' => 'Guru Test Tiga (No NIP)',
+            'user_id'   => $guruUserId,
+            // nip is permit_empty, should default to NULL
+        ];
+        $teacherId = $this->teacherModel->insert($data);
+
+        $this->assertIsNumeric($teacherId, "Insert should return ID. Errors: ".implode(', ', $this->teacherModel->errors()));
+        $insertedTeacher = $this->teacherModel->find($teacherId);
+        $this->assertNotNull($insertedTeacher);
+        $this->assertEquals($data['full_name'], $insertedTeacher['full_name']);
+        $this->assertNull($insertedTeacher['nip']);
+        $this->assertEquals($guruUserId, $insertedTeacher['user_id']);
     }
 
-    public function testUserIdMustExistInUsersTableIfExists()
+    public function testCreateTeacherFailsIfFullNameMissing()
     {
-        $data = $this->getValidTeacherData(['user_id' => 999997]); // Non-existent user_id
-        $this->assertFalse($this->teacherModel->insert($data));
-        $this->assertArrayHasKey('user_id', $this->teacherModel->errors());
-        $this->assertStringContainsStringIgnoringCase('The selected User ID for teacher login does not exist.', $this->teacherModel->errors()['user_id']);
+        $data = [
+            'nip' => '123456789012345678',
+            // full_name is missing, which is required
+        ];
+        $result = $this->teacherModel->insert($data);
+        $errors = $this->teacherModel->errors();
 
-        // Test with null user_id (should be allowed by 'permit_empty')
-        $dataValidWithNullUser = $this->getValidTeacherData(['user_id' => null]);
-        $teacherId = $this->teacherModel->insert($dataValidWithNullUser);
-        $this->assertIsNumeric($teacherId, "Teacher creation should succeed with null user_id. Errors: " . print_r($this->teacherModel->errors(), true));
-        $this->seeInDatabase('teachers', ['id' => $teacherId, 'user_id' => null]);
+        $this->assertFalse($result, "Insert should fail if full_name is missing.");
+        $this->assertArrayHasKey('full_name', $errors);
+        $this->assertMatchesRegularExpression('/required/i', $errors['full_name']);
+    }
+
+    public function testCreateTeacherFailsIfNipTaken()
+    {
+        // First teacher with a unique NIP
+        $this->teacherModel->insert([
+            'full_name' => 'Guru A With NIP',
+            'nip'       => 'NIP-UNIK-001XYZ',
+        ]);
+
+        // Attempt to create another teacher with the same NIP
+        $duplicateData = [
+            'full_name' => 'Guru B Also With NIP',
+            'nip'       => 'NIP-UNIK-001XYZ', // Duplicate NIP
+        ];
+        $result = $this->teacherModel->insert($duplicateData);
+        $errors = $this->teacherModel->errors();
+
+        $this->assertFalse($result, "Insert should fail if NIP is already taken.");
+        $this->assertArrayHasKey('nip', $errors);
+        $this->assertEquals('This NIP is already registered.', $errors['nip']);
+    }
+
+    public function testCreateTeacherFailsIfInvalidUserId()
+    {
+        $invalidUserId = 99999; // Assuming this user ID does not exist
+        $user = $this->userModel->find($invalidUserId); // Verify it doesn't exist
+        $this->assertNull($user, "User ID {$invalidUserId} should not exist for this test.");
+
+        $data = [
+            'full_name' => 'Guru Dengan User Invalid',
+            'nip'       => '198001012010121003XYZ', // Unique NIP
+            'user_id'   => $invalidUserId,
+        ];
+        $result = $this->teacherModel->insert($data);
+        $errors = $this->teacherModel->errors();
+
+        $this->assertFalse($result, "Insert should fail due to invalid user_id.");
+        $this->assertArrayHasKey('user_id', $errors);
+        $this->assertEquals('The selected User ID for teacher login does not exist.', $errors['user_id']);
     }
 
     public function testUpdateTeacher()
     {
-        $data = $this->getValidTeacherData();
-        $teacherId = $this->teacherModel->insert($data);
+        $initialData = [
+            'full_name' => 'Nama Awal Guru Update',
+            'nip'       => 'NIPAWAL123XYZ',
+        ];
+        $teacherId = $this->teacherModel->insert($initialData);
+        $this->assertIsNumeric($teacherId, "Initial teacher insert failed.");
 
         $updatedData = [
-            'full_name' => 'Updated Teacher Name',
-            'nip' => 'nip_updated_teacher_' . uniqid(),
+            'full_name' => 'Nama Baru Guru Update',
+            'nip'       => 'NIPBARU456XYZ', // New unique NIP
         ];
-        $this->teacherModel->update($teacherId, $updatedData);
-        $this->seeInDatabase('teachers', ['id' => $teacherId, 'full_name' => 'Updated Teacher Name']);
+        $result = $this->teacherModel->update($teacherId, $updatedData);
+
+        $this->assertTrue($result, "Update should be successful. Errors: ".implode(', ', $this->teacherModel->errors()));
+
+        $dbTeacher = $this->teacherModel->find($teacherId);
+        $this->assertEquals($updatedData['full_name'], $dbTeacher['full_name']);
+        $this->assertEquals($updatedData['nip'], $dbTeacher['nip']);
     }
 
     public function testDeleteTeacher()
     {
-        $data = $this->getValidTeacherData();
+        $data = [
+            'full_name' => 'Guru Akan Dihapus Test',
+            'nip'       => 'NIPHAPUS789XYZ', // Unique NIP
+        ];
         $teacherId = $this->teacherModel->insert($data);
-        $this->seeInDatabase('teachers', ['id' => $teacherId]);
+        $this->assertIsNumeric($teacherId, "Teacher for deletion should be inserted.");
 
-        $this->teacherModel->delete($teacherId);
+        $result = $this->teacherModel->delete($teacherId);
+        $this->assertTrue($result, "Delete should be successful.");
         $this->dontSeeInDatabase('teachers', ['id' => $teacherId]);
     }
 }
