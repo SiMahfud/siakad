@@ -422,4 +422,87 @@ Dengan melakukan verifikasi dan penyesuaian ini, diharapkan file Excel yang diha
 *   `php spark routes` (untuk melihat daftar rute yang aktif)
 
 ---
+
+## 8. Panduan Testing Aplikasi
+
+Bagian ini menjelaskan bagaimana testing diatur dan dijalankan dalam proyek SI-AKADEMIK.
+
+### 8.1. Pengaturan Awal & Konfigurasi
+
+*   **Database untuk Testing**: Saat menjalankan test yang melibatkan database, CodeIgniter secara otomatis akan menggunakan koneksi database grup `tests` yang dikonfigurasi di `app/Config/Database.php`. Secara default, ini menggunakan SQLite in-memory (`:memory:`), yang berarti database dibuat baru setiap kali sesi test dimulai dan dihancurkan setelahnya. Ini memastikan test berjalan dalam environment yang bersih dan terisolasi.
+*   **File Konfigurasi PHPUnit**: `phpunit.xml.dist` di root proyek adalah file konfigurasi utama untuk PHPUnit. Ini mendefinisikan bagaimana test dijalankan, direktori test, dll.
+
+### 8.2. Struktur Direktori Test
+
+*   Semua test ditempatkan di dalam direktori `tests/`.
+*   Struktur direktori di dalam `tests/` sebaiknya mencerminkan struktur direktori `app/`.
+    *   Contoh: Test untuk controller `App\Controllers\Admin\UserController.php` berada di `tests\Controllers\Admin\UserControllerTest.php`.
+    *   Contoh: Test untuk model `App\Models\UserModel.php` berada di `tests\Models\UserModelTest.php`.
+
+### 8.3. Trait Standar CodeIgniter untuk Testing
+
+Manfaatkan trait bawaan CodeIgniter untuk mempermudah penulisan test:
+
+*   **`CodeIgniter\Test\FeatureTestTrait`**:
+    *   Gunakan untuk test controller yang memerlukan simulasi request HTTP penuh, termasuk routing, filter, dan validasi response.
+    *   Memungkinkan Anda membuat request GET, POST, dll. ke URI aplikasi dan melakukan assertion pada response (status, header, body, redirect, session).
+    *   Contoh penggunaan ada di `tests/Controllers/Admin/UserControllerTest.php` dan `tests/Controllers/AuthControllerTest.php`.
+*   **`CodeIgniter\Test\DatabaseTestTrait`**:
+    *   Gunakan untuk semua test yang berinteraksi dengan database, terutama test model.
+    *   Properti yang penting untuk diatur dalam class test Anda:
+        *   `protected $migrate = true;`: Menjalankan semua migrasi sebelum setiap test (atau sekali jika `$migrateOnce = true;`).
+        *   `protected $refresh = true;`: Melakukan rollback semua migrasi ke versi 0, lalu menjalankan semua migrasi lagi. Ini memastikan skema database bersih untuk setiap test.
+        *   `protected $namespace = 'App';`: Pastikan ini diatur agar migrasi dari direktori `app/Database/Migrations/` dijalankan. Jika `null`, semua namespace akan dijalankan.
+        *   `protected $basePath = APPPATH . 'Database';`: Menentukan path dasar untuk seeder jika seeder Anda berada di `app/Database/Seeds/`.
+        *   `protected $seed = 'NamaSeeder';`: Nama class seeder yang akan dijalankan sebelum setiap test (atau sekali jika `$seedOnce = true;`).
+    *   Menyediakan method assertion yang berguna seperti `seeInDatabase()`, `dontSeeInDatabase()`, `hasInDatabase()`, `grabFromDatabase()`.
+    *   Contoh penggunaan ada di `tests/Models/UserModelTest.php`.
+
+### 8.4. Seeder Khusus untuk Testing
+
+*   Buat seeder spesifik untuk kebutuhan testing jika data default dari seeder produksi tidak mencukupi atau terlalu banyak.
+    *   Contoh: `App\Database\Seeds\UserRoleSeeder.php` dibuat untuk menyediakan user admin dan non-admin dengan peran yang jelas untuk test otorisasi.
+*   Tempatkan seeder test di `app/Database/Seeds/` dan panggil dari class test menggunakan properti `$seed`.
+*   **Penting**: Seeder yang digunakan untuk testing sebaiknya **tidak menghasilkan output** menggunakan `echo` atau `print`. Output ini akan ditangkap oleh PHPUnit dan menandai test sebagai "risky".
+
+### 8.5. Perbaikan Migrasi untuk Testing
+
+*   Setiap file migrasi di `app/Database/Migrations/` **harus** memiliki method `down()` yang diimplementasikan dengan benar.
+*   Method `down()` bertanggung jawab untuk membatalkan perubahan yang dibuat oleh method `up()`.
+    *   Untuk migrasi yang membuat tabel (`$this->forge->createTable('nama_tabel');`), method `down()` harus berisi `$this->forge->dropTable('nama_tabel');`.
+    *   Untuk migrasi yang menambah kolom (`$this->forge->addColumn(...)`), method `down()` harus berisi `$this->forge->dropColumn(...)`.
+    *   Untuk migrasi yang memodifikasi kolom (`$this->forge->modifyColumn(...)`), method `down()` idealnya mengembalikan kolom ke state sebelumnya (jika memungkinkan dan aman).
+*   Implementasi `down()` yang benar krusial agar properti `$refresh = true` pada `DatabaseTestTrait` dapat berfungsi dengan baik, memastikan setiap test berjalan pada skema database yang bersih. Beberapa migrasi awal di proyek ini tidak memiliki implementasi `down()` yang benar dan telah diperbaiki.
+
+### 8.6. Menjalankan Test
+
+*   **Semua Test**:
+    ```bash
+    php vendor/bin/phpunit
+    ```
+    Atau jika dikonfigurasi di `composer.json` (seperti di proyek ini):
+    ```bash
+    composer test
+    ```
+*   **Test File Spesifik**:
+    ```bash
+    php vendor/bin/phpunit tests/Controllers/Admin/UserControllerTest.php
+    ```
+*   **Test Method Spesifik (Filter)**:
+    ```bash
+    php vendor/bin/phpunit tests/Controllers/Admin/UserControllerTest.php --filter testNamaMethodSpesifik
+    ```
+
+### 8.7. Status Test yang Sudah Ada (Sebelum Inisiatif Testing Ini)
+
+*   Proyek ini memiliki sejumlah file test yang sudah ada sebelumnya (`tests/Controllers/Admin/*`, `tests/Models/*`, dll.).
+*   Saat menjalankan `composer test` secara keseluruhan, banyak dari test-test lama ini yang **gagal** atau menghasilkan **error**.
+*   Penyebab kegagalan ini beragam, termasuk:
+    *   Asumsi tentang data sesi yang tidak di-setup dengan benar untuk test.
+    *   Ketergantungan pada data spesifik di database yang tidak disediakan oleh seeder test saat ini.
+    *   Perubahan pada logika aplikasi yang membuat assertion lama tidak valid lagi.
+    *   Masalah Foreign Key Constraint karena data prasyarat tidak ada.
+*   Perbaikan test-test lama ini memerlukan investigasi dan upaya terpisah dan tidak termasuk dalam cakupan inisiatif testing awal yang berfokus pada `Admin/UserController`, `AuthController`, dan `UserModel`.
+
+---
 *Dokumen ini akan diperbarui seiring dengan perkembangan proyek.*
