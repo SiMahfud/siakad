@@ -33,6 +33,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     $routes->post('students/update/(:num)', 'StudentController::update/$1', ['filter' => $dataIndukEditFilter]); // Added for form submission
     $routes->resource('teachers', ['controller' => 'TeacherController', 'filter' => $dataIndukFilter]);
     $routes->resource('subjects', ['controller' => 'SubjectController', 'filter' => $dataIndukFilter]);
+    $routes->post('subjects/update/(:num)', 'SubjectController::update/$1', ['filter' => $dataIndukEditFilter]); // Added for form submission
 
     // Class Management (CRUD)
     $routes->resource('classes', ['controller' => 'ClassController', 'filter' => $dataIndukFilter]); // Original
