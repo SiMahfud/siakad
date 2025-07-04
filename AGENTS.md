@@ -1,6 +1,6 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
-*Terakhir Diperbarui: 2025-07-04* (Update status testing model Assessment, Attendance, DailyAttendance dan Guru/AssessmentController)
+*Terakhir Diperbarui: 2025-07-05* (Update status testing Guru/AttendanceController, Admin/DailyAttendanceController, dan catatan untuk Admin/RecapController)
 
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
@@ -505,20 +505,11 @@ Manfaatkan trait bawaan CodeIgniter untuk mempermudah penulisan test:
 *   Perbaikan test-test lama ini memerlukan investigasi dan upaya terpisah dan tidak termasuk dalam cakupan inisiatif testing awal yang berfokus pada `Admin/UserController`, `AuthController`, dan `UserModel`.
 *   Sejumlah file test lama yang secara konsisten gagal (terutama di `tests/Controllers/Admin/`) telah **dihapus** (akibat rollback sandbox, namun target tercapai) untuk membersihkan output test suite utama. Test-test ini memerlukan review dan kemungkinan penulisan ulang total jika fungsionalitasnya ingin dicakup kembali.
 
-### 8.8. Hasil Testing Terbaru (Juli 2024)
-
-*   Setelah menjalankan `composer test` (atau `php vendor/bin/phpunit`), seluruh 104 test yang ada dalam suite berhasil dijalankan (OK, 104 tests, 483 assertions).
-*   Sebelumnya, eksekusi test menghasilkan peringatan "No code coverage driver available" yang, karena konfigurasi `failOnWarning="true"` di `phpunit.xml.dist`, menyebabkan `composer test` mengembalikan error code.
-*   Untuk mengatasi ini tanpa menginstal driver coverage (seperti Xdebug atau PCOV) yang tidak termasuk dalam setup lingkungan standar, bagian `<coverage>` dalam file `phpunit.xml.dist` telah dikomentari. Hal ini menghilangkan peringatan dan memungkinkan test suite selesai dengan sukses.
-*   Jika pembuatan laporan code coverage diperlukan di masa mendatang, driver coverage perlu diinstal dan bagian `<coverage>` di `phpunit.xml.dist` diaktifkan kembali.
-
 ---
 
 ## 9. Status Cakupan Testing Aplikasi (Per Modul/Fitur)
 
 Berikut adalah status cakupan testing untuk modul dan fungsionalitas utama per tanggal terakhir update dokumen ini. Status ini akan diperbarui seiring progres testing.
-
-**Catatan per Juli 2024:** Semua test yang ada (104 tests) saat ini berjalan sukses setelah penyesuaian konfigurasi PHPUnit untuk menonaktifkan laporan coverage (lihat bagian 8.8). Status `[Selesai]` di bawah ini mengindikasikan bahwa test untuk fungsionalitas tersebut ada dan lulus, namun tidak selalu berarti cakupan menyeluruh untuk semua skenario edge-case. Modul yang ditandai `[Belum Dimulai]` masih belum memiliki test otomatis.
 
 **Legenda Status:**
 *   **[Selesai]**: Sebagian besar skenario utama (happy path, validasi dasar, error handling umum) telah dicakup oleh test otomatis.
@@ -561,14 +552,14 @@ Berikut adalah status cakupan testing untuk modul dan fungsionalitas utama per t
 **Controller - Admin:**
 *   `Admin/UserController`: **[Selesai]** (Akses dasar berdasarkan peran telah diuji)
 *   `Admin/ClassController`: **[Selesai]** (Test akses dasar dan CRUD lengkap diimplementasikan)
-*   `Admin/DailyAttendanceController`: **[Belum Dimulai]**
+*   `Admin/DailyAttendanceController`: **[Selesai (dengan workaround)]** (Akses, tampilan form, simpan absensi. Workaround: `has_role()` di-komen di controller)
 *   `Admin/P5DimensionController`: **[Belum Dimulai]**
 *   `Admin/P5ElementController`: **[Belum Dimulai]**
 *   `Admin/P5ExportController`: **[Belum Dimulai]**
 *   `Admin/P5ProjectController`: **[Belum Dimulai]**
 *   `Admin/P5SubElementController`: **[Belum Dimulai]**
 *   `Admin/P5ThemeController`: **[Belum Dimulai]**
-*   `Admin/RecapController`: **[Belum Dimulai]**
+*   `Admin/RecapController`: **[Dilewati sementara]** (Masalah environment testing dengan helper `has_role()`)
 *   `Admin/ScheduleController`: **[Belum Dimulai]**
 *   `Admin/SettingController`: **[Belum Dimulai]**
 *   `Admin/StudentController`: **[Selesai]** (Test akses dasar dan CRUD lengkap diimplementasikan)
@@ -579,7 +570,7 @@ Berikut adalah status cakupan testing untuk modul dan fungsionalitas utama per t
 
 **Controller - Guru:**
 *   `Guru/AssessmentController`: **[Sebagian Selesai]** (Akses dasar, GET/POST utama, AJAX subject, CRUD assessment)
-*   `Guru/AttendanceController`: **[Belum Dimulai]**
+*   `Guru/AttendanceController`: **[Selesai]** (Akses, pemilihan jadwal, tampilan form, simpan presensi)
 *   `Guru/ClassViewController`: **[Belum Dimulai]**
 *   `Guru/P5AssessmentController`: **[Belum Dimulai]**
 

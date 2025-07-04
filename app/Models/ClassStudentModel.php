@@ -7,8 +7,9 @@ use CodeIgniter\Model;
 class ClassStudentModel extends Model
 {
     protected $table            = 'class_student';
-    protected $primaryKey       = 'id'; // Assuming 'id' is the primary key of this pivot table
-    protected $useAutoIncrement = true;
+    // Pivot table often doesn't have a single auto-incrementing PK if composite key is used.
+    // protected $primaryKey       = 'id';
+    // protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
 
@@ -49,7 +50,7 @@ class ClassStudentModel extends Model
      */
     public function getStudentsInClass(int $class_id): array
     {
-        return $this->select('students.id, students.nisn, students.full_name, class_student.id as class_student_id')
+        return $this->select('students.id, students.nis, students.nisn, students.full_name') // Removed class_student.id
                     ->join('students', 'students.id = class_student.student_id')
                     ->where('class_student.class_id', $class_id)
                     ->orderBy('students.full_name', 'ASC')
