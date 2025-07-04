@@ -69,7 +69,13 @@ class StudentController extends BaseController
         ];
 
         if (!$this->validate($validationRules)) {
-            return redirect()->back()->withInput()->with('validation', $this->validator);
+            // Re-render the 'new' view with validation errors
+            $data = [
+                'title'      => 'Add New Student',
+                'validation' => $this->validator,
+                // Add any other data the 'new' view might need (e.g., for dropdowns)
+            ];
+            return view('admin/students/new', $data);
         }
 
         if ($this->studentModel->insert($studentData)) {
@@ -130,7 +136,14 @@ class StudentController extends BaseController
         ];
 
         if (!$this->validate($validationRules)) {
-            return redirect()->back()->withInput()->with('validation', $this->validator);
+            // Re-render the 'edit' view with validation errors
+            $data = [
+                'title'      => 'Edit Student',
+                'student'    => $student, // Pass existing student data back to the view
+                'validation' => $this->validator,
+                // Add any other data the 'edit' view might need
+            ];
+            return view('admin/students/edit', $data);
         }
 
         if ($this->studentModel->update($id, $studentData)) {
