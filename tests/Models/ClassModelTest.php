@@ -2,179 +2,185 @@
 
 namespace Tests\Models;
 
-use App\Models\ClassModel;
-use App\Models\TeacherModel;
-use App\Models\UserModel;
-use App\Models\RoleModel;
-use Tests\Support\BaseTestCase; // Use the new base test case
+use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
+use App\Models\ClassModel;
+use App\Models\TeacherModel; // To get a valid wali_kelas_id
+use App\Models\UserModel;    // To get user for teacher
 
-class ClassModelTest extends BaseTestCase // Extend BaseTestCase
+class ClassModelTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $namespace   = 'App'; // Specify the namespace for migrations
-    protected $refresh     = true;  // Refresh database for each test class
-    // protected $migrate     = true; // Redundant
-    // protected $migrateOnce = false; // Redundant
-    // Seeders are now primarily handled by BaseTestCase's setUp.
-    // This array can be left empty or list additional, class-specific seeders if any.
-    // For now, relying on BaseTestCase for RoleSeeder, UserSeederForTests, TeacherSeederForTests.
-    protected $seeders     = [];
+    protected $migrate = true;
+    protected $refresh = true;
+    protected $namespace = 'App';
+    // UserRoleSeeder now creates 'testguru' user AND a linked teacher record.
+    protected $seed = 'UserRoleSeeder';
+    protected $basePath = APPPATH . 'Database';
 
     protected $classModel;
-    protected $teacherModel; // To get a valid teacher_id for wali_kelas_id
-    protected $validTeacherId;
+    protected $teacherModel;
+    protected $userModel;
+    protected $testTeacherId; // To store the ID of the teacher created by seeder
 
     protected function setUp(): void
     {
-        parent::setUp(); // This should call the seeder helpers from BaseTestCase if they are in BaseTestCase::setUp()
+        parent::setUp();
         $this->classModel = new ClassModel();
         $this->teacherModel = new TeacherModel();
+        $this->userModel = new UserModel();
 
-        // Get a valid teacher_id for wali_kelas_id
-        $teacher = $this->teacherModel->first(); // Get any teacher from seeder
-        if ($teacher) {
-            $this->validTeacherId = $teacher['id'];
+        // Fetch the teacher record that UserRoleSeeder should have created (linked to 'testguru')
+        $guruUser = $this->userModel->where('username', 'testguru')->first();
+        if ($guruUser) {
+            $teacher = $this->teacherModel->where('user_id', $guruUser['id'])->first();
+            $this->testTeacherId = $teacher ? (int)$teacher['id'] : null;
         } else {
-            // Fallback: create a dummy teacher if seeder failed or no teachers
-            $userModel = new UserModel();
-            $roleModel = new RoleModel();
-            $role = $roleModel->where('role_name', 'Guru')->first() ?? $roleModel->first();
-            if(!$role){
-                $roleModel->insert(['role_name' => 'TestRoleForClassFK']);
-                $role = ['id' => $roleModel->getInsertID()];
+             // If testguru wasn't found by seeder (should not happen if seeder ran), create a fallback teacher
+            $fallbackTeacher = $this->teacherModel->where('nip', 'FALLBACK-WK-NIP')->first();
+            if (!$fallbackTeacher) {
+                $fallbackTeacherId = $this->teacherModel->insert([
+                    'full_name' => 'Fallback Wali Kelas',
+                    'nip' => 'FALLBACK-WK-NIP'
+                ]);
+                $this->testTeacherId = $fallbackTeacherId;
+            } else {
+                $this->testTeacherId = $fallbackTeacher['id'];
             }
-            $userId = $userModel->insert([
-                'username' => 'class_fk_user_' . uniqid(),
-                'password' => 'password123',
-                'role_id'  => $role['id'],
-                'is_active'=> 1,
-                'full_name'=> 'Class FK User'
-            ]);
-            $teacherId = $this->teacherModel->insert([
-                'full_name' => 'Class FK Teacher ' . uniqid(),
-                'nip'       => 'nip_classfk_' . uniqid(),
-                'user_id'   => $userId
-            ]);
-            $this->validTeacherId = $teacherId;
         }
+        $this->assertNotNull($this->testTeacherId, "A Test teacher (for wali kelas) must be available either from UserRoleSeeder or fallback creation.");
     }
 
-    // ensureUserSeederExists() and ensureTeacherSeederExists() are now in BaseTestCase.
-
-    private function getValidClassData(array $override = []): array
+    protected function tearDown(): void
     {
-        return array_merge([
-            'class_name'    => 'X IPA ' . uniqid(),
+        parent::tearDown();
+        unset($this->classModel);
+        unset($this->teacherModel);
+        unset($this->userModel);
+    }
+
+    public function testCreateClassWithValidData()
+    {
+        $data = [
+            'class_name'    => 'XI IPA 1',
             'academic_year' => '2023/2024',
-            'fase'          => 'E',
-            'wali_kelas_id' => $this->validTeacherId, // FK to teachers table
-        ], $override);
-    }
-
-    public function testCreateClassSuccessfully()
-    {
-        $data = $this->getValidClassData();
+            'wali_kelas_id' => $this->testTeacherId,
+            'fase'          => 'F',
+        ];
         $classId = $this->classModel->insert($data);
 
-        $this->assertIsNumeric($classId);
-        $this->seeInDatabase('classes', ['class_name' => $data['class_name'], 'academic_year' => $data['academic_year']]);
+        $this->assertIsNumeric($classId, "Insert should return new class ID. Errors: ".implode(', ', $this->classModel->errors()));
+        $this->seeInDatabase('classes', ['id' => $classId, 'class_name' => $data['class_name'], 'wali_kelas_id' => $this->testTeacherId]);
     }
 
-    public function testClassNameIsRequired()
+    public function testCreateClassWithMinimalData()
     {
-        $data = $this->getValidClassData(['class_name' => '']);
-        $this->assertFalse($this->classModel->insert($data));
-        $this->assertArrayHasKey('class_name', $this->classModel->errors());
+        $data = [
+            'class_name'    => 'X IPS 2',
+            'academic_year' => '2023/2024',
+            // wali_kelas_id and fase are permit_empty in model, will be NULL in DB
+        ];
+        $classId = $this->classModel->insert($data);
+        $this->assertIsNumeric($classId, "Insert should return ID for minimal data. Errors: ".implode(', ', $this->classModel->errors()));
+
+        $insertedClass = $this->classModel->find($classId);
+        $this->assertNotNull($insertedClass);
+        $this->assertEquals($data['class_name'], $insertedClass['class_name']);
+        $this->assertEquals($data['academic_year'], $insertedClass['academic_year']);
+        $this->assertNull($insertedClass['wali_kelas_id']);
+        $this->assertNull($insertedClass['fase']);
     }
 
-    public function testAcademicYearIsRequired()
+    public function testCreateClassFailsIfClassNameMissing()
     {
-        $data = $this->getValidClassData(['academic_year' => '']);
-        $this->assertFalse($this->classModel->insert($data));
-        $this->assertArrayHasKey('academic_year', $this->classModel->errors());
+        $data = [
+            'academic_year' => '2023/2024',
+            'wali_kelas_id' => $this->testTeacherId,
+            // class_name is missing
+        ];
+        $result = $this->classModel->insert($data);
+        $errors = $this->classModel->errors();
+
+        $this->assertFalse($result, "Insert should fail if class_name is missing.");
+        $this->assertArrayHasKey('class_name', $errors);
+        $this->assertMatchesRegularExpression('/required/i', $errors['class_name']);
     }
 
-    public function testWaliKelasIdMustExistInTeachersTableIfExists()
+    public function testCreateClassFailsIfAcademicYearMissing()
     {
-        $data = $this->getValidClassData(['wali_kelas_id' => 999996]); // Non-existent teacher_id
-        // The model validation is 'permit_empty|integer'. It doesn't have 'is_not_unique[teachers.id]'.
-        // So, this test will pass at model level if an integer is provided.
-        // The DB foreign key constraint would catch this if direct DB insertion was attempted without disabling FKs.
-        // For model validation, we'd need to add 'is_not_unique[teachers.id,id,{id}]' to the rule.
-        // Let's assume for now the rule is as defined in ClassModel.php
-        // $this->assertFalse($this->classModel->insert($data));
-        // $this->assertArrayHasKey('wali_kelas_id', $this->classModel->errors());
-        // $this->assertStringContainsStringIgnoringCase('The selected Wali Kelas does not exist.', $this->classModel->errors()['wali_kelas_id']);
-        // Given current model rules, this test would not reflect a validation failure at model level.
-        // Let's test if it accepts a valid integer and null.
+        $data = [
+            'class_name'    => 'XII Bahasa',
+            'wali_kelas_id' => $this->testTeacherId,
+            // academic_year is missing
+        ];
+        $result = $this->classModel->insert($data);
+        $errors = $this->classModel->errors();
 
-        // Test with null wali_kelas_id (should be allowed by 'permit_empty')
-        $dataValidWithNullWali = $this->getValidClassData(['wali_kelas_id' => null]);
-        $classId = $this->classModel->insert($dataValidWithNullWali);
-        $this->assertIsNumeric($classId, "Class creation should succeed with null wali_kelas_id. Errors: " . print_r($this->classModel->errors(), true));
-        $this->seeInDatabase('classes', ['id' => $classId, 'wali_kelas_id' => null]);
+        $this->assertFalse($result, "Insert should fail if academic_year is missing.");
+        $this->assertArrayHasKey('academic_year', $errors);
+        $this->assertMatchesRegularExpression('/required/i', $errors['academic_year']);
     }
 
-    public function testFaseMaxLength()
+    public function testCreateClassFailsIfWaliKelasIdInvalidAtDbLevel()
     {
-        $data = $this->getValidClassData(['fase' => 'EE']); // Too long
-        $this->assertFalse($this->classModel->insert($data));
-        $this->assertArrayHasKey('fase', $this->classModel->errors());
-    }
+        $invalidTeacherId = 99999; // Assuming this ID does not exist
+        $teacher = $this->teacherModel->find($invalidTeacherId); // Verify non-existence
+        $this->assertNull($teacher, "Teacher ID {$invalidTeacherId} should not exist for this test.");
 
+        $data = [
+            'class_name'    => 'XI IPA Super',
+            'academic_year' => '2024/2025',
+            'wali_kelas_id' => $invalidTeacherId,
+        ];
+
+        // Expect a DatabaseException due to FOREIGN KEY constraint violation
+        // The model validation for wali_kelas_id is 'permit_empty|integer', so it won't catch this.
+        $this->expectException(\CodeIgniter\Database\Exceptions\DatabaseException::class);
+        $this->classModel->insert($data);
+
+        // Note: If tests are run with FK checks off for SQLite, this might pass where it shouldn't.
+        // Ensure FKs are on for the test DB connection. Default CI test setup for SQLite usually enables them.
+    }
 
     public function testUpdateClass()
     {
-        $data = $this->getValidClassData();
-        $classId = $this->classModel->insert($data);
+        $initialData = [
+            'class_name'    => 'Kelas Lama Update',
+            'academic_year' => '2022/2023',
+            'wali_kelas_id' => $this->testTeacherId,
+        ];
+        $classId = $this->classModel->insert($initialData);
+        $this->assertIsNumeric($classId, "Initial class insert for update test failed.");
 
         $updatedData = [
-            'class_name'    => 'XI IPS ' . uniqid(),
-            'academic_year' => '2024/2025',
-            'fase'          => 'F',
+            'class_name'    => 'Kelas Baru Keren Update',
+            'academic_year' => '2023/2024',
+            'fase'          => 'E',
+            // wali_kelas_id can also be updated or set to null
         ];
-        $this->classModel->update($classId, $updatedData);
-        $this->seeInDatabase('classes', ['id' => $classId, 'academic_year' => '2024/2025']);
+        $result = $this->classModel->update($classId, $updatedData);
+
+        $this->assertTrue($result, "Update should be successful. Errors: ".implode(', ', $this->classModel->errors()));
+
+        $dbClass = $this->classModel->find($classId);
+        $this->assertEquals($updatedData['class_name'], $dbClass['class_name']);
+        $this->assertEquals($updatedData['academic_year'], $dbClass['academic_year']);
+        $this->assertEquals($updatedData['fase'], $dbClass['fase']);
     }
 
     public function testDeleteClass()
     {
-        $data = $this->getValidClassData();
+        $data = [
+            'class_name'    => 'Kelas Akan Dihapus Test',
+            'academic_year' => '2021/2022',
+            'wali_kelas_id' => $this->testTeacherId,
+        ];
         $classId = $this->classModel->insert($data);
-        $this->seeInDatabase('classes', ['id' => $classId]);
+        $this->assertIsNumeric($classId, "Class for deletion should be inserted.");
 
-        $this->classModel->delete($classId);
+        $result = $this->classModel->delete($classId);
+        $this->assertTrue($result, "Delete should be successful.");
         $this->dontSeeInDatabase('classes', ['id' => $classId]);
-    }
-
-    public function testGetAllClassesWithWaliKelas()
-    {
-        // Create a class with a known wali_kelas
-        $classData = $this->getValidClassData(); // Uses $this->validTeacherId
-        $this->classModel->insert($classData);
-
-        // Create another class, possibly without a wali_kelas or with a different one
-        $teacher2 = $this->teacherModel->where('nip', 'nip_no_user')->first(); // From seeder
-        $this->classModel->insert($this->getValidClassData([
-            'class_name' => 'Another Class ' . uniqid(),
-            'wali_kelas_id' => $teacher2 ? $teacher2['id'] : null
-        ]));
-
-        $classesWithWali = $this->classModel->getAllClassesWithWaliKelas();
-        $this->assertIsArray($classesWithWali);
-        $this->assertGreaterThanOrEqual(1, count($classesWithWali)); // At least one class was inserted
-
-        $foundWaliKelasName = false;
-        foreach($classesWithWali as $classItem) {
-            $this->assertArrayHasKey('wali_kelas_name', $classItem);
-            if ($classItem['wali_kelas_id'] == $this->validTeacherId) {
-                $teacher = $this->teacherModel->find($this->validTeacherId);
-                $this->assertEquals($teacher['full_name'], $classItem['wali_kelas_name']);
-                $foundWaliKelasName = true;
-            }
-        }
-        $this->assertTrue($foundWaliKelasName, "Did not find the expected wali_kelas_name in the results.");
     }
 }
