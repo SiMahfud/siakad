@@ -92,16 +92,22 @@ class ScheduleModel extends Model
     public function getScheduleDetails(array $filters = [])
     {
         $builder = $this->select('
-                schedules.*,
+                schedules.id as schedule_id, schedules.class_id, schedules.subject_id, schedules.teacher_id,
+                schedules.day_of_week, schedules.start_time, schedules.end_time, schedules.academic_year,
+                schedules.semester, schedules.notes, schedules.created_at, schedules.updated_at,
                 classes.class_name,
                 subjects.subject_name,
                 teachers.full_name as teacher_name
             ')
-            ->from('schedules schedules') // Alias the main table
+            // ->from('schedules schedules') // Removed alias
             ->join('classes', 'classes.id = schedules.class_id')
             ->join('subjects', 'subjects.id = schedules.subject_id')
             ->join('teachers', 'teachers.id = schedules.teacher_id');
 
+        // Ensure filters use the table name `schedules` if no alias, or are simple field names if context is clear
+        if (!empty($filters['schedules.id'])) { // If filter key is specific
+            $builder->where('schedules.id', $filters['schedules.id']);
+        }
         if (!empty($filters['class_id'])) {
             $builder->where('schedules.class_id', $filters['class_id']);
         }
