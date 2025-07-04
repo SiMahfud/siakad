@@ -51,22 +51,43 @@ class SubjectController extends BaseController
             'is_pilihan'   => $this->request->getPost('is_pilihan'), // '0' or '1'
         ];
 
-        // Ensure boolean is correctly handled for is_pilihan
-        $subjectData['is_pilihan'] = ($subjectData['is_pilihan'] == '1');
+        // Convert 'is_pilihan' to integer 0 or 1 for validation and DB
+        $subjectData['is_pilihan'] = ($subjectData['is_pilihan'] == '1') ? 1 : 0;
 
 
         if (!$this->validate($validationRules)) {
-            // Convert boolean back for form repopulation if needed, or handle in view
-            $this->request->setGlobal('request', $this->request->withParsedBody(array_merge($this->request->getPost(), ['is_pilihan' => $this->request->getPost('is_pilihan')])));
-            return redirect()->back()->withInput()->with('validation', $this->validator);
+            // Re-render the 'new' view with validation errors
+            $data = [
+                'title'      => 'Add New Subject',
+                'validation' => $this->validator,
+                // 'subject' field is not needed for 'new' view, but old input will be repopulated by withInput()
+                // Ensure 'is_pilihan' is passed back correctly if needed by view's old() specifically
+                // The view's old('is_pilihan', '0') handles default for new form.
+            ];
+            // It's important that old input is available. `withInput()` handles this if redirecting.
+            // When rendering view directly, CI by default makes $validation available.
+            // For `old()` to work with the submitted values, they need to be available.
+            // The `redirect()->back()->withInput()` does this.
+            // If rendering view directly, we need to pass old input if view uses `old()`.
+            // The view uses `old('subject_name')` etc.
+            // The $this->request->getPost() is implicitly available to `old()` when view is rendered.
+            // The $this->validator is passed as 'validation'.
+             return view('admin/subjects/new', $data);
         }
 
         if ($this->subjectModel->insert($subjectData)) {
             return redirect()->to('/admin/subjects')->with('success', 'Subject added successfully.');
         } else {
-            // Convert boolean back for form repopulation if needed
-            $this->request->setGlobal('request', $this->request->withParsedBody(array_merge($this->request->getPost(), ['is_pilihan' => $this->request->getPost('is_pilihan')])));
-            return redirect()->back()->withInput()->with('error', 'Failed to add subject. Check data and try again.');
+            // Failed to insert, likely a DB issue not caught by validation.
+            // Re-render the 'new' view with an error message.
+            $dbError = $this->subjectModel->errors();
+            $data = [
+                'title'      => 'Add New Subject',
+                'validation' => $this->validator, // Pass validator (might be empty if validation passed but insert failed)
+                'custom_error' => 'Failed to save the subject. DB Errors: ' . print_r($dbError, true),
+            ];
+            // old() helper should pick up POST data automatically when re-rendering view.
+            return view('admin/subjects/new', $data);
         }
     }
 
@@ -115,20 +136,32 @@ class SubjectController extends BaseController
             'subject_code' => $this->request->getPost('subject_code') ?: null,
             'is_pilihan'   => $this->request->getPost('is_pilihan'), // '0' or '1'
         ];
-        // Ensure boolean is correctly handled for is_pilihan
-        $subjectData['is_pilihan'] = ($subjectData['is_pilihan'] == '1');
+        // Convert 'is_pilihan' to integer 0 or 1 for validation and DB
+        $subjectData['is_pilihan'] = ($subjectData['is_pilihan'] == '1') ? 1 : 0;
 
         if (!$this->validate($validationRules)) {
-            // Convert boolean back for form repopulation if needed
-            $this->request->setGlobal('request', $this->request->withParsedBody(array_merge($this->request->getPost(), ['is_pilihan' => $this->request->getPost('is_pilihan')])));
-            return redirect()->back()->withInput()->with('validation', $this->validator);
+            // Re-render the 'edit' view with validation errors
+            $data = [
+                'title'      => 'Edit Subject',
+                'subject'    => $subjectEntry, // Pass existing subject data back to the view
+                'validation' => $this->validator,
+            ];
+            // As with create, old input is available via $this->request->getPost() to `old()` helper
+            return view('admin/subjects/edit', $data);
         }
 
         if ($this->subjectModel->update($id, $subjectData)) {
             return redirect()->to('/admin/subjects')->with('success', 'Subject updated successfully.');
         } else {
-            $this->request->setGlobal('request', $this->request->withParsedBody(array_merge($this->request->getPost(), ['is_pilihan' => $this->request->getPost('is_pilihan')])));
-            return redirect()->back()->withInput()->with('error', 'Failed to update subject. Check data and try again.');
+            // Failed to update, likely a DB issue not caught by validation.
+            // Re-render the 'edit' view with an error message.
+            $data = [
+                'title'      => 'Edit Subject',
+                'subject'    => $subjectEntry, // Pass existing subject data back
+                'validation' => $this->validator,
+                'custom_error' => 'Failed to update the subject in the database. Please try again.',
+            ];
+            return view('admin/subjects/edit', $data);
         }
     }
 

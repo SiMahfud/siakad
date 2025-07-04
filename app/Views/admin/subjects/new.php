@@ -29,7 +29,7 @@
                 </div>
             <?php endif; ?>
 
-            <form action="<?= site_url('admin/subjects/create') ?>" method="post">
+            <form action="<?= site_url('admin/subjects') ?>" method="post">
                 <?= csrf_field() ?>
 
                 <div class="mb-3">
