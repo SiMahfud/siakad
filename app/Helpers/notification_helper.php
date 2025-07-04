@@ -8,13 +8,26 @@ if (!function_exists('get_unread_notifications_count')) {
      */
     function get_unread_notifications_count(): int
     {
-        $currentUser = auth()->user();
+        if (!function_exists('current_user_id')) {
+            helper('auth'); // Ensure auth_helper is loaded
+        }
+
+        $userId = current_user_id();
+        if (!$userId) {
+            return 0;
+        }
+
+        $userModel = new \App\Models\UserModel(); // Assuming UserModel can fetch user by ID
+        $currentUser = $userModel->find($userId); // Or however you get the full user object
+
         if (!$currentUser) {
             return 0;
         }
 
         $notificationModel = new \App\Models\NotificationModel();
-        return $notificationModel->countUnreadNotifications($currentUser->id);
+        // Assuming $currentUser is an array and has an 'id' key, or an object with an id property.
+        // Based on UserModel's $returnType = 'array', it will be an array.
+        return $notificationModel->countUnreadNotifications($currentUser['id']);
     }
 }
 
@@ -27,13 +40,24 @@ if (!function_exists('get_unread_notifications')) {
      */
     function get_unread_notifications(int $limit = 5): array
     {
-        $currentUser = auth()->user();
+        if (!function_exists('current_user_id')) {
+            helper('auth'); // Ensure auth_helper is loaded
+        }
+
+        $userId = current_user_id();
+        if (!$userId) {
+            return [];
+        }
+
+        $userModel = new \App\Models\UserModel();
+        $currentUser = $userModel->find($userId);
+
         if (!$currentUser) {
             return [];
         }
 
         $notificationModel = new \App\Models\NotificationModel();
-        return $notificationModel->getUnreadNotifications($currentUser->id, $limit);
+        return $notificationModel->getUnreadNotifications($currentUser['id'], $limit);
     }
 }
 

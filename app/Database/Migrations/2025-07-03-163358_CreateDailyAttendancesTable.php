@@ -61,6 +61,6 @@ class CreateDailyAttendancesTable extends Migration
 
     public function down()
     {
-        //
+        $this->forge->dropTable('daily_attendances');
     }
 }
