@@ -1,6 +1,6 @@
 # AGENTS.md - Catatan untuk Pengembang SI-AKADEMIK
 
-*Terakhir Diperbarui: 2025-07-03* (Update setelah implementasi Modul Absensi Harian Umum dan penyesuaian rekap)
+*Terakhir Diperbarui: 2025-07-04* (Update status testing model Assessment, Attendance, DailyAttendance dan Guru/AssessmentController)
 
 Dokumen ini berisi catatan, konvensi, dan panduan untuk agen (termasuk AI atau pengembang manusia) yang bekerja pada proyek SI-AKADEMIK SMAN 1 Campurdarat.
 
@@ -531,9 +531,9 @@ Berikut adalah status cakupan testing untuk modul dan fungsionalitas utama per t
 *   `TeacherModel`: **[Selesai]** (CRUD, Validasi)
 *   `ClassModel`: **[Selesai]** (CRUD, Validasi)
 *   `StudentModel`: **[Selesai]** (CRUD, Validasi)
-*   `AssessmentModel`: **[Belum Dimulai]**
-*   `AttendanceModel`: **[Belum Dimulai]**
-*   `DailyAttendanceModel`: **[Belum Dimulai]**
+*   `AssessmentModel`: **[Selesai]** (CRUD dasar, validasi, method helper utama)
+*   `AttendanceModel`: **[Selesai]** (CRUD dasar, validasi, method helper utama)
+*   `DailyAttendanceModel`: **[Selesai]** (CRUD dasar, validasi, method helper utama)
 *   `NotificationModel`: **[Belum Dimulai]**
 *   `P5DimensionModel`: **[Belum Dimulai]**
 *   `P5ElementModel`: **[Belum Dimulai]**
@@ -569,7 +569,7 @@ Berikut adalah status cakupan testing untuk modul dan fungsionalitas utama per t
 *   `Admin/TeacherController`: **[Selesai]** (Test akses dasar dan CRUD lengkap diimplementasikan)
 
 **Controller - Guru:**
-*   `Guru/AssessmentController`: **[Belum Dimulai]**
+*   `Guru/AssessmentController`: **[Sebagian Selesai]** (Akses dasar, GET/POST utama, AJAX subject, CRUD assessment)
 *   `Guru/AttendanceController`: **[Belum Dimulai]**
 *   `Guru/ClassViewController`: **[Belum Dimulai]**
 *   `Guru/P5AssessmentController`: **[Belum Dimulai]**

@@ -48,7 +48,7 @@ class ClassSeeder extends Seeder
                                        ->where('academic_year', $classData['academic_year'])
                                        ->first();
             if ($existingClass) {
-                echo "Class {$classData['class_name']} ({$classData['academic_year']}) already exists. Fetching ID.\n";
+                // echo "Class {$classData['class_name']} ({$classData['academic_year']}) already exists. Fetching ID.\n";
                 if ($classData['class_name'] === 'X-A') {
                     self::$classX_A_Id = $existingClass['id'];
                 } elseif ($classData['class_name'] === 'XI-IPA-1') {
@@ -58,14 +58,14 @@ class ClassSeeder extends Seeder
             }
 
             if ($classId = $classModel->insert($classData)) {
-                echo "Class {$classData['class_name']} ({$classData['academic_year']}) created successfully.\n";
+                // echo "Class {$classData['class_name']} ({$classData['academic_year']}) created successfully.\n";
                 if ($classData['class_name'] === 'X-A') {
                     self::$classX_A_Id = $classId;
                 } elseif ($classData['class_name'] === 'XI-IPA-1') {
                     self::$classXI_IPA1_Id = $classId;
                 }
             } else {
-                echo "Failed to create class {$classData['class_name']}. Errors: " . implode(', ', $classModel->errors()) . "\n";
+                // echo "Failed to create class {$classData['class_name']}. Errors: " . implode(', ', $classModel->errors()) . "\n";
             }
         }
     }

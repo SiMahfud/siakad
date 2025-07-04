@@ -42,23 +42,23 @@ class ClassStudentSeeder extends Seeder
                                         ->get()->getRowArray();
 
             if ($existingAssignment) {
-                echo "Student {$assignmentData['student_id']} is already in class {$assignmentData['class_id']}. Skipping.\n";
+                // echo "Student {$assignmentData['student_id']} is already in class {$assignmentData['class_id']}. Skipping.\n";
                 continue;
             }
 
             // Using Query Builder directly as ClassStudentModel might not have complex logic
             // and to avoid issues if the model doesn't exist or isn't configured for insertBatch.
             if ($this->db->table('class_student')->insert($assignmentData)) {
-                 echo "Assigned student {$assignmentData['student_id']} to class {$assignmentData['class_id']}.\n";
+                 // echo "Assigned student {$assignmentData['student_id']} to class {$assignmentData['class_id']}.\n";
             } else {
                 // $errors = $classStudentModel->errors(); // If using model
                 // For DB builder, error handling might be different or rely on DB exceptions.
-                echo "Failed to assign student {$assignmentData['student_id']} to class {$assignmentData['class_id']}.\n";
+                // echo "Failed to assign student {$assignmentData['student_id']} to class {$assignmentData['class_id']}.\n";
             }
         }
 
         if (empty($assignments)) {
-            echo "No student/class IDs available from previous seeders to create class-student assignments.\n";
+            // echo "No student/class IDs available from previous seeders to create class-student assignments.\n";
         }
     }
 }

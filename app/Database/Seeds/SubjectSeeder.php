@@ -30,14 +30,14 @@ class SubjectSeeder extends Seeder
         foreach ($subjects as $subjectData) {
             // Check if subject with the same code already exists
             if ($subjectModel->where('subject_code', $subjectData['subject_code'])->first()) {
-                echo "Subject with code {$subjectData['subject_code']} already exists. Skipping.\n";
+                // echo "Subject with code {$subjectData['subject_code']} already exists. Skipping.\n";
                 continue;
             }
 
             if ($subjectModel->insert($subjectData)) {
-                echo "Subject {$subjectData['subject_name']} created successfully.\n";
+                // echo "Subject {$subjectData['subject_name']} created successfully.\n";
             } else {
-                echo "Failed to create subject {$subjectData['subject_name']}. Errors: " . implode(', ', $subjectModel->errors()) . "\n";
+                // echo "Failed to create subject {$subjectData['subject_name']}. Errors: " . implode(', ', $subjectModel->errors()) . "\n";
             }
         }
     }
