@@ -30,6 +30,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
     $dataIndukEditFilter = 'auth:Administrator Sistem,Staf Tata Usaha'; // For CRUD actions beyond viewing
 
     $routes->resource('students', ['controller' => 'StudentController', 'filter' => $dataIndukFilter]);
+    $routes->post('students/update/(:num)', 'StudentController::update/$1', ['filter' => $dataIndukEditFilter]); // Added for form submission
     $routes->resource('teachers', ['controller' => 'TeacherController', 'filter' => $dataIndukFilter]);
     $routes->resource('subjects', ['controller' => 'SubjectController', 'filter' => $dataIndukFilter]);
 

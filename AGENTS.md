@@ -562,7 +562,7 @@ Berikut adalah status cakupan testing untuk modul dan fungsionalitas utama per t
 *   `Admin/RecapController`: **[Belum Dimulai]**
 *   `Admin/ScheduleController`: **[Belum Dimulai]**
 *   `Admin/SettingController`: **[Belum Dimulai]**
-*   `Admin/StudentController`: **[Dihapus - Test Lama Bermasalah]**
+*   `Admin/StudentController`: **[Selesai]** (Test akses dasar dan CRUD lengkap diimplementasikan)
 *   `Admin/SubjectController`: **[Dihapus - Test Lama Bermasalah]**
 *   `Admin/SubjectOfferingController`: **[Belum Dimulai]**
 *   `Admin/TeacherClassSubjectAssignmentController`: **[Belum Dimulai]**
