@@ -212,33 +212,34 @@ class ScheduleControllerTest extends CIUnitTestCase
 
         $this->assertNotEquals($originalSchedule['notes'], $updatedData['notes']);
 
-        // WORKAROUND: Commenting out this test due to persistent redirect/validation issues in test environment
-        // $result = $this->withSession([
-        //     'is_logged_in' => true, 'user_id' => $this->adminUser['id'], 'role_id' => $this->adminUser['role_id']
-        // ])->call('put', "admin/schedules/{$scheduleId}", $updatedData);
+        // Fix: Use the explicit POST route for updates
+        $result = $this->withSession([
+            'is_logged_in' => true, 'user_id' => $this->adminUser['id'], 'role_id' => $this->adminUser['role_id']
+        ])->call('post', "admin/schedules/update/{$scheduleId}", $updatedData);
 
-        // if (!$result->isRedirect()) {
-        //     // If not a redirect, it's likely a validation error or other issue.
-        //     // Check for session errors.
-        //     $sessionError = session()->getFlashdata('error');
-        //     $validation = service('validation')->getErrors(); // Get validation errors directly
 
-        //     $debugMessage = "Update did not redirect.";
-        //     if ($sessionError) {
-        //         $debugMessage .= " Session error: " . $sessionError;
-        //     }
-        //     if (!empty($validation)) {
-        //         $debugMessage .= " Validation errors: " . json_encode($validation);
-        //     }
-        //     // Log this message or use it in an assertion if appropriate
-        //     log_message('debug', $debugMessage);
-        //      // For now, let the original assertions fail to see their specific messages.
-        // }
+        if (!$result->isRedirect()) {
+            // If not a redirect, it's likely a validation error or other issue.
+            // Check for session errors.
+            $sessionError = session()->getFlashdata('error');
+            $validation = service('validation')->getErrors(); // Get validation errors directly
 
-        // $result->assertRedirectTo(site_url('admin/schedules'));
-        // $result->assertSessionHas('success', 'Schedule updated successfully.');
-        // $this->seeInDatabase('schedules', ['id' => $scheduleId, 'notes' => 'Updated Schedule Notes']);
-        $this->markTestSkipped('Skipping testUpdateScheduleValidData due to unresolved redirect/validation issues in test environment.');
+            $debugMessage = "Update did not redirect.";
+            if ($sessionError) {
+                $debugMessage .= " Session error: " . $sessionError;
+            }
+            if (!empty($validation)) {
+                $debugMessage .= " Validation errors: " . json_encode($validation);
+            }
+            // Log this message or use it in an assertion if appropriate
+            log_message('debug', $debugMessage);
+             // For now, let the original assertions fail to see their specific messages.
+        }
+
+        $result->assertRedirectTo(site_url('admin/schedules'));
+        $result->assertSessionHas('success', 'Schedule updated successfully.');
+        $this->seeInDatabase('schedules', ['id' => $scheduleId, 'notes' => 'Updated Schedule Notes - Simpler']);
+        // $this->markTestSkipped('Skipping testUpdateScheduleValidData due to unresolved redirect/validation issues in test environment.');
     }
 
     public function testDeleteSchedule()
