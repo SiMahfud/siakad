@@ -59,6 +59,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'au
         'controller' => 'ScheduleController',
         'filter'     => 'auth:Administrator Sistem,Staf Tata Usaha'
     ]);
+    $routes->post('schedules/update/(:num)', 'ScheduleController::update/$1', ['filter' => 'auth:Administrator Sistem,Staf Tata Usaha']);
     // Note: 'delete' method in resource routes defaults to GET if not specified otherwise or handled by form method.
     // Our form uses POST for delete, which is good.
 
