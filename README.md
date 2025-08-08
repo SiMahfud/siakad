@@ -1,170 +1,166 @@
-# SI-AKADEMIK - Sistem Informasi Akademik Harian SMAN 1 Campurdarat
+# SI-AKADEMIK - Sistem Informasi Akademik SMAN 1 Campurdarat
 
-Versi: 1.0 (Pengembangan Awal)
-Tanggal Proyek Dimulai: 30 Juni 2025 (sesuai dokumen desain)
+Selamat datang di SI-AKADEMIK, sebuah Sistem Informasi Akademik Harian yang dirancang khusus untuk mendukung proses pembelajaran di SMAN 1 Campurdarat sesuai dengan Kurikulum Merdeka.
 
-## Deskripsi Aplikasi
-
-SI-AKADEMIK adalah aplikasi Sistem Informasi Akademik Harian yang dirancang khusus untuk SMAN 1 Campurdarat. Aplikasi ini bertujuan untuk mendukung implementasi Kurikulum Merdeka dengan fokus utama pada pencatatan aktivitas pembelajaran harian dan pengelolaan penilaian (formatif dan sumatif) oleh guru secara efisien.
-
-Sistem ini tidak dirancang untuk menghasilkan rapor final secara langsung. Sebaliknya, SI-AKADEMIK akan berfungsi sebagai "Bank Nilai" yang terstruktur dan terpusat. Fitur kunci dari sistem ini adalah kemampuannya untuk mengekspor data nilai dalam format Excel (.xlsx) yang kompatibel dan siap diimpor ke dalam aplikasi e-Rapor Kemdikbud yang sudah digunakan oleh sekolah.
-
-### Tujuan Utama Pengembangan:
-*   **Sentralisasi Data Penilaian**: Menciptakan satu sumber data tunggal untuk semua jenis penilaian.
-*   **Efisiensi Kerja Guru**: Memudahkan guru dalam mengelola dan mendokumentasikan nilai.
-*   **Transparansi Proses Pembelajaran**: Memberikan akses bagi siswa dan orang tua untuk memantau perkembangan belajar.
-*   **Integrasi dengan e-Rapor**: Menyederhanakan proses pengisian rapor akhir semester.
-*   **Mendukung Kurikulum Merdeka**: Memfasilitasi administrasi mata pelajaran pilihan dan penilaian Projek Penguatan Profil Pelajar Pancasila (P5).
-
-### Spesifikasi Teknologi (Saat Ini):
-*   **Backend Framework**: CodeIgniter 4
-*   **Bahasa Pemrograman**: PHP 8.3.6 (Desain awal: PHP 7.4+)
-*   **Frontend**: HTML, CSS, JavaScript (Telah diintegrasikan dengan Bootstrap 5 via CDN)
-*   **Database**: SQLite (untuk pengembangan awal, sesuai desain bisa MySQL)
-
-## Status Implementasi Fitur
-
-Berikut adalah status implementasi fitur berdasarkan dokumen desain:
-
-### Modul Inti & Administrasi
-
-*   **[X] Modul Autentikasi & Manajemen Pengguna (Dasar)**
-    *   [X] Struktur Tabel Database (`roles`, `users`) & Model (`UserModel`, `RoleModel`)
-    *   [X] Login, Logout, Manajemen Akun (CRUD Admin), Hak Akses Dasar & Halaman 403
-*   **[X] Modul Manajemen Data Induk (MVP)**
-    *   **Data Siswa**: [X] CRUD Lengkap (DB, Model, Controller, View)
-    *   **Data Guru**: [X] CRUD Lengkap (DB, Model, Controller, View)
-    *   **Data Mata Pelajaran**: [X] CRUD Lengkap (DB, Model, Controller, View)
-    *   **Data Kelas (Rombongan Belajar)**: [X] CRUD (DB, Model, Controller, View), termasuk pemilihan Wali Kelas & manajemen siswa per kelas.
-    *   **Manajemen Penugasan Guru-Kelas-Mapel (Admin)**: [X] CRUD Dasar (DB, Model, Controller, View)
-
-### Modul Akademik & Penilaian
-
-*   **[X] Modul Akademik Harian (MVP & Penyempurnaan)**
-    *   [X] Manajemen Jadwal Pelajaran (Admin: CRUD; Guru & Siswa: View)
-    *   [X] Input Presensi Harian oleh Guru
-    *   [X] Input Presensi Harian Umum per Kelas (oleh Admin/Staf TU).
-    *   [X] Rekapitulasi Presensi (View, Filter Rentang Tanggal, Export untuk Admin/Wali Kelas/Kepala Sekolah). **Dilengkapi Kalender Presensi Visual (Harian Umum & Per Jam Pelajaran) & Grafik Tren Kehadiran per Kelas.**
-    *   [X] **Notifikasi Otomatis Ketidakhadiran Siswa** (untuk Wali Kelas, Ortu, Admin) berdasarkan threshold (Alfa beruntun, total Alfa, total Sakit/Izin).
-    *   [X] Pemilihan Mata Pelajaran Pilihan (Siswa Fase F: Pilih; Admin: Setup)
-    *   [X] Rekapitulasi Pilihan Mata Pelajaran (View, Filter, Export untuk Admin/Wali Kelas/Kepala Sekolah)
-*   **[X] Modul Penilaian (Bank Nilai) (Fungsional Dasar)**
-    *   [X] Struktur Data & Model (`assessments`) dengan validasi skor & tanggal.
-    *   [X] Input Nilai oleh Guru (pemilihan konteks kelas/mapel, form input batch dinamis per siswa).
-    *   [X] Penyimpanan & Validasi Batch Nilai (formatif/sumatif), termasuk error handling.
-    *   [X] Rekapitulasi & Pengelolaan Nilai (Lihat, Edit, Hapus oleh Guru; Lihat oleh Siswa & Ortu).
-    *   [X] Filter cerdas untuk Guru (kelas diajar/wali, mapel diajar di kelas).
-
-### Modul Projek Penguatan Profil Pelajar Pancasila (P5)
-
-*   **[X] Pengelolaan Data & Struktur P5 (Admin/Koordinator)**
-    *   [X] Desain Database & Model (8 tabel: `p5_themes`, `p5_projects`, `p5_dimensions`, `p5_elements`, `p5_sub_elements`, `p5_project_target_sub_elements`, `p5_project_students`, `p5_assessments`).
-    *   [X] CRUD untuk Master Data P5 (Tema, Dimensi, Elemen, Sub-elemen).
-    *   [X] CRUD untuk Projek P5 (termasuk pemilihan tema, target sub-elemen).
-    *   [X] Alokasi Siswa ke Projek P5.
-    *   [X] Penentuan fasilitator/guru pendamping projek P5 oleh Admin.
-*   **[X] Fitur Penilaian P5 (Fasilitator/Guru) (Dasar - Hak Akses Disempurnakan)**
-    *   [X] Antarmuka input penilaian kualitatif (BB, MB, BSH, SB) & catatan deskriptif per siswa per sub-elemen.
-    *   [X] Hak akses input penilaian P5 kini dibatasi hanya untuk fasilitator yang ditugaskan pada projek tersebut (Administrator Sistem tetap memiliki akses penuh).
-*   **[X] Fitur Pelaporan P5 (Dasar & Komprehensif Sebagian)**
-    *   [X] Rekapitulasi penilaian P5 per projek (per siswa, per sub-elemen) untuk Admin/Koordinator, **dengan visualisasi Bar Chart per sub-elemen**.
-    *   [X] Rekapitulasi penilaian P5 per siswa (lintas projek) untuk Admin/Koordinator, **dengan visualisasi Radar Chart untuk profil dimensi siswa**.
-    *   [X] Ekspor data P5 untuk e-Rapor (berdasarkan format spesifik yang diberikan).
-
-### Modul Pendukung
-
-*   **[X] Modul Ekspor ke e-Rapor (Fitur Kunci - Penyempurnaan Lanjutan)**
-    *   [X] Antarmuka Wali Kelas untuk parameter ekspor (Kelas, Tahun Ajaran, Semester).
-    *   [X] Proses penarikan data nilai sumatif (rata-rata per mapel) dengan filter semester yang disempurnakan berdasarkan rentang tanggal dan **penggunaan kode mata pelajaran** pada header output Excel.
-    *   [X] Penyusunan & Unduh file Excel (.xlsx).
-        *   *Catatan: Pengguna tetap disarankan memverifikasi output Excel dengan template e-Rapor aktual.*
-    *   [X] Ekspor data P5 (diimplementasikan sebagai fitur terpisah di bawah modul P5 Admin).
-
-### Fitur Berdasarkan Peran Pengguna
-*   **Administrator Sistem**:
-    *   [X] Mengelola akun dan hak akses semua pengguna (CRUD Users).
-    *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
-    *   [X] Mengelola Jadwal Pelajaran (CRUD).
-    *   [X] Mengelola Penawaran Mata Pelajaran Pilihan (CRUD).
-    *   [X] Melihat Rekap Presensi.
-    *   [X] Melihat Rekap Pemilihan Mapel.
-    *   [X] Mengelola data master tema, dimensi, elemen, sub-elemen P5 (CRUD).
-    *   [X] Mengelola Projek P5 (CRUD, alokasi siswa, penentuan fasilitator).
-    *   [X] Melihat laporan P5 per projek (dengan visualisasi).
-    *   [X] Melihat laporan P5 per siswa (dengan visualisasi).
-    *   [X] Melakukan ekspor data P5 ke format e-Rapor.
-    *   [X] Mengatur Konfigurasi Global Sekolah (Nama Sekolah, Alamat, Kepsek, Tahun/Semester Aktif, Kode Semester e-Rapor).
-    *   [X] Menginput dan mengelola Absensi Harian Umum per kelas.
-    *   [ ] Maintenance dan backup database.
-*   **Staf Tata Usaha (TU)**:
-    *   [X] Mengelola Data Induk (Siswa, Guru, Mapel, Kelas - CRUD Penuh).
-    *   [X] Mengatur pembagian siswa ke dalam rombel.
-    *   [X] Mengelola Jadwal Pelajaran (CRUD).
-    *   [X] Mengelola Penawaran Mata Pelajaran Pilihan (CRUD).
-    *   [X] Menginput dan mengelola Absensi Harian Umum per kelas.
-    *   [X] Melihat Rekap Presensi.
-    *   [X] Melihat Rekap Pemilihan Mapel.
-    *   [X] (Jika diberi akses) Mengelola data master P5 dan Projek P5.
-    *   [X] Menerima Notifikasi terkait absensi siswa di kelas perwalian (jika juga Wali Kelas).
-*   **Kepala Sekolah**:
-    *   [X] Akses read-only ke Data Induk (via Controller, halaman index).
-    *   [X] Melihat Rekap Presensi (termasuk visualisasi kalender/grafik per kelas).
-    *   [X] Melihat Rekap Pemilihan Mapel.
-    *   [X] Melihat laporan P5 per projek (dengan visualisasi).
-    *   [X] Melihat laporan P5 per siswa (dengan visualisasi).
-    *   [X] Dasbor Eksekutif Sederhana (Jumlah Siswa, Guru, Kelas, P5 Aktif, Rata-rata Kehadiran).
-    *   [ ] Memantau aktivitas guru.
-    *   [ ] Membuat dan menyebarkan pengumuman.
-*   **Guru Mata Pelajaran**:
-    *   [X] Melihat Jadwal Mengajar.
-    *   [X] Menginput Presensi Harian.
-    *   [X] Menginput nilai asesmen (formatif, sumatif) - Alur dasar input dan penyimpanan batch sudah ada, termasuk edit/hapus.
-    *   [X] Melihat daftar kelas yang diajar dan siswa di dalamnya.
-    *   [X] Menerima Notifikasi terkait absensi siswa di kelas perwaliannya (jika Wali Kelas).
-    *   [ ] Mengunggah materi ajar/tugas.
-*   **Wali Kelas**:
-    *   (Semua fitur Guru Mata Pelajaran)
-    *   [X] Melihat daftar siswa di kelas perwalian.
-    *   [X] Memantau rekapitulasi absensi kelas perwalian (via Rekap Presensi, termasuk visualisasi kalender/grafik).
-    *   [X] Menerima Notifikasi terkait absensi siswa di kelas perwaliannya.
-    *   [X] Melihat Rekap Pemilihan Mapel (untuk memantau pilihan siswa secara umum, jika relevan).
-    *   [X] Ekspor Data Nilai Akademik ke e-Rapor (dengan kode mapel dan filter semester yang disempurnakan).
-    *   [ ] Menginput catatan perilaku/perkembangan siswa.
-    *   [ ] Validasi Kelengkapan Nilai.
-    *   [ ] Mengelola Projek P5 (jika ditunjuk sebagai Koordinator P5).
-    *   [ ] Mengelola Projek P5 (jika ditunjuk sebagai Koordinator P5).
-*   **Siswa**:
-    *   [X] Melihat Jadwal Pelajaran Kelas.
-    *   [X] Melakukan Pemilihan Mata Pelajaran Pilihan (Fase F).
-    *   [X] Melihat Notifikasi terkait dirinya (jika ada, misal dari Wali Kelas).
-    *   [X] Melihat Rekap Absensi Pribadi (dengan tabel detail dan kalender visual).
-    *   [X] Melihat transkrip nilai sementara.
-*   **Orang Tua / Wali**:
-    *   [X] Menerima Notifikasi terkait absensi anaknya.
-    *   [X] Memantau Kehadiran dan Rekap Absensi Anak (dengan tabel detail dan kalender visual per anak).
-    *   [ ] Melihat status pemilihan mapel anak (Belum).
-    *   [X] Melihat transkrip nilai sementara anak.
-    *   [ ] Menerima pengumuman dan pesan.
-
-## Setup Pengembangan Awal
-
-1.  Clone repositori ini.
-2.  Pastikan PHP (versi 8.1+ direkomendasikan, saat ini menggunakan 8.3.6) dan Composer terinstal.
-3.  Jalankan `composer install` untuk menginstal dependensi.
-4.  Database SQLite (`writable/database.sqlite`) akan dibuat dan dimigrasikan secara otomatis saat pertama kali menjalankan migrasi.
-5.  Jalankan migrasi: `php spark migrate`
-6.  Jalankan seeder untuk mengisi data awal: `php spark db:seed DatabaseSeeder`
-    *   Perintah ini akan membuat peran default, user default untuk setiap peran, data guru dan siswa terkait, serta beberapa data master untuk mata pelajaran, kelas, dan penugasan mengajar.
-    *   Beberapa user default yang bisa digunakan untuk login (password untuk semua: `password123`):
-        *   Administrator Sistem: `admin`
-        *   Staf Tata Usaha: `staf`
-        *   Kepala Sekolah: `kepsek`
-        *   Guru 1: `guru1`
-        *   Guru 2: `guru2`
-        *   Siswa 1: `siswa1`
-        *   Orang Tua 1: `ortu1`
-7.  Jalankan server pengembangan: `php spark serve`
-8.  Akses aplikasi melalui `http://localhost:8080`. Fitur admin data induk tersedia di bawah path `/admin/...` (misal, `/admin/students`).
+Aplikasi ini berfungsi sebagai **"Bank Nilai"** yang terpusat dan terstruktur, memudahkan guru dalam mencatat penilaian formatif dan sumatif. Tujuan utamanya adalah menyederhanakan administrasi akademik dan menyediakan data yang akurat dan siap pakai untuk aplikasi **e-Rapor Kemdikbud**, bukan untuk menggantikannya.
 
 ---
-*Readme ini bersifat sementara dan akan diperbarui seiring progres pengembangan.*
+
+## ✨ Fitur Utama
+
+SI-AKADEMIK menyediakan fungsionalitas yang disesuaikan untuk setiap peran di lingkungan sekolah.
+
+### Untuk Administrasi Sekolah (Admin, Staf TU, Kepala Sekolah)
+- **Manajemen Data Induk**: CRUD (Create, Read, Update, Delete) penuh untuk data Siswa, Guru, Mata Pelajaran, dan Kelas (Rombel).
+- **Manajemen Akademik**: Mengelola jadwal pelajaran, penugasan guru ke kelas, dan penawaran mata pelajaran pilihan.
+- **Manajemen Pengguna**: Mengelola akun dan hak akses untuk semua pengguna sistem.
+- **Monitoring & Pelaporan**: Melihat rekapitulasi presensi dan pilihan mata pelajaran, serta mengakses dasbor eksekutif dengan ringkasan data sekolah (khusus Kepala Sekolah).
+- **Manajemen P5**: Mengelola seluruh aspek Projek Penguatan Profil Pelajar Pancasila, mulai dari tema, projek, hingga alokasi siswa dan fasilitator.
+- **Konfigurasi Sistem**: Mengatur parameter global sekolah seperti tahun ajaran dan semester aktif.
+
+### Untuk Guru (Guru & Wali Kelas)
+- **Input Penilaian**: Mencatat nilai formatif dan sumatif dengan antarmuka yang dinamis dan efisien.
+- **Input Presensi**: Mencatat kehadiran siswa per jam pelajaran dengan mudah.
+- **Akses Terfilter**: Melihat jadwal mengajar, daftar kelas, dan siswa yang relevan secara otomatis.
+- **Rekapitulasi**: Memantau rekap nilai dan presensi untuk kelas yang diampu.
+- **Ekspor e-Rapor (Wali Kelas)**: Mengekspor data nilai sumatif semesteran ke format Excel (.xlsx) yang kompatibel dengan aplikasi e-Rapor.
+- **Penilaian P5**: Menginput penilaian kualitatif (BB, MB, BSH, SB) untuk siswa dalam projek P5 yang difasilitasi.
+
+### Untuk Siswa
+- **Transparansi Akademik**: Melihat jadwal pelajaran, rekap presensi pribadi, dan transkrip nilai sementara.
+- **Pemilihan Mata Pelajaran**: Siswa Fase F dapat melakukan pemilihan mata pelajaran pilihan secara mandiri.
+- **Notifikasi**: Menerima notifikasi penting terkait aktivitas akademik.
+
+### Untuk Orang Tua
+- **Monitoring Anak**: Memantau rekapitulasi kehadiran dan transkrip nilai anak-anak mereka.
+- **Notifikasi**: Menerima notifikasi otomatis jika terdeteksi tingkat ketidakhadiran anak yang tinggi.
+
+---
+
+## 🚀 Tumpukan Teknologi
+
+*   **Framework**: CodeIgniter 4.6.1
+*   **Bahasa**: PHP 8.3.6
+*   **Database**: SQLite (pengembangan) & MySQL (target produksi)
+*   **Frontend**: Bootstrap 5, jQuery, DataTables.net, Chart.js, FullCalendar.js (via CDN)
+*   **Manajemen Dependensi**: Composer
+
+---
+
+## 🏁 Memulai
+
+Panduan ini untuk pengembang atau pengguna teknis yang ingin menjalankan aplikasi ini secara lokal.
+
+### Prasyarat
+- PHP 8.1+
+- Composer 2.x
+- Akses ke terminal/command line
+
+### Instalasi & Pengaturan
+1.  **Clone Repositori**:
+    ```bash
+    git clone https://github.com/username/si-akademik.git
+    cd si-akademik
+    ```
+2.  **Instal Dependensi**:
+    ```bash
+    composer install
+    ```
+3.  **Salin File Environment**:
+    Salin file `env` menjadi `.env` dan sesuaikan jika perlu (misalnya, `CI_ENVIRONMENT` ke `development`).
+    ```bash
+    cp env .env
+    ```
+4.  **Jalankan Migrasi Database**:
+    Perintah ini akan membuat struktur tabel database. Untuk SQLite, file database akan otomatis dibuat di `writable/database.sqlite`.
+    ```bash
+    php spark migrate
+    ```
+5.  **Jalankan Database Seeder**:
+    Perintah ini akan mengisi database dengan data awal yang penting, termasuk peran dan akun pengguna default.
+    ```bash
+    php spark db:seed DatabaseSeeder
+    ```
+6.  **Jalankan Server Lokal**:
+    ```bash
+    php spark serve
+    ```
+    Aplikasi sekarang dapat diakses di **http://localhost:8080**.
+
+### Akun Login Default
+Setelah menjalankan seeder, Anda dapat login menggunakan akun default berikut.
+**Password** untuk semua akun adalah: `password123`
+
+| Peran                  | Username  |
+| ---------------------- | --------- |
+| Administrator Sistem   | `admin`   |
+| Staf Tata Usaha        | `staf`    |
+| Kepala Sekolah         | `kepsek`  |
+| Guru 1                 | `guru1`   |
+| Guru 2                 | `guru2`   |
+| Siswa 1                | `siswa1`  |
+| Orang Tua 1            | `ortu1`   |
+
+---
+
+## 📖 Panduan Penggunaan
+
+Berikut adalah alur kerja dasar untuk beberapa tugas kunci di dalam aplikasi.
+
+#### Sebagai Guru: Menginput Nilai
+1.  Login sebagai `guru1`.
+2.  Navigasi ke menu **Penilaian -> Input Nilai**.
+3.  Pilih **Kelas** dan **Mata Pelajaran** yang Anda ajar. Daftar mata pelajaran akan muncul secara dinamis setelah kelas dipilih.
+4.  Klik **"Lanjutkan"**.
+5.  Form input akan muncul, menampilkan daftar siswa di kelas tersebut. Anda dapat menambahkan beberapa baris penilaian untuk setiap siswa.
+6.  Isi detail penilaian (jenis, judul, tanggal, skor/deskripsi).
+7.  Klik **"Simpan Penilaian"** di bagian bawah halaman.
+
+#### Sebagai Wali Kelas: Mengekspor Data e-Rapor
+1.  Login sebagai guru yang ditunjuk sebagai Wali Kelas (misal, `guru1` jika diset di database).
+2.  Navigasi ke menu **Wali Kelas -> Ekspor e-Rapor**.
+3.  Pilih **Tahun Ajaran** dan **Semester**.
+4.  Klik **"Proses & Unduh Excel"**.
+5.  Sistem akan menghasilkan file `.xlsx` yang berisi rata-rata nilai sumatif untuk setiap siswa di kelas perwalian Anda, siap untuk diimpor ke aplikasi e-Rapor.
+
+---
+
+## 👨‍💻 Untuk Pengembang
+
+Informasi teknis tambahan untuk berkontribusi pada proyek ini.
+
+### Struktur Proyek
+- **Controllers**: `app/Controllers/` - Logika utama aplikasi, diorganisir dalam sub-direktori berdasarkan peran (misal, `Admin`, `Guru`).
+- **Models**: `app/Models/` - Interaksi database dan aturan validasi data.
+- **Views**: `app/Views/` - File tampilan (UI), diorganisir dalam sub-direktori berdasarkan peran.
+- **Routes**: `app/Config/Routes.php` - Mendefinisikan URL dan menghubungkannya ke controller.
+- **Database Migrations**: `app/Database/Migrations/` - Skema database dalam bentuk kode.
+- **Database Seeders**: `app/Database/Seeds/` - Data awal untuk pengembangan.
+- **Helpers**: `app/Helpers/` - Fungsi-fungsi bantuan kustom (misal, `auth_helper.php`).
+
+### Kontrol Akses
+Aplikasi menggunakan kombinasi **Filter Rute** dan **Pengecekan di dalam Controller** untuk mengelola hak akses.
+- **Filter Rute**: Di `app/Config/Routes.php`, grup rute dilindungi dengan filter `auth` yang dapat menerima argumen peran (misal, `'filter' => 'auth:Administrator Sistem,Staf Tata Usaha'`).
+- **Helper `hasRole()`**: Di dalam controller, fungsi `hasRole(['Nama Peran'])` digunakan untuk memberikan pengamanan lapis kedua pada aksi-aksi spesifik (misal, CUD).
+
+### Testing
+Proyek ini menggunakan PHPUnit untuk testing.
+- **Menjalankan Semua Test**:
+  ```bash
+  composer test
+  ```
+- **Menjalankan File Test Spesifik**:
+  ```bash
+  php vendor/bin/phpunit tests/Controllers/Admin/StudentControllerTest.php
+  ```
+- File konfigurasi test ada di `phpunit.xml.dist`. Test database menggunakan database SQLite in-memory untuk isolasi dan kecepatan.
+
+---
+
+## 🤝 Berkontribusi
+
+Kontribusi sangat kami hargai! Silakan fork repositori ini, buat branch baru untuk fitur atau perbaikan Anda, dan ajukan Pull Request.
+
+## 📜 Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
